@@ -77,7 +77,7 @@
     <aliyun-oss.version>2.20.26</aliyun-oss.version>
 
     <!-- SMS -->
-    <aliyun-dysmsapi.version>3.3.4</aliyun-dysmsapi.version>
+    <aliyun-dysmsapi.version>4.6.0</aliyun-dysmsapi.version>
 
     <!-- Workflow -->
     <warm-flow.version>1.8.9</warm-flow.version>
