@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <parent>
+    <groupId>com.carlos</groupId>
+    <artifactId>carlos-integration</artifactId>
+    <version>${revision}</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.carlos</groupId>
+  <artifactId>carlos-gateway</artifactId>
+  <version>${revision}</version>
+
+  <description>
+    Carlos 现代融合治理网关 - 集成 OAuth2、WAF、限流、熔断、灰度发布、链路追踪
+  </description>
+
+  <dependencies>
+    <!-- ==================== Spring Boot 基础 ==================== -->
+    <!-- Spring Boot 配置处理器 -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-configuration-processor</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <!-- ==================== Spring WebFlux (WebClient 支持) ==================== -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-webflux</artifactId>
+    </dependency>
+
+    <!-- ==================== Spring Cloud Gateway ==================== -->
+    <dependency>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-gateway-server-webflux</artifactId>
+    </dependency>
+
+    <!-- 负载均衡 -->
+    <dependency>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-loadbalancer</artifactId>
+    </dependency>
+
+    <!-- ==================== Spring Cloud Alibaba Nacos ==================== -->
+    <dependency>
+      <groupId>com.alibaba.cloud</groupId>
+      <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.alibaba.cloud</groupId>
+      <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
+    </dependency>
+
+    <!-- ==================== Redis 支持 ==================== -->
+    <dependency>
+      <groupId>com.carlos</groupId>
+      <artifactId>carlos-spring-boot-starter-redis-reactive</artifactId>
+    </dependency>
+
+    <!-- ==================== 熔断降级（Resilience4j） ==================== -->
+    <dependency>
+      <groupId>io.github.resilience4j</groupId>
+      <artifactId>resilience4j-spring-boot4</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>io.github.resilience4j</groupId>
+      <artifactId>resilience4j-reactor</artifactId>
+    </dependency>
+
+
+    <!-- ==================== 链路追踪（Spring Boot Micrometer Tracing + Brave + Zipkin） ==================== -->
+    <!-- Spring Boot 4.x 专用 Brave tracing starter：自动装配 Tracer、Propagator -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-micrometer-tracing-brave</artifactId>
+    </dependency>
+
+    <!--
+      Brave 桥接实现：提供 io.micrometer.tracing.brave.bridge.BraveTracer。
+      spring-boot-micrometer-tracing-brave 的 BraveAutoConfiguration 以
+      @ConditionalOnClass({brave.Tracer, BraveTracer}) 为前置条件，缺少本依赖时
+      该自动配置整体不激活，brave.Tracer / brave.Tracing Bean 都不会创建。
+    -->
+    <dependency>
+      <groupId>io.micrometer</groupId>
+      <artifactId>micrometer-tracing-bridge-brave</artifactId>
+    </dependency>
+
+    <!-- Brave 核心（显式声明，代码直接依赖 brave.Tracer / brave.Span） -->
+    <dependency>
+      <groupId>io.zipkin.brave</groupId>
+      <artifactId>brave</artifactId>
+    </dependency>
+
+    <!--
+      注意：Zipkin 上报已移除，可视化统一使用 SkyWalking。
+      management.zipkin.tracing.endpoint 配置不再生效。
+      SkyWalking Agent 启动后自动接管 Span 上报。
+    -->
+
+    <!-- ==================== 指标监控（Micrometer + Prometheus） ==================== -->
+    <dependency>
+      <groupId>io.micrometer</groupId>
+      <artifactId>micrometer-registry-prometheus</artifactId>
+    </dependency>
+    <!-- ==================== 指标监控与可观测性（Actuator + Micrometer + Prometheus） ==================== -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-actuator</artifactId>
+    </dependency>
+
+    <!-- ==================== 文档聚合（Knife4j） ==================== -->
+    <dependency>
+      <groupId>com.github.carlos</groupId>
+      <artifactId>knife4j-gateway-spring-boot-starter</artifactId>
+    </dependency>
+
+
+    <!-- ==================== Carlos 核心依赖 ==================== -->
+    <dependency>
+      <groupId>com.carlos</groupId>
+      <artifactId>carlos-spring-boot-core</artifactId>
+      <exclusions>
+        <exclusion>
+          <artifactId>aspectjweaver</artifactId>
+          <groupId>org.aspectj</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>com.carlos</groupId>
+      <artifactId>carlos-utils</artifactId>
+    </dependency>
+
+    <!-- ==================== 测试依赖 ==================== -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>io.projectreactor</groupId>
+      <artifactId>reactor-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+  </dependencies>
+
+  <build>
+    <finalName>${project.artifactId}</finalName>
+    <plugins>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>repackage</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+      </plugin>
+      <!-- 父 POM 默认 skipTests=true，本模块自行开启 -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <skipTests>false</skipTests>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>

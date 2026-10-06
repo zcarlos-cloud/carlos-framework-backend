@@ -1,0 +1,57 @@
+server:
+  port: 9815
+
+spring:
+  application:
+    name: carlos-sample-sms
+
+carlos:
+  sms:
+    # 核心线程池大小
+    corePoolSize: 10
+    # 最大线程数
+    maxPoolSize: 30
+    # 队列容量
+    queueCapacity: 50
+    # 活跃时间（秒）
+    keepAliveSeconds: 60
+    # 线程名字前缀
+    threadNamePrefix: sms-executor-
+    # 设置线程池关闭的时候等待所有任务都完成再继续销毁其他的Bean
+    shutdownStrategy: true
+    # 阿里云短信配置
+    alibaba:
+      # 阿里云的 accessKey
+      accessKeyId: ${ALIYUN_ACCESS_KEY_ID:您的accessKey}
+      # 阿里云的 accessKeySecret
+      accessKeySecret: ${ALIYUN_ACCESS_KEY_SECRET:您的accessKeySecret}
+      # 短信签名
+      signature: ${ALIYUN_SMS_SIGNATURE:测试签名}
+      # 模板ID，用于发送固定模板短信使用
+      templateId: ${ALIYUN_SMS_TEMPLATE_ID:SMS_215125134}
+      # 模板变量，上述模板的变量
+      templateName: code
+      # 请求地址，默认为 dysmsapi.aliyuncs.com，如无特殊改变可以不用设置
+      requestUrl: dysmsapi.aliyuncs.com
+    # 华为云短信配置
+    huawei:
+      # 华为短信 appKey
+      appKey: ${HUAWEI_SMS_APP_KEY:5N6fvXXXX920HaWhVXXXXXX7fYa}
+      # 华为短信 appSecret
+      app-secret: ${HUAWEI_SMS_APP_SECRET:Wujt7EYzZTBXXXXXXEhSP6XXXX}
+      # 短信签名
+      signature: ${HUAWEI_SMS_SIGNATURE:华为短信测试}
+      # 通道号
+      sender: ${HUAWEI_SMS_SENDER:8823040504797}
+      # 模板ID，如果使用自定义模板发送方法可不设定
+      template-id: ${HUAWEI_SMS_TEMPLATE_ID:acXXXXXXXXc274b2a8263479b954c1ab5}
+      # 华为回调地址，如不需要可不设置或为空
+      statusCallBack: ${HUAWEI_SMS_CALLBACK:}
+      # 华为分配的 app 请求地址
+      url: ${HUAWEI_SMS_URL:https://XXXXX.cn-north-4.XXXXXXXX.com:443}
+
+# 日志配置
+logging:
+  level:
+    com.carlos.sms: debug
+    org.dromara.sms4j: debug

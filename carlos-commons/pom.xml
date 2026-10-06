@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <parent>
+    <groupId>com.carlos</groupId>
+    <artifactId>carlos-parent</artifactId>
+    <version>${revision}</version>
+    <relativePath>../carlos-parent/pom.xml</relativePath>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+
+  <artifactId>carlos-commons</artifactId>
+  <packaging>pom</packaging>
+
+  <name>carlos-commons</name>
+  <description>
+    carlos通用库和核心组件 - 作为commons子模块的父POM
+  </description>
+
+  <modules>
+    <module>carlos-utils</module>
+  </modules>
+
+  <!-- Commons模块特定的依赖配置 -->
+  <!-- 如果未来需要为所有commons模块添加通用依赖，可以在这里配置 -->
+</project>

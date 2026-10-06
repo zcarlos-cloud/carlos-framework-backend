@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<!--
+    分支管理界面 FXML 文件
+    使用 ScrollPane 包裹主内容，支持内容超出窗口时滚动
+-->
+<ScrollPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.carlos.fx.gitlab.controller.BranchManagementController"
+            fitToWidth="true"
+            vbarPolicy="AS_NEEDED"
+            hbarPolicy="NEVER"
+            pannable="true"
+            style="-fx-background-color: transparent;">
+
+    <!-- 主容器：垂直布局 (VBox) -->
+    <VBox spacing="15" style="-fx-padding: 15;">
+
+        <!-- 过滤栏：水平布局 (HBox) -->
+        <HBox spacing="10" alignment="CENTER_LEFT" styleClass="card">
+            <Label text="项目:" styleClass="form-label"/>
+            <!-- 项目下拉框：选择要管理的 GitLab 项目 -->
+            <ComboBox fx:id="projectCombo" prefWidth="200"/>
+
+            <!-- 搜索输入框：实时过滤分支列表 -->
+            <TextField fx:id="searchField" promptText="搜索分支..." prefWidth="200" HBox.hgrow="ALWAYS"/>
+
+            <!-- 刷新按钮：重新加载分支列表 -->
+            <Button fx:id="refreshButton" text="刷新" styleClass="secondary-button"/>
+            <!-- 进度指示器：显示加载状态 -->
+            <ProgressIndicator fx:id="progressIndicator" prefWidth="24" prefHeight="24"/>
+        </HBox>
+
+        <!-- 分支表格：显示所有分支信息 -->
+        <TableView fx:id="branchTable" prefHeight="400">
+            <columns>
+                <!-- 选择列：复选框，用于批量操作 -->
+                <TableColumn fx:id="selectColumn" text="选择" prefWidth="60"/>
+                <!-- 分支名称列 -->
+                <TableColumn fx:id="nameColumn" text="分支名称" prefWidth="200"/>
+                <!-- 受保护状态列 -->
+                <TableColumn fx:id="protectedColumn" text="受保护" prefWidth="80"/>
+                <!-- 最后提交信息列 -->
+                <TableColumn fx:id="commitColumn" text="最后提交" prefWidth="400"/>
+                <!-- 提交时间列 -->
+                <TableColumn fx:id="dateColumn" text="提交时间" prefWidth="150"/>
+            </columns>
+        </TableView>
+
+        <!-- 操作按钮栏：水平布局 (HBox) -->
+        <HBox spacing="10" styleClass="card">
+            <!-- 创建分支按钮 -->
+            <Button fx:id="createButton" text="创建分支" styleClass="primary-button"/>
+            <!-- 删除选中分支按钮 -->
+            <Button fx:id="deleteButton" text="删除选中" styleClass="danger-button"/>
+            <!-- 保护分支按钮 -->
+            <Button fx:id="protectButton" text="保护" styleClass="success-button"/>
+            <!-- 取消保护分支按钮 -->
+            <Button fx:id="unprotectButton" text="取消保护" styleClass="secondary-button"/>
+            <!-- 比较分支按钮 -->
+            <Button fx:id="compareButton" text="比较分支" styleClass="secondary-button"/>
+            <Separator orientation="VERTICAL"/>
+            <!-- 删除已合并分支按钮 -->
+            <Button fx:id="deleteMergedButton" text="删除已合并分支" styleClass="danger-button"/>
+        </HBox>
+
+    </VBox>
+
+</ScrollPane>

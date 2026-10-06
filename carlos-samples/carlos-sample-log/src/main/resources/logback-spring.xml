@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <!-- 引入 Spring Boot 默认日志配置 -->
+  <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+  <!-- 定义日志文件路径 -->
+  <property name="LOG_PATH" value="./logs"/>
+  <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"/>
+
+  <!-- 控制台输出 -->
+  <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>${LOG_PATTERN}</pattern>
+      <charset>UTF-8</charset>
+    </encoder>
+  </appender>
+
+  <!-- 应用日志文件输出 -->
+  <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>${LOG_PATH}/carlos-sample-log.log</file>
+    <encoder>
+      <pattern>${LOG_PATTERN}</pattern>
+      <charset>UTF-8</charset>
+    </encoder>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <fileNamePattern>${LOG_PATH}/carlos-sample-log.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+      <maxHistory>30</maxHistory>
+      <maxFileSize>100MB</maxFileSize>
+      <totalSizeCap>10GB</totalSizeCap>
+    </rollingPolicy>
+  </appender>
+
+  <!-- 操作日志文件输出 -->
+  <appender name="OPERATION_LOG" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>${LOG_PATH}/operation/operation.log</file>
+    <encoder>
+      <pattern>${LOG_PATTERN}</pattern>
+      <charset>UTF-8</charset>
+    </encoder>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <fileNamePattern>${LOG_PATH}/operation/operation.%d{yyyy-MM-dd}.log</fileNamePattern>
+      <maxHistory>30</maxHistory>
+    </rollingPolicy>
+  </appender>
+
+  <!-- 异步日志配置 -->
+  <appender name="ASYNC_FILE" class="ch.qos.logback.classic.AsyncAppender">
+    <discardingThreshold>0</discardingThreshold>
+    <queueSize>512</queueSize>
+    <appender-ref ref="FILE"/>
+  </appender>
+
+  <!-- 根日志级别 -->
+  <root level="INFO">
+    <appender-ref ref="CONSOLE"/>
+    <appender-ref ref="ASYNC_FILE"/>
+  </root>
+
+  <!-- 包级别日志配置 -->
+  <logger name="com.carlos.sample.log" level="DEBUG"/>
+  <logger name="com.carlos.log.aspect" level="DEBUG" additivity="false">
+    <appender-ref ref="CONSOLE"/>
+    <appender-ref ref="OPERATION_LOG"/>
+  </logger>
+
+  <!-- Spring 框架日志级别 -->
+  <logger name="org.springframework" level="WARN"/>
+  <logger name="org.springframework.web" level="INFO"/>
+</configuration>

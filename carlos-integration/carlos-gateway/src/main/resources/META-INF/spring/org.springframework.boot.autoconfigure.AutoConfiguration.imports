@@ -1,0 +1,35 @@
+# Gateway 模块自动配置类
+# 按依赖顺序排列，基础设施配置在前
+
+# 基础设施配置
+com.carlos.gateway.config.InfrastructureAutoConfiguration
+
+# 过滤器配置
+com.carlos.gateway.filter.FilterAutoConfiguration
+
+# OAuth2 认证配置
+com.carlos.gateway.oauth2.OAuth2GatewayAutoConfiguration
+
+# 身份断言配置（净化客户端身份头 + 签发 X-User-Context）
+com.carlos.gateway.identity.IdentityGatewayAutoConfiguration
+
+# 熔断降级配置
+com.carlos.gateway.circuitbreaker.CircuitBreakerAutoConfiguration
+
+# 灰度发布配置
+com.carlos.gateway.gray.GrayReleaseAutoConfiguration
+
+# 安全防护配置
+com.carlos.gateway.security.SecurityGatewayAutoConfiguration
+
+# 缓存配置
+com.carlos.gateway.cache.CacheGatewayAutoConfiguration
+
+# 可观测性配置
+com.carlos.gateway.observability.ObservabilityAutoConfiguration
+
+# 请求转换配置
+com.carlos.gateway.transform.TransformAutoConfiguration
+
+# 主配置入口（兼容旧版本）
+com.carlos.gateway.config.GatewayConfig

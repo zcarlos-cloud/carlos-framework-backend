@@ -1,0 +1,41 @@
+# ==========================================
+# carlos-devkit-boot 本地数据源补充配置
+# 说明：补充 boot profile 下的 PostgreSQL 元数据库配置（dev_* 表所在库）
+# ==========================================
+
+# ======================== 数据源配置（PostgreSQL 元数据库） ========================
+spring:
+  datasource:
+    dynamic:
+      primary: master
+      datasource:
+        # 主库数据源（开发工具元数据：dev_* 表所在库）
+        master:
+          driver-class-name: org.postgresql.Driver
+          url: jdbc:postgresql://${DB_URL}?currentSchema=public&stringtype=unspecified
+          username: ${DB_USERNAME}
+          password: ${DB_PWD}
+
+---
+# ======================== 缓存数据库配置（Redis） ========================
+# 说明：devkit 自身不使用缓存/分布式锁，但框架基线（starter-redis）会装配 RedissonClient，
+#       未配置时默认连 localhost:6379 直接启动失败，故此处显式给出连接。
+#       默认端口 16379 是本机开发环境的 Redis（不是 6379）。
+#
+# ⚠️ 这里**故意不写 password**：本地 Redis 无密码，而 `${REDIS_PWD:}` 会解析成空字符串，
+#    Redisson 拿到空串仍会发 AUTH 命令，导致 WRONGPASS 启动失败。
+#    需要密码的环境请直接给环境变量 `SPRING_DATA_REDIS_PASSWORD`（Spring Boot 宽松绑定会覆盖），
+#    或走 Nacos 的 redis.yml（cloud 模式）。
+spring:
+  data:
+    redis:
+      database: ${REDIS_DB:0}
+      host: ${REDIS_IP:localhost}
+      port: ${REDIS_PORT:16379}
+      timeout: 10s
+      lettuce:
+        pool:
+          max-active: 100
+          max-idle: 50
+          min-idle: 10
+          max-wait: 2000ms

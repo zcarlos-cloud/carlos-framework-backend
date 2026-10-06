@@ -1,0 +1,6 @@
+com.carlos.redis.config.RedisConnectionConfig
+com.carlos.redis.config.RedisCacheConfig
+com.carlos.redis.config.RedissonConfig
+com.carlos.redis.caffeine.CaffeineConfig
+com.carlos.redis.stream.RedisStreamAutoConfiguration
+com.carlos.redis.delay.RedisDelayAutoConfiguration

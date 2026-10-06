@@ -1,0 +1,266 @@
+databaseChangeLog:
+  -
+    changeSet:
+      id: 5
+      author: carlos
+      context: develop,test,production
+      comment: 改造 sys_menu 表，字段对齐前端菜单管理
+      changes:
+        # 1. 新增字段
+        -
+          addColumn:
+            tableName: sys_menu
+            columns:
+              -
+                column:
+                  name: menu_category
+                  type: TINYINT
+                  defaultValue: "1"
+                  remarks: 菜单类别：1=目录, 2=菜单
+              -
+                column:
+                  name: icon_type
+                  type: TINYINT
+                  defaultValue: "1"
+                  remarks: 图标类型：1=iconify, 2=local
+              -
+                column:
+                  name: i18n_key
+                  type: VARCHAR(100)
+                  remarks: 国际化key
+              -
+                column:
+                  name: keep_alive
+                  type: TINYINT
+                  defaultValue: "0"
+                  remarks: 是否缓存页面
+              -
+                column:
+                  name: constant
+                  type: TINYINT
+                  defaultValue: "0"
+                  remarks: 是否常量路由
+              -
+                column:
+                  name: href
+                  type: VARCHAR(200)
+                  remarks: 外链地址
+              -
+                column:
+                  name: active_menu
+                  type: VARCHAR(100)
+                  remarks: 高亮菜单路由名
+              -
+                column:
+                  name: multi_tab
+                  type: TINYINT
+                  defaultValue: "0"
+                  remarks: 是否多标签页
+              -
+                column:
+                  name: fixed_index_in_tab
+                  type: INT
+                  remarks: 标签页固定索引
+              -
+                column:
+                  name: route_query
+                  type: JSON
+                  remarks: 路由query参数
+              -
+                column:
+                  name: status
+                  type: TINYINT
+                  defaultValue: "1"
+                  remarks: 状态：1=启用, 2=禁用
+              -
+                column:
+                  name: create_by
+                  type: BIGINT
+                  remarks: 创建人ID
+              -
+                column:
+                  name: update_by
+                  type: BIGINT
+                  remarks: 修改人ID
+
+        # 2. 重命名字段
+        -
+          renameColumn:
+            tableName: sys_menu
+            oldColumnName: title
+            newColumnName: menu_name
+            columnDataType: VARCHAR(100)
+        -
+          renameColumn:
+            tableName: sys_menu
+            oldColumnName: name
+            newColumnName: route_name
+            columnDataType: VARCHAR(100)
+        -
+          renameColumn:
+            tableName: sys_menu
+            oldColumnName: path
+            newColumnName: route_path
+            columnDataType: VARCHAR(200)
+        -
+          renameColumn:
+            tableName: sys_menu
+            oldColumnName: sort
+            newColumnName: order_num
+            columnDataType: INT
+        -
+          renameColumn:
+            tableName: sys_menu
+            oldColumnName: menu_type
+            newColumnName: client_type
+            columnDataType: VARCHAR(20)
+        -
+          renameColumn:
+            tableName: sys_menu
+            oldColumnName: hidden
+            newColumnName: hide_in_menu
+            columnDataType: TINYINT
+
+        # 2.5 修改 client_type 数据类型为 TINYINT
+        -
+          modifyDataType:
+            tableName: sys_menu
+            columnName: client_type
+            newDataType: TINYINT
+
+        # 3. 数据迁移：state -> status
+        -
+          sql:
+            sql: UPDATE sys_menu SET status = CASE WHEN state = 1 THEN 1 ELSE 2 END
+            remarks: 将原 state 字段映射到新的 status 字段
+
+        # 4. 删除原 state 字段
+        -
+          dropColumn:
+            tableName: sys_menu
+            columnName: state
+
+        # 5. 创建新索引
+        -
+          createIndex:
+            tableName: sys_menu
+            indexName: idx_menu_category
+            columns:
+              -
+                column:
+                  name: menu_category
+        -
+          createIndex:
+            tableName: sys_menu
+            indexName: idx_status
+            columns:
+              -
+                column:
+                  name: status
+
+      rollback:
+        # 回滚：恢复字段名
+        -
+          renameColumn:
+            tableName: sys_menu
+            oldColumnName: menu_name
+            newColumnName: title
+            columnDataType: VARCHAR(100)
+        -
+          renameColumn:
+            tableName: sys_menu
+            oldColumnName: route_name
+            newColumnName: name
+            columnDataType: VARCHAR(100)
+        -
+          renameColumn:
+            tableName: sys_menu
+            oldColumnName: route_path
+            newColumnName: path
+            columnDataType: VARCHAR(200)
+        -
+          renameColumn:
+            tableName: sys_menu
+            oldColumnName: order_num
+            newColumnName: sort
+            columnDataType: INT
+        -
+          renameColumn:
+            tableName: sys_menu
+            oldColumnName: client_type
+            newColumnName: menu_type
+            columnDataType: TINYINT
+        -
+          modifyDataType:
+            tableName: sys_menu
+            columnName: menu_type
+            newDataType: VARCHAR(20)
+        -
+          renameColumn:
+            tableName: sys_menu
+            oldColumnName: hide_in_menu
+            newColumnName: hidden
+            columnDataType: TINYINT
+        # 恢复 state 字段
+        -
+          addColumn:
+            tableName: sys_menu
+            columns:
+              -
+                column:
+                  name: state
+                  type: TINYINT
+                  defaultValue: "1"
+        # 删除新增字段
+        -
+          dropColumn:
+            tableName: sys_menu
+            columnName: menu_category
+        -
+          dropColumn:
+            tableName: sys_menu
+            columnName: icon_type
+        -
+          dropColumn:
+            tableName: sys_menu
+            columnName: i18n_key
+        -
+          dropColumn:
+            tableName: sys_menu
+            columnName: keep_alive
+        -
+          dropColumn:
+            tableName: sys_menu
+            columnName: constant
+        -
+          dropColumn:
+            tableName: sys_menu
+            columnName: href
+        -
+          dropColumn:
+            tableName: sys_menu
+            columnName: active_menu
+        -
+          dropColumn:
+            tableName: sys_menu
+            columnName: multi_tab
+        -
+          dropColumn:
+            tableName: sys_menu
+            columnName: fixed_index_in_tab
+        -
+          dropColumn:
+            tableName: sys_menu
+            columnName: route_query
+        -
+          dropColumn:
+            tableName: sys_menu
+            columnName: status
+        -
+          dropColumn:
+            tableName: sys_menu
+            columnName: create_by
+        -
+          dropColumn:
+            tableName: sys_menu
+            columnName: update_by

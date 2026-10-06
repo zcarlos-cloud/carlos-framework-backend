@@ -1,0 +1,12 @@
+## 数据库配置
+MYSQL_URL: '100.127.6.234:13306/carlos_msg_feature'
+MYSQL_USERNAME: 'root'
+MYSQL_PWD: 'carlos@123456'
+
+
+
+REDIS_IP: '100.127.6.234'
+REDIS_PORT: '16379'
+REDIS_DB: '2'
+REDIS_PWD: 'carlos@123456'
+

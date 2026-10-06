@@ -1,0 +1,234 @@
+# ==========================================
+# carlos-monitor-cloud 微服务启动配置
+# 说明：监控服务 Spring Cloud 版本，通过 Nacos 获取共享配置
+# ==========================================
+
+# ======================== 服务基础配置 ========================
+server:
+  port: 9519
+
+# ======================== Spring 主配置 ========================
+spring:
+  profiles:
+    active: ${PROFILE:local}
+  application:
+    name: carlos-monitor
+
+  # ======================== Nacos 配置中心 ========================
+  cloud:
+    nacos:
+      discovery:
+        enabled: true
+      config:
+        enabled: true
+        file-extension: yml
+        refresh-enabled: true
+
+  # 配置导入（Nacos 共享配置）
+  config:
+    import:
+      # 1. 公共配置（所有环境共享）
+      # 2. Redis 共享配置
+      # 3. 数据库共享配置（监控元数据 PostgreSQL，由 Nacos 管理）
+      - optional:nacos:common.yml?group=DEFAULT_GROUP&refreshEnabled=true
+      - optional:nacos:redis.yml?group=DEFAULT_GROUP&refreshEnabled=true
+      - optional:nacos:db.yml?group=DEFAULT_GROUP&refreshEnabled=true
+
+# ======================== 本地调试环境 ========================
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+  cloud:
+    nacos:
+      username: ${NACOS_USERNAME:@nacos.username@}
+      password: ${NACOS_PASSWORD:@nacos.password@}
+      discovery:
+        server-addr: ${NACOS_ADDR:@nacos.addr@}
+        namespace: ${NACOS_NAMESPACE:@nacos.namespace@}
+        group: ${NACOS_GROUP:@nacos.group@}
+      config:
+        server-addr: ${NACOS_ADDR:@nacos.addr@}
+        namespace: ${NACOS_NAMESPACE:@nacos.namespace@}
+        group: ${NACOS_GROUP:@nacos.group@}
+
+# ======================== 部署环境（使用环境变量） ========================
+---
+spring:
+  config:
+    activate:
+      on-profile: deploy
+  cloud:
+    nacos:
+      username: ${NACOS_USERNAME}
+      password: ${NACOS_PASSWORD}
+      discovery:
+        server-addr: ${NACOS_ADDR}
+        namespace: ${NACOS_NAMESPACE}
+        group: ${NACOS_GROUP}
+      config:
+        namespace: ${NACOS_NAMESPACE}
+        server-addr: ${NACOS_ADDR}
+        group: ${NACOS_GROUP}
+
+---
+# ======================== Carlos 监控服务配置 ========================
+carlos:
+  # ======================== 资源服务器/安全配置 ========================
+  # 校验网关签发的身份断言（X-User-Context），建立登录人上下文（@MonitorAudit 记录操作人的前提）
+  resource-server:
+    enabled: true
+  # ======================== 加密配置（SM4 国密，实例凭据加密必需） ========================
+  encrypt:
+    sm4:
+      enabled: true
+      encrypt-mode: cbc
+      key: ${CARLOS_ENCRYPT_KEY:asdfghjklmnbvcxz}
+      iv: ${CARLOS_ENCRYPT_IV:mnbvcxzpoiuytre1}
+  # APM 链路追踪（Brave + MDC 日志关联）
+  apm:
+    enabled: true
+  # ======================== 枚举字典配置 ========================
+  web:
+    enum-dict:
+      # 只扫本服务自己的枚举包（@AppEnum 的 code 需全局唯一，扫 com.carlos 会跨模块互相覆盖）
+      scan-packages: com.carlos.monitor
+      enabled: true
+
+  # ======================== 系统监控配置（详见 MonitorProperties，Nacos 可覆盖） ========================
+  monitor:
+    enabled: true
+    collect:
+      enabled: true
+      shard-count: 8
+      parallelism: 32
+    sink:
+      clickhouse:
+        url: ${CLICKHOUSE_URL:jdbc:clickhouse://${CLICKHOUSE_HOST:localhost}:${CLICKHOUSE_PORT:8123}/${CLICKHOUSE_DATABASE:default}}
+        username: ${CLICKHOUSE_USERNAME:default}
+        password: ${CLICKHOUSE_PASSWORD:}
+        batch-size: 2000
+        flush-interval-ms: 3000
+        backup-dir: logs/monitor/backup
+      disruptor:
+        ring-size: 65536
+    connection:
+      registry-max-size: 500
+      expire-after-access-min: 30
+      db-pool-max-active: 8
+    redis:
+      confirm-token-ttl-sec: 60
+      batch-delete-size: 500
+      batch-delete-sleep-ms: 100
+    sql-console:
+      default-limit: 500
+      max-limit: 5000
+      statement-timeout-sec: 10
+      write-max-affected-rows: 10000
+    alarm:
+      rule-cache-sec: 60
+      recover-notify: true
+    service-monitor:
+      actuator-base-path: /actuator
+      connect-timeout-ms: 2000
+
+  # Disruptor 公共配置
+  disruptor:
+    enabled: true
+    buffer-size: 1024
+    wait-strategy: blocking
+    thread-pool:
+      thread-name-prefix: monitor-disruptor-
+
+  # 雪花 ID 配置
+  snowflake:
+    tag: monitor
+
+# ======================== 监控配置 ========================
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+# ======================== 日志配置 ========================
+logging:
+  config: classpath:config/logback.xml
+  level:
+    com.carlos: debug
+    com.carlos.monitor: INFO
+  file:
+    path: logs/monitor/
+
+---
+# ======================== 接口文档配置（Knife4j/SpringDoc） ========================
+carlos:
+  openapi:
+    enable: true
+    title: "Carlos 监控服务 API 文档"
+    description: "中间件/数据库/微服务监控与数据管理接口"
+    version: "3.0.0"
+    contact:
+      name: "技术支持"
+      email: "zhujunkeep@gmail.com"
+      url: "https://example.com"
+    license: "Apache 2.0"
+    license-url: "https://www.apache.org/licenses/LICENSE-2.0"
+
+knife4j:
+  enable: true
+  production: false
+  basic:
+    enable: false
+    username: admin
+    password: 123456
+  setting:
+    language: ZH_CN
+    enable-document-manage: true
+    enable-swagger-models: true
+    swagger-model-name: Swagger Models
+    enable-host: true
+    enable-request-cache: true
+    enable-filter-multipart-apis: true
+    enable-filter-multipart-api-method-type: POST
+    enable-dynamic-parameter: true
+    enable-open-api: true
+    enable-search: true
+    enable-after-script: true
+    enable-group: true
+    enable-response-code: true
+    enable-reload-cache-parameter: false
+    enable-debug: true
+    enable-home-custom: false
+    home-custom-path: classpath:markdown/home.md
+    enable-version: true
+    enable-footer: false
+    enable-footer-custom: false
+    footer-custom-content: "自定义Footer内容"
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+    resolve-schema-properties: true
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+    doc-expansion: list
+    display-request-duration: true
+  paths-to-exclude: /error, /actuator/**
+  cache:
+    disabled: false
+  show-actuator: false
+  show-login-endpoint: false
+  # ==================== 接口分组 ====================
+  group-configs:
+    # Feign 接口（服务间调用）
+    -
+      group: 'Feign接口'
+      displayName: 'Feign 接口（服务间调用）'
+      packagesToScan: com.carlos.monitor.apiimpl
+      pathsToMatch: /**

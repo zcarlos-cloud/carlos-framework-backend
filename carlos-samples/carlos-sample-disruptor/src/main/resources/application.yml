@@ -1,0 +1,26 @@
+server:
+  port: 9820
+
+spring:
+  application:
+    name: carlos-sample-disruptor
+
+carlos:
+  disruptor:
+    enabled: true
+    # RingBuffer 大小，必须是 2 的幂
+    buffer-size: 1024
+    # 等待策略: BLOCKING, SLEEPING, YIELDING, BUSY_SPIN
+    wait-strategy: sleeping
+    # 线程池配置
+    thread-pool:
+      core-size: 4
+      max-size: 8
+      queue-capacity: 100
+      thread-name-prefix: "disruptor-"
+
+# 日志配置
+logging:
+  level:
+    com.carlos.disruptor: debug
+    com.carlos.sample.disruptor: debug

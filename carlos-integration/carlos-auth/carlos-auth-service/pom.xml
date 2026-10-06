@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.carlos.auth</groupId>
+        <artifactId>carlos-auth</artifactId>
+        <version>${revision}</version>
+    </parent>
+
+    <artifactId>carlos-auth-service</artifactId>
+    <description>
+        Carlos OAuth2 统一认证服务模块
+
+        本模块提供完整的 OAuth2 认证授权能力，包括：
+        - 授权服务器（Authorization Server）- 基于 Spring Authorization Server 1.x
+        - 多种授权模式：授权码模式、密码模式（扩展）、短信验证码模式（扩展）、客户端凭证模式
+        - 国密 SM4 密码加密支持
+        - 可扩展的用户详情服务和 Token 增强机制
+
+        适用场景：
+        - 微服务架构中的统一认证中心
+        - 多租户系统的身份认证
+        - 需要自定义授权逻辑的 OAuth2 服务
+    </description>
+
+    <dependencies>
+        <!-- ==================== Carlos 内部依赖 ==================== -->
+
+        <!-- Carlos Security（用户上下文） -->
+        <dependency>
+            <groupId>com.carlos</groupId>
+            <artifactId>carlos-spring-boot-starter-security</artifactId>
+        </dependency>
+
+        <!-- 核心基础模块 -->
+        <dependency>
+            <groupId>com.carlos</groupId>
+            <artifactId>carlos-spring-boot-core</artifactId>
+        </dependency>
+
+        <!-- Web 支持 -->
+        <dependency>
+            <groupId>com.carlos</groupId>
+            <artifactId>carlos-spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- Redis 支持（用于 Token 存储和会话管理） -->
+        <dependency>
+            <groupId>com.carlos</groupId>
+            <artifactId>carlos-spring-boot-starter-redis</artifactId>
+        </dependency>
+
+        <!--
+            carlos MQ：审计日志改为经 MQ 投递（见 com.carlos.auth.audit.AuditLogPublisher）。
+            本模块已有 Redis 依赖，故引入 MQ 不新增部署前提。
+        -->
+        <dependency>
+            <groupId>com.carlos</groupId>
+            <artifactId>carlos-spring-boot-starter-mq</artifactId>
+        </dependency>
+
+        <!-- 数据库访问 -->
+        <dependency>
+            <groupId>com.carlos</groupId>
+            <artifactId>carlos-spring-boot-starter-mybatis</artifactId>
+        </dependency>
+
+        <!-- 国密加密支持（SM2/SM4） -->
+        <dependency>
+            <groupId>com.carlos</groupId>
+            <artifactId>carlos-spring-boot-starter-encrypt</artifactId>
+        </dependency>
+
+        <!-- OpenAPI 文档 -->
+        <dependency>
+            <groupId>com.carlos</groupId>
+            <artifactId>carlos-spring-boot-starter-openapi</artifactId>
+        </dependency>
+
+        <!-- API 接口定义 -->
+        <dependency>
+            <groupId>com.carlos.auth</groupId>
+            <artifactId>carlos-auth-api</artifactId>
+        </dependency>
+
+        <!-- 统一审计服务 API -->
+        <dependency>
+            <groupId>com.carlos.audit</groupId>
+            <artifactId>carlos-audit-api</artifactId>
+        </dependency>
+
+        <!-- 短信发送支持 -->
+        <dependency>
+            <groupId>com.carlos</groupId>
+            <artifactId>carlos-spring-boot-starter-sms</artifactId>
+        </dependency>
+
+        <!-- 第三方集成（钉钉等） -->
+        <dependency>
+            <groupId>com.carlos</groupId>
+            <artifactId>carlos-spring-boot-starter-integration</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.carlos</groupId>
+            <artifactId>carlos-spring-boot-starter-log</artifactId>
+        </dependency>
+
+        <!-- 组织机构用户服务 API（用于身份源用户校验） -->
+        <dependency>
+            <groupId>com.carlos.org</groupId>
+            <artifactId>carlos-org-api</artifactId>
+        </dependency>
+
+
+        <!-- ==================== Spring Security OAuth2 ==================== -->
+
+        <!--
+            Spring Authorization Server 2.x (Spring Security 7 兼容)
+            主要变化：
+            - 配置方式改为使用 OAuth2AuthorizationServerConfigurer
+            - 端点配置通过 Lambda DSL 方式
+        -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-oauth2-authorization-server</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-config</artifactId>
+        </dependency>
+
+
+        <!-- ==================== Spring Boot Starter ==================== -->
+
+        <!-- 配置处理器 - 用于生成配置元数据 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- ==================== 其他依赖 ==================== -->
+
+        <!-- FastExcel - Excel 导入导出 -->
+        <dependency>
+            <groupId>cn.idev.excel</groupId>
+            <artifactId>fastexcel</artifactId>
+            <exclusions>
+                <!-- 强制使用 carlos-dependencies 统一管理的 Apache POI 版本 -->
+                <exclusion>
+                    <groupId>org.apache.poi</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!-- 显式声明 POI，确保 fastexcel 排除传递依赖后版本统一 -->
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+        </dependency>
+
+        <!-- Thymeleaf 模板引擎（用于 OAuth2 登录页和授权确认页） -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+        </dependency>
+
+        <!-- WebAuthn / Passkey -->
+        <dependency>
+            <groupId>com.yubico</groupId>
+            <artifactId>webauthn-server-core</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- 测试依赖 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <skipTests>false</skipTests>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

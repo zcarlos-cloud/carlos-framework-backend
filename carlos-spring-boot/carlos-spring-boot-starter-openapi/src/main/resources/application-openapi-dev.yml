@@ -1,0 +1,28 @@
+# ==========================================
+# 开发环境配置 - Knife4j 全功能开启
+# ==========================================
+
+knife4j:
+  # 启用文档
+  enable: true
+  production: false
+
+  # 基础认证（开发环境可关闭）
+  basic:
+    enable: false
+
+  # 详细配置
+  setting:
+    enable-swagger-models: true
+    enable-document-manage: true
+    enable-dynamic-parameter: true
+    enable-search: true
+    enable-after-script: true
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+  cache:
+    disabled: true  # 开发环境禁用缓存

@@ -1,0 +1,130 @@
+name: Task
+about: 创建项目待办任务 | Create a project task or todo item
+title: '[TASK] '
+labels: [ 'task', 'todo' ]
+assignees: ''
+body:
+  -
+    type: markdown
+    attributes:
+      value: |
+        创建一个新的待办任务 | Create a new task/todo item
+
+  -
+    type: dropdown
+    id: priority
+    attributes:
+      label: 优先级 | Priority
+      description: 选择任务的优先级 | Select task priority
+      options:
+        - 🔴 紧急 (Critical) - 需要立即处理
+        - 🟠 高 (High) - 本周内完成
+        - 🟡 中 (Medium) - 本月内完成
+        - 🟢 低 (Low) - 可延后处理
+      default: 1
+    validations:
+      required: true
+
+  -
+    type: dropdown
+    id: category
+    attributes:
+      label: 任务类型 | Task Category
+      description: 选择任务所属类别 | Select task category
+      options:
+        - 核心功能 (Core Feature)
+        - 测试覆盖 (Test Coverage)
+        - 文档完善 (Documentation)
+        - 性能优化 (Performance)
+        - 代码质量 (Code Quality)
+        - 安全加固 (Security)
+        - Bug 修复 (Bug Fix)
+        - 新模块开发 (New Module)
+        - CI/CD 改进
+        - 其他 (Other)
+      default: 0
+    validations:
+      required: true
+
+  -
+    type: dropdown
+    id: module
+    attributes:
+      label: 相关模块 | Related Module
+      description: 选择相关的模块（如适用）| Select related module if applicable
+      options:
+        - 不适用 (N/A)
+        - carlos-dependencies
+        - carlos-parent
+        - carlos-spring-boot-core
+        - carlos-utils
+        - carlos-excel
+        - carlos-spring-boot-starter-web
+        - carlos-spring-cloud-starter
+        - carlos-spring-boot-starter-mybatis
+        - carlos-spring-boot-starter-redis
+        - carlos-spring-boot-starter-mongodb
+        - carlos-spring-boot-starter-oauth2
+        - carlos-spring-boot-starter-encrypt
+        - carlos-spring-boot-starter-oss
+        - carlos-spring-boot-starter-mq
+        - carlos-spring-boot-starter-datascope
+        - carlos-spring-boot-starter-disruptor
+        - carlos-spring-boot-starter-apm
+        - carlos-spring-boot-starter-log
+        - carlos-spring-boot-starter-openapi
+        - carlos-spring-boot-starter-snowflake
+        - carlos-spring-boot-starter-sms
+        - carlos-spring-boot-starter-docking
+        - carlos-spring-boot-starter-datacenter
+        - carlos-license
+        - carlos-tools
+        - carlos-test
+      default: 0
+
+  -
+    type: textarea
+    id: description
+    attributes:
+      label: 任务描述 | Task Description
+      description: 清晰描述任务内容 | Describe the task clearly
+      placeholder: |
+        需要完成的工作：
+        -
+        -
+    validations:
+      required: true
+
+  -
+    type: textarea
+    id: acceptance
+    attributes:
+      label: 完成标准 | Acceptance Criteria
+      description: 定义任务完成的条件 | Define when this task is considered done
+      placeholder: |
+        - [ ] 标准 1
+        - [ ] 标准 2
+        - [ ] 标准 3
+    validations:
+      required: true
+
+  -
+    type: textarea
+    id: notes
+    attributes:
+      label: 补充说明 | Additional Notes
+      description: 任何其他相关信息 | Any other relevant information
+      placeholder: 参考文档、相关链接、注意事项等...
+
+  -
+    type: checkboxes
+    id: checklist
+    attributes:
+      label: 检查清单 | Checklist
+      options:
+        -
+          label: 我已阅读项目编码规范 | I have read the project coding standards
+        -
+          label: 此任务不重复 | This task is not a duplicate
+        -
+          label: 我已评估任务复杂度 | I have assessed the task complexity

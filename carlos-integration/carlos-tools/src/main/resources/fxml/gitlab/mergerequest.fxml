@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<!--
+    合并请求管理界面 FXML 文件
+    使用 ScrollPane 包裹主内容，支持内容超出窗口时滚动
+-->
+<ScrollPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.carlos.fx.gitlab.controller.MergeRequestController"
+            fitToWidth="true"
+            vbarPolicy="AS_NEEDED"
+            hbarPolicy="NEVER"
+            pannable="true"
+            style="-fx-background-color: transparent;">
+
+    <!-- 主容器：垂直布局 (VBox) -->
+    <VBox spacing="15" style="-fx-padding: 15;">
+
+        <!-- 过滤栏：水平布局 (HBox) -->
+        <HBox spacing="10" alignment="CENTER_LEFT" styleClass="card">
+            <Label text="项目:" styleClass="form-label"/>
+            <!-- 项目下拉框：选择要管理的 GitLab 项目 -->
+            <ComboBox fx:id="projectCombo" prefWidth="200"/>
+
+            <Label text="状态:" styleClass="form-label"/>
+            <!-- 状态下拉框：过滤合并请求状态（全部/opened/closed/merged） -->
+            <ComboBox fx:id="stateCombo" prefWidth="120"/>
+
+            <!-- 搜索输入框：实时过滤合并请求列表 -->
+            <TextField fx:id="searchField" promptText="搜索..." prefWidth="200" HBox.hgrow="ALWAYS"/>
+
+            <!-- 刷新按钮：重新加载合并请求列表 -->
+            <Button fx:id="refreshButton" text="刷新" styleClass="secondary-button"/>
+            <!-- 进度指示器：显示加载状态 -->
+            <ProgressIndicator fx:id="progressIndicator" prefWidth="24" prefHeight="24"/>
+        </HBox>
+
+        <!-- 合并请求表格：显示所有合并请求信息 -->
+        <TableView fx:id="mrTable" prefHeight="400">
+            <columns>
+                <!-- 合并请求 ID 列 -->
+                <TableColumn fx:id="iidColumn" text="ID" prefWidth="60"/>
+                <!-- 合并请求标题列 -->
+                <TableColumn fx:id="titleColumn" text="标题" prefWidth="300"/>
+                <!-- 分支信息列：显示源分支 → 目标分支 -->
+                <TableColumn fx:id="branchColumn" text="分支" prefWidth="200"/>
+                <!-- 作者列 -->
+                <TableColumn fx:id="authorColumn" text="作者" prefWidth="120"/>
+                <!-- 创建时间列 -->
+                <TableColumn fx:id="dateColumn" text="创建时间" prefWidth="150"/>
+                <!-- 状态列 -->
+                <TableColumn fx:id="stateColumn" text="状态" prefWidth="100"/>
+            </columns>
+        </TableView>
+
+        <!-- 操作按钮栏：水平布局 (HBox) -->
+        <HBox spacing="10" styleClass="card">
+            <!-- 创建合并请求按钮 -->
+            <Button fx:id="createButton" text="创建合并请求" styleClass="primary-button"/>
+            <!-- 查看详情按钮：需要先选中一个合并请求 -->
+            <Button fx:id="viewButton" text="查看详情" styleClass="secondary-button"/>
+            <!-- 批准合并请求按钮 -->
+            <Button fx:id="approveButton" text="批准" styleClass="success-button"/>
+            <!-- 合并按钮 -->
+            <Button fx:id="mergeButton" text="合并" styleClass="success-button"/>
+            <!-- 关闭合并请求按钮 -->
+            <Button fx:id="closeButton" text="关闭" styleClass="danger-button"/>
+        </HBox>
+
+    </VBox>
+
+</ScrollPane>

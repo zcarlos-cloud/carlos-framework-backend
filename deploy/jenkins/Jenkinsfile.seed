@@ -1,0 +1,47 @@
+#!/usr/bin/env groovy
+
+// ============================================
+// Carlos Framework Seed Job
+// 作用: 执行 Job DSL 脚本，批量生成模块级构建流水线
+// 触发方式: 手动执行或 SCM 变更时自动执行
+// ============================================
+
+pipeline {
+    agent any
+
+    options {
+        timeout(time: 5, unit: 'MINUTES')
+        buildDiscarder(logRotator(daysToKeepStr: '7', numToKeepStr: '5'))
+        disableConcurrentBuilds()
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Seed Jobs') {
+            steps {
+                jobDsl {
+                    targets('deploy/jenkins/seed.groovy')
+                    removedJobAction('DELETE')
+                    removedViewAction('DELETE')
+                    lookupStrategy('SEED_JOB')
+                    failOnMissingPlugin(true)
+                    unstableOnDeprecation(true)
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Seed Job 执行成功，所有模块流水线已生成/更新'
+        }
+        failure {
+            echo 'Seed Job 执行失败，请检查 DSL 语法和 Jenkins 插件'
+        }
+    }
+}

@@ -1,0 +1,178 @@
+databaseChangeLog:
+  -
+    changeSet:
+      id: 4
+      author: carlos
+      context: develop,test
+      comment: 初始化基础数据（仅开发/测试环境执行）
+      changes:
+        # 插入配置数据
+        -
+          insert:
+            tableName: migration_config
+            columns:
+              -
+                column:
+                  name: config_key
+                  value: system.version
+              -
+                column:
+                  name: config_value
+                  value: 3.0.0-SNAPSHOT
+              -
+                column:
+                  name: description
+                  value: 系统版本号
+
+        -
+          insert:
+            tableName: migration_config
+            columns:
+              -
+                column:
+                  name: config_key
+                  value: system.name
+              -
+                column:
+                  name: config_value
+                  value: Carlos Framework
+              -
+                column:
+                  name: description
+                  value: 系统名称
+
+        # 插入示例用户数据
+        -
+          insert:
+            tableName: demo_user
+            columns:
+              -
+                column:
+                  name: username
+                  value: admin
+              -
+                column:
+                  name: email
+                  value: admin@carlos.com
+              -
+                column:
+                  name: status
+                  valueNumeric: 1
+
+        -
+          insert:
+            tableName: demo_user
+            columns:
+              -
+                column:
+                  name: username
+                  value: test
+              -
+                column:
+                  name: email
+                  value: test@carlos.com
+              -
+                column:
+                  name: status
+                  valueNumeric: 1
+
+        # 插入示例配置数据
+        -
+          insert:
+            tableName: demo_config
+            columns:
+              -
+                column:
+                  name: config_name
+                  value: max_login_attempts
+              -
+                column:
+                  name: config_value
+                  value: "5"
+              -
+                column:
+                  name: config_type
+                  value: NUMBER
+
+        -
+          insert:
+            tableName: demo_config
+            columns:
+              -
+                column:
+                  name: config_name
+                  value: session_timeout
+              -
+                column:
+                  name: config_value
+                  value: "30"
+              -
+                column:
+                  name: config_type
+                  value: NUMBER
+
+      rollback:
+        -
+          delete:
+            tableName: migration_config
+            where: config_key in ('system.version', 'system.name')
+        -
+          delete:
+            tableName: demo_user
+            where: username in ('admin', 'test')
+        -
+          delete:
+            tableName: demo_config
+            where: config_name in ('max_login_attempts', 'session_timeout')
+
+  -
+    changeSet:
+      id: 5
+      author: carlos
+      context: production
+      comment: 生产环境初始化数据（最小化）
+      changes:
+        -
+          insert:
+            tableName: migration_config
+            columns:
+              -
+                column:
+                  name: config_key
+                  value: system.version
+              -
+                column:
+                  name: config_value
+                  value: 3.0.0
+              -
+                column:
+                  name: description
+                  value: 系统版本号
+
+        # 预创建 admin 用户
+        -
+          insert:
+            tableName: demo_user
+            columns:
+              -
+                column:
+                  name: username
+                  value: admin
+              -
+                column:
+                  name: email
+                  value: admin@carlos.com
+              -
+                column:
+                  name: status
+                  valueNumeric: 1
+
+      rollback:
+        -
+          delete:
+            tableName: migration_config
+            where: config_key = 'system.version'
+        -
+          delete:
+            tableName: demo_user
+            where: username = 'admin'

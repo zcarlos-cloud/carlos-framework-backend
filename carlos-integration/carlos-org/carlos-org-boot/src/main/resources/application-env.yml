@@ -1,0 +1,26 @@
+# ==========================================
+# carlos-org-boot 本地开发环境变量配置
+# 说明：仅用于本地开发，生产环境通过系统环境变量或 Nacos 配置中心提供
+# 警告：此文件不应包含真实密码，提交前请确认已使用占位符
+# ==========================================
+
+# ======================== 数据库配置 ========================
+DB_URL: ${CARLOS_DB_URL:localhost:3306/carlos_org}
+DB_USERNAME: ${CARLOS_DB_USERNAME:root}
+DB_PWD: ${CARLOS_DB_PASSWORD:}
+
+# ======================== MinIO/OSS 配置 ========================
+MINIO_HOST: ${CARLOS_MINIO_ENDPOINT:http://localhost:9000}
+MINIO_PUBLIC_HOST: ${CARLOS_MINIO_PUBLIC_ENDPOINT:http://localhost:9000}
+MINIO_USERNAME: ${CARLOS_MINIO_ACCESS_KEY:minioadmin}
+MINIO_PWD: ${CARLOS_MINIO_SECRET_KEY:minioadmin}
+
+# ======================== Redis 配置 ========================
+REDIS_IP: ${CARLOS_REDIS_HOST:localhost}
+REDIS_PORT: ${CARLOS_REDIS_PORT:6379}
+REDIS_DB: ${CARLOS_REDIS_DB:0}
+REDIS_PWD: ${CARLOS_REDIS_PASSWORD:}
+
+# ======================== 加密密钥配置 ========================
+CARLOS_ENCRYPT_KEY: ${CARLOS_ENCRYPT_KEY_VAR:}
+CARLOS_ENCRYPT_IV: ${CARLOS_ENCRYPT_IV_VAR:}

@@ -1,0 +1,53 @@
+# ==========================================
+# carlos-auth-boot 本地数据源补充配置
+# 说明：补充 boot profile 下的数据库连接、Redis 等配置
+# ==========================================
+
+# ======================== 数据源配置 ========================
+spring:
+  datasource:
+    dynamic:
+      primary: master
+      datasource:
+        # 主库数据源
+        master:
+          driver-class-name: org.postgresql.Driver
+          url: jdbc:postgresql://${DB_URL}?currentSchema=public&stringtype=unspecified
+          username: ${DB_USERNAME}
+          password: ${DB_PWD}
+
+---
+# ======================== 缓存数据库配置（Redis） ========================
+spring:
+  cache:
+    type: redis
+  data:
+    redis:
+      # Redis 数据库索引
+      database: ${REDIS_DB}
+      # Redis 服务器地址
+      host: ${REDIS_IP}
+      # Redis 服务器端口
+      port: ${REDIS_PORT}
+      # Redis 密码
+      password: ${REDIS_PWD}
+      lettuce:
+        pool:
+          # 最大活跃连接数
+          max-active: 50
+          # 最大空闲连接数
+          max-idle: 100
+          # 最大等待时间
+          max-wait: 30s
+          # 最小空闲连接数
+          min-idle: 0
+        # 关闭超时
+        shutdown-timeout: 100ms
+
+---
+# ======================== MyBatis 实体 fill 注解启动期校验 ========================
+carlos:
+  mybatis:
+    # 实体包扫描路径：启动时校验实体上 fill 注解的字段是否可自动填充（error 告警不阻断）
+    entity-packages:
+      - com.carlos.auth

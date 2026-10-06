@@ -1,0 +1,325 @@
+# ==========================================
+# carlos-message-boot 消息中心单体启动配置
+# 说明：统一消息中心服务，支持邮件、短信、钉钉、WebSocket 等多种消息通道
+# ==========================================
+
+# ======================== 服务基础配置 ========================
+server:
+  port: ${SERVER_PORT:9515}
+  tomcat:
+    # 最大工作线程数
+    threads:
+      max: 64
+
+# ======================== Spring 主配置 ========================
+spring:
+  application:
+    name: carlos-message
+  profiles:
+    active: env,boot
+  servlet:
+    multipart:
+      # 启用文件上传
+      enabled: true
+      # 单文件最大限制
+      max-file-size: 200MB
+      # 一次上传所有文件的最大限制
+      max-request-size: 200MB
+
+  # ======================== 数据源配置（Druid + 动态数据源） ========================
+  datasource:
+    druid:
+      stat-view-servlet:
+        enabled: true
+        loginUsername: admin
+        loginPassword: 123456
+    dynamic:
+      primary: master
+      druid:
+        time-between-connect-error-millis: 10000
+        break-after-acquire-failure: false
+        fail-fast: true
+        connection-error-retry-attempts: 10
+        initial-size: 50
+        min-idle: 50
+        max-idle: 800
+        max-active: 800
+        max-wait: 10000
+        time-between-eviction-runs-millis: 60000
+        min-evictable-idle-time-millis: 300000
+        validation-query: SELECT 1
+        test-while-idle: true
+        test-on-borrow: false
+        test-on-return: false
+        pool-prepared-statements: true
+        max-pool-prepared-statement-per-connection-size: 20
+        filters: stat,wall,slf4j
+        connection-properties:
+          druid.stat.mergeSql: true
+          druid.stat.slowSqlMillis: 5000
+
+  # ======================== 邮件服务配置 ========================
+  mail:
+    # SMTP 服务器主机
+    host: ${MAIL_HOST:smtp.example.com}
+    # SMTP 服务器端口
+    port: ${MAIL_PORT:465}
+    # 邮箱账号
+    username: ${MAIL_USERNAME:}
+    # 邮箱密码（建议使用 SMTP 授权码）
+    password: ${MAIL_PASSWORD:}
+    # 默认编码
+    default-encoding: UTF-8
+    properties:
+      mail:
+        smtp:
+          # 是否启用 SSL
+          ssl:
+            enabled: true
+          # 是否启用认证
+          auth: true
+          # 连接超时
+          connectiontimeout: 5000
+          # 读取超时
+          timeout: 5000
+          # 写入超时
+          writetimeout: 5000
+
+  # ======================== 模板引擎配置（FreeMarker） ========================
+  freemarker:
+    # 模板文件编码
+    charset: UTF-8
+    # 是否缓存模板（开发环境建议关闭）
+    cache: false
+    # 模板文件后缀
+    suffix: .ftl
+    # 模板文件路径
+    template-loader-path: classpath:/templates/
+
+  # ======================== OpenFeign 配置 ========================
+  cloud:
+    openfeign:
+      # 启用 OkHttp 客户端（如果使用）
+      okhttp:
+        enabled: false
+      # HTTP 客户端连接池
+      httpclient:
+        enabled: true
+        # 最大连接数
+        max-connections: 200
+        # 每个路由最大连接数
+        max-connections-per-route: 50
+        # 连接超时时间
+        connection-timeout: 3000
+      # 压缩配置
+      compression:
+        request:
+          enabled: true
+          # 需要压缩的 MIME 类型
+          mime-types: text/xml,application/xml,application/json
+          # 最小压缩大小
+          min-request-size: 2048
+        response:
+          enabled: true
+      # 默认客户端配置
+      client:
+        config:
+          default:
+            # 连接超时
+            connect-timeout: 5000
+            # 读取超时
+            read-timeout: 30000
+            # 日志级别
+            logger-level: BASIC
+
+# ======================== Carlos 框架配置 ========================
+carlos:
+  # ======================== 资源服务器/安全配置 ========================
+  # 开启后挂载 UserContextAuthenticationFilter：校验网关签发的身份断言（X-User-Context），
+  # 并在本服务内建立登录人上下文。这是 @Log 审计日志能记录「操作人」的前提 ——
+  # 关闭时审计行会记成 principalType=ANONYMOUS、操作人为空。
+  # 注意：该过滤器链是 anyRequest().permitAll()，不收紧任何准入；准入权威仍在网关。
+  resource-server:
+    enabled: true
+  # APM 链路追踪（Brave + MDC 日志关联）
+  apm:
+    enabled: true
+  web:
+    # 跨域配置
+    cors:
+      enabled: true
+    # 枚举字典配置
+    enum-dict:
+      # 只扫本服务自己的枚举包（@AppEnum 的 code 需全局唯一，扫 com.carlos 会跨模块互相覆盖）
+      scan-packages: com.carlos.message
+      enabled: true
+
+  # ======================== SMS 短信配置 ========================
+  sms:
+    templates:
+      # 验证码模板
+      verification:
+        template-id: ${SMS_VERIFICATION_TEMPLATE:}
+        sign-name: ${SMS_SIGN_NAME:}
+      # 通知模板
+      notification:
+        template-id: ${SMS_NOTIFICATION_TEMPLATE:}
+        sign-name: ${SMS_SIGN_NAME:}
+
+  # ======================== OSS 对象存储配置 ========================
+  oss:
+    enabled: false
+    type: MINIO
+    endpoint: ${CARLOS_OSS_ENDPOINT:}
+    access-key: ${CARLOS_OSS_ACCESS_KEY:}
+    secret-key: ${CARLOS_OSS_SECRET_KEY:}
+    bucket-name: ${CARLOS_OSS_BUCKET_NAME:carlos-message}
+
+  # ======================== 钉钉集成配置 ========================
+  integration:
+    dingtalk:
+      enabled: ${DINGTALK_ENABLED:false}
+      host: ${DINGTALK_HOST:https://oapi.dingtalk.com}
+      appkey: ${DINGTALK_APPKEY:}
+      appsecret: ${DINGTALK_APPSECRET:}
+      agent-id: ${DINGTALK_AGENT_ID:}
+      token-duration: 2h
+
+  # ======================== 消息中心配置 ========================
+  message:
+    enabled: true
+    # 消息队列配置
+    # 注意：consumer-id / queue.type / queue.stream-prefix / queue.consumer-count 均为
+    # **零读取的死配置**（详见 MessageProperties 类注释），已移除。渠道维度改由 MQ 主题表达，
+    # 物理键前缀由 carlos.redis.stream.key-prefix 统一管理。
+    queue:
+      enabled: true
+    # 限流配置
+    rate-limiter:
+      enabled: true
+      default-qps: 100
+    # 重试配置
+    retry:
+      max-attempts: 3
+      initial-interval: 1000
+      multiplier: 2
+
+# ======================== 监控配置（Actuator） ========================
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+# ======================== 日志配置 ========================
+logging:
+  config: classpath:config/logback.xml
+  level:
+    root: info
+    com.carlos: debug
+  file:
+    path: logs/message
+
+# ======================== MyBatis-Plus 配置 ========================
+mybatis-plus:
+  # 启动时是否检查 MyBatis XML 文件是否存在
+  check-config-location: true
+  # MyBatis 原生配置
+  configuration:
+    # 字段名称下划线转驼峰命名
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+    call-setters-on-nulls: true
+  global-config:
+    db-config:
+      # 全局默认主键类型
+      id-type: assign_id
+      # 逻辑已删除值（默认为 1）
+      logic-delete-value: 1
+      # 逻辑未删除值（默认为 0）
+      logic-not-delete-value: 0
+  # mapper xml 映射路径
+  mapper-locations: classpath*:mapper/**/*Mapper.xml
+
+---
+# ======================== 接口文档配置（Knife4j/SpringDoc） ========================
+carlos:
+  openapi:
+    enable: true
+    # 基本信息
+    title: "Carlos 消息中心 API 文档"
+    description: "消息推送、模板管理、消息查询等接口"
+    version: "1.0.0"
+
+    # 联系人信息
+    contact:
+      name: Carlos
+      email: carlos@xxx.com
+      url: https://www.carlos.com
+
+  # 扫描的包
+  swagger:
+    base-package: com.carlos.message
+
+knife4j:
+  enable: true
+  production: false
+  basic:
+    enable: false
+    username: carlos
+    password: hadoop543216
+  setting:
+    enableDebug: true
+    language: zh-CN
+    enableSwaggerModels: true
+    enableDocumentManage: true
+    swaggerModelName: 实体类列表
+    enableVersion: true
+    enableReloadCacheParameter: false
+    enableAfterScript: true
+    enableFilterMultipartApiMethodType: POST
+    enableFilterMultipartApis: false
+    enableRequestCache: true
+    enableHost: false
+    enableHostText: 192.168.0.193:8000
+    enableHomeCustom: false
+    homeCustomLocation: classpath:markdown/home.md
+    enableSearch: true
+    enableFooter: false
+    enableFooterCustom: true
+    footerCustomContent: 云津智慧科技有限公司
+    enableDynamicParameter: true
+    enableOpenApi: true
+    enableGroup: true
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+    resolve-schema-properties: true
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+    doc-expansion: list
+    display-request-duration: true
+  paths-to-exclude: /error, /actuator/**
+  cache:
+    disabled: false
+  show-actuator: false
+  show-login-endpoint: false
+  # ==================== 接口分组 ====================
+  group-configs:
+    # Feign 接口（服务间调用）
+    -
+      group: 'Feign接口'
+      displayName: 'Feign 接口（服务间调用）'
+      packagesToScan: com.carlos.message.apiimpl
+      pathsToMatch: /**
+    # 消息管理
+    -
+      group: '消息管理'
+      displayName: '消息管理'
+      packagesToScan: com.carlos.message.controller
+      pathsToMatch: /**

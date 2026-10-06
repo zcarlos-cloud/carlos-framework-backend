@@ -1,0 +1,5 @@
+1. /oauth2/token端点，授权码模式下，授权码是如何获得的。
+2./oauth2/token端点的客户端模式，我理解是用来给三方服务端下发授权的。如果是，那授权码模式和客户端模式都是通过一个接口获取token的，那我网关在校验token的时候，如何识别token类型，因为客户端token不具备用户上下文信息。
+3. 当前框架既要考虑正常的账号密码、手机号登录。又要考虑到集成微信、钉钉登录，并且要具备单点登录功能。同时该系统还可能开放接口给三方服务调用。当前系统也可能在应用管理模块，免密跳转三方系统。请问我应该如何设计登录？
+4.我的系统登录采用 授权码模式时，用户交互、页面跳转、接口调用链路是什么，分别设计到哪些服务和接口，请详细说明。
+5.carlos-auth只做认证，用户信息通过D:\ide_project\carlos\carlos-framework\carlos-integration\carlos-auth\carlos-auth-service\src\main\java\com\carlos\auth\provider下的接口获取。

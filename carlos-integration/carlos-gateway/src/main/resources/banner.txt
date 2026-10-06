@@ -1,0 +1,16 @@
+${AnsiColor.BLUE}
+
+
+                             ,,
+  .g8"""bgd                `7MM                                         mm
+.dP'     `M                  MM                                         MM
+dM'       ` ,6"Yb.  `7Mb,od8 MM  ,pW"Wq.  ,pP"Ybd      .P"Ybmmm ,6"Yb.mmMMmm .gP"Ya `7M'    ,A    `MF',6"Yb.`7M'   `MF'
+MM         8)   MM    MM' "' MM 6W'   `Wb 8I   `"     :MI  I8  8)   MM  MM  ,M'   Yb  VA   ,VAA   ,V 8)   MM  VA   ,V
+MM.         ,pm9MM    MM     MM 8M     M8 `YMMMa.      WmmmP"   ,pm9MM  MM  8M""""""   VA ,V  VA ,V   ,pm9MM   VA ,V
+`Mb.     ,'8M   MM    MM     MM YA.   ,A9 L.   I8     8M       8M   MM  MM  YM.    ,    VVV    VVV   8M   MM    VVV
+  `"bmmmd' `Moo9^Yo..JMML. .JMML.`Ybmd9'  M9mmmP'      YMMMMMb `Moo9^Yo.`Mbmo`Mbmmd'     W      W    `Moo9^Yo.  ,V
+                                                      6'     dP                                                ,V
+                                                      Ybmmmd'                                               OOb"
+
+${AnsiColor.GREEN}
+:: Spring Boot::${spring-boot.version}

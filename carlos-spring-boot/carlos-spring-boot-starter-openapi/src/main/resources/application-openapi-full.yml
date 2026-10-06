@@ -1,0 +1,165 @@
+spring:
+  # Spring MVC 配置
+  mvc:
+    # 静态资源处理
+    static-path-pattern: /static/**
+
+# ==========================================
+# Knife4j 核心配置（必须）
+# ==========================================
+knife4j:
+  # 是否启用 Knife4j（生产环境建议关闭）
+  enable: true
+  # 生产环境安全配置
+  production: false  # true=生产环境，关闭文档
+  # 基础认证配置（访问文档页面的登录认证）
+  basic:
+    enable: false           # 是否启用基础认证
+    username: admin         # 登录用户名
+    password: 123456        # 登录密码
+  # ==========================================
+  # 个性化配置（界面定制）
+  # ==========================================
+  setting:
+    # 语言：ZH_CN（中文）、EN（英文）
+    language: ZH_CN
+
+    # ==========================================
+    # 界面功能开关
+    # ==========================================
+    # 是否显示文档管理功能
+    enable-document-manage: true
+    # 是否显示 Swagger Models
+    enable-swagger-models: true
+    swagger-model-name: Swagger Models
+    # 是否显示主机信息
+    enable-host: true
+    # 是否显示请求参数缓存
+    enable-request-cache: true
+    # 针对RequestMapping的接口请求类型,在不指定参数类型的情况下,如果不过滤,默认会显示7个类型的接口地址参数,如果开启此配置,默认展示一个Post类型的接口地址
+    enable-filter-multipart-apis: true
+    # 具体接口的过滤类型
+    enable-filter-multipart-api-method-type: POST
+    # 是否开启动态参数调试
+    enable-dynamic-parameter: true
+    # 是否显示 OpenAPI 规范
+    enable-open-api: true
+    # 是否显示搜索框
+    enable-search: true
+    # 是否显示 AfterScript 功能
+    enable-after-script: true
+    # 是否显示分组下拉框
+    enable-group: true
+    # 是否显示响应状态码
+    enable-response-code: true
+    # 是否在每个调试调试条后显示刷新变量按钮，但默认不会显示
+    enable-reload-cache-parameter: false
+    enable-debug: false
+    # 是否开启自定义主页内容
+    enable-home-custom: false
+    # 首页文档路径（自定义 markdown 文档）
+    home-custom-path: classpath:markdown/home.md
+    # 是否开启界面中对某接口的版本控制,如果开启，后端变化后Ui界面会存在小蓝点
+    enable-version: true
+    enable-footer: false
+    enable-footer-custom: false
+    # 自定义Footer内容
+    footer-custom-content: ""
+  # ==========================================
+  # 文档分组配置（多模块/多版本）
+  # ==========================================
+  documents:
+    # 分组1：用户模块
+    -
+      group: user-module
+      name: 用户管理模块
+      locations: classpath:markdown/user/*
+    # 分组2：订单模块
+    -
+      group: order-module
+      name: 订单管理模块
+      locations: classpath:markdown/order/*
+    # 分组3：系统模块
+    -
+      group: system-module
+      name: 系统管理模块
+      locations: classpath:markdown/system/*
+
+
+# ==========================================
+# SpringDoc OpenAPI 原生配置（底层依赖）
+# ==========================================
+springdoc:
+  # 是否启用 API Docs
+  api-docs:
+    enabled: true
+    # API Docs 访问路径
+    path: /v3/api-docs
+    # 是否启用属性解析器
+    resolve-schema-properties: true
+  # Swagger UI 配置（Knife4j 会覆盖部分配置）
+  swagger-ui:
+    enabled: true
+    # UI 访问路径（Knife4j 使用自己的 UI）
+    path: /swagger-ui.html
+    # 操作排序：alpha（字母）、method（HTTP方法）
+    operations-sorter: method
+    # 标签排序
+    tags-sorter: alpha
+    # 默认展开深度
+    doc-expansion: list
+    # 是否显示请求时长
+    display-request-duration: true
+  # 包扫描配置
+  packages-to-scan: com.example.controller
+  # 路径匹配配置
+  paths-to-match: /api/**
+  # 路径排除配置
+  paths-to-exclude: /error, /actuator/**
+  # 缓存配置
+  cache:
+    disabled: false  # 生产环境建议启用缓存
+  # 模型配置
+  model-converters:
+    # 是否启用 Pageable 转换器
+    pageable-converter:
+      enabled: true
+    # 是否启用 Deprecating 转换器
+    deprecating-converter:
+      enabled: true
+  # 显示配置
+  show-actuator: false      # 是否显示 Actuator 端点
+  show-login-endpoint: false  # 是否显示登录端点
+  # 分组配置（与 Knife4j 分组配合使用）
+  group-configs:
+    # 分组1：默认分组
+    -
+      group: default
+      display-name: 默认分组
+      packages-to-scan: com.example.controller
+      paths-to-match: /api/**
+      paths-to-exclude: /api/internal/**
+    # 分组2：内部接口
+    -
+      group: internal
+      display-name: 内部接口
+      packages-to-scan: com.example.internal
+      paths-to-match: /api/internal/**
+    # 分组3：公开接口
+    -
+      group: public
+      display-name: 公开接口
+      packages-to-scan: com.example.public
+      paths-to-match: /public/**
+
+# ==========================================
+# 日志配置（调试使用）
+# ==========================================
+logging:
+  level:
+    # Knife4j 日志
+    com.github.xiaoymin.knife4j: debug
+    # SpringDoc 日志
+    org.springdoc: debug
+    # Spring MVC 日志
+    org.springframework.web: info

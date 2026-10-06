@@ -1,0 +1,145 @@
+#!/usr/bin/env groovy
+
+// 通用后端服务 Jenkinsfile
+// 所有服务配置通过 parameters 传入，在 Jenkins Job 中设置默认值
+// 用法：创建 Pipeline Job 时指向此文件，在 Job 参数中配置服务信息
+
+def imageTag() {
+    def date = new Date().format('yyyyMMddHHmm', TimeZone.getTimeZone('Asia/Shanghai'))
+    return "dev-${date}"
+}
+
+pipeline {
+    agent any
+    tools {
+        jdk 'jdk-21'
+        maven 'maven-3.9'
+    }
+    options {
+        timeout(time: 30, unit: 'MINUTES')
+        buildDiscarder(logRotator(daysToKeepStr: '7', numToKeepStr: '10'))
+        disableConcurrentBuilds()
+    }
+    environment {
+        HARBOR_URL = $ { env.HARBOR_URL }
+        HARBOR_PROJECT = $ { env.HARBOR_PROJECT }
+        IMAGE_TAG = "${params.IMAGE_TAG?.trim() ?: imageTag()}"
+        IMAGE_NAME = "${HARBOR_URL}/${HARBOR_PROJECT}/${params.APP_NAME}"
+    }
+    parameters {
+        string(name: 'APP_NAME', defaultValue: '', description: '服务名称（如 carlos-gateway）')
+        string(name: 'MODULE_PATH', defaultValue: '', description: 'Dockerfile 所在目录（如 carlos-integration/carlos-gateway）')
+        string(name: 'DEPLOY_HOST', defaultValue: '192.168.3.20', description: '部署主机')
+        string(name: 'DEPLOY_SSH_PORT', defaultValue: '2022', description: 'SSH端口')
+        string(name: 'DEPLOY_USER', defaultValue: 'carlos', description: '部署用户')
+        string(name: 'HOST_PORT', defaultValue: '', description: '健康检查端口（如 9510）')
+        string(name: 'IMAGE_TAG', defaultValue: '', description: '镜像标签（空则自动生成 dev-时间戳）')
+        booleanParam(name: 'SKIP_TEST', defaultValue: true, description: '跳过测试')
+        booleanParam(name: 'AUTO_DEPLOY', defaultValue: true, description: '构建后自动部署')
+    }
+    stages {
+        stage('Maven构建') {
+            steps {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'nexus-carlos',
+                        usernameVariable: 'NEXUS_USERNAME',
+                        passwordVariable: 'NEXUS_PASSWORD'
+                    )
+                ]) {
+                    configFileProvider([configFile(fileId: 'carlos-maven-settings', variable: 'MAVEN_SETTINGS')]) {
+                        script {
+                            def skipTests = params.SKIP_TEST ? '-DskipTests' : ''
+                            sh """
+                                mvn -B -s ${MAVEN_SETTINGS} -pl ${params.MODULE_PATH} -am clean package ${skipTests}
+                            """
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('构建Docker镜像') {
+            steps {
+                script {
+                    dir("${params.MODULE_PATH}") {
+                        docker.withRegistry("http://${HARBOR_URL}", 'harbor-admin') {
+                            sh """
+                                docker build \
+                                    --build-arg PROJECT_NAME=${params.APP_NAME} \
+                                    -t ${IMAGE_NAME}:${IMAGE_TAG} .
+                                docker push ${IMAGE_NAME}:${IMAGE_TAG}
+                            """
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('部署') {
+            when {
+                expression { params.AUTO_DEPLOY == true }
+            }
+            steps {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'harbor-admin',
+                        usernameVariable: 'HARBOR_USERNAME',
+                        passwordVariable: 'HARBOR_PASSWORD'
+                    )
+                ]) {
+                    sshagent(['carlos-ai-ssh']) {
+                        sh """
+                            ssh -p ${DEPLOY_SSH_PORT} -o StrictHostKeyChecking=no ${DEPLOY_USER}@${DEPLOY_HOST} "
+                                # 校验 .env 文件存在，避免 Nacos 环境变量缺失导致启动失败
+                                if [ ! -f /data/carlos/.env ]; then
+                                    echo 'ERROR: /data/carlos/.env 不存在，请先配置环境变量文件'
+                                    exit 1
+                                fi
+
+                                echo '${HARBOR_PASSWORD}' | docker login ${HARBOR_URL} -u '${HARBOR_USERNAME}' --password-stdin
+                                docker pull ${IMAGE_NAME}:${IMAGE_TAG}
+
+                                cd /data/carlos
+                                # 回显关键环境变量用于调试（密码脱敏）
+                                echo 'NACOS_ADDR='\$(grep '^NACOS_ADDR=' .env | cut -d '=' -f2-)
+                                echo 'NACOS_NAMESPACE='\$(grep '^NACOS_NAMESPACE=' .env | cut -d '=' -f2-)
+                                echo 'NACOS_GROUP='\$(grep '^NACOS_GROUP=' .env | cut -d '=' -f2-)
+
+                                # 更新目标服务镜像标签
+                                sed -i 's|image: ${IMAGE_NAME}:.*|image: ${IMAGE_NAME}:${IMAGE_TAG}|' docker-compose.yml
+                                docker compose up -d --no-deps --force-recreate ${params.APP_NAME}
+                                docker compose ps ${params.APP_NAME}
+                            "
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('健康检查') {
+            when {
+                expression { params.AUTO_DEPLOY == true }
+            }
+            steps {
+                sshagent(['carlos-ai-ssh']) {
+                    sh """
+                        sleep 15
+                        ssh -p ${DEPLOY_SSH_PORT} -o StrictHostKeyChecking=no ${DEPLOY_USER}@${DEPLOY_HOST} "
+                            curl -sf http://localhost:${params.HOST_PORT}/actuator/health || echo 'WARN: 健康检查未通过'
+                        "
+                    """
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "${params.APP_NAME} 构建成功，镜像: ${HARBOR_URL}/${HARBOR_PROJECT}/${params.APP_NAME}:${IMAGE_TAG}"
+        }
+        failure {
+            error("${params.APP_NAME} 构建失败")
+        }
+    }
+}

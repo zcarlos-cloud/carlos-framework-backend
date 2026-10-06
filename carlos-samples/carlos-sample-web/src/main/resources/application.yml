@@ -1,0 +1,11 @@
+server:
+  port: 9823
+
+spring:
+  application:
+    name: carlos-sample-web
+
+carlos:
+  boot:
+    cors:
+      allowed-origins: [ "*" ]

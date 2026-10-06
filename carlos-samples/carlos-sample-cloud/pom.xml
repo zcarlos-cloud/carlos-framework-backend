@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>com.carlos</groupId>
+    <artifactId>carlos-parent</artifactId>
+    <version>${revision}</version>
+    <relativePath>../../carlos-parent/pom.xml</relativePath>
+  </parent>
+
+  <artifactId>carlos-sample-cloud</artifactId>
+  <packaging>jar</packaging>
+
+  <name>carlos-sample-cloud</name>
+  <description>Carlos Spring Cloud 微服务示例模块 - 演示 Nacos、OpenFeign、LoadBalancer 等服务治理能力</description>
+
+  <dependencies>
+    <!-- Carlos Spring Cloud Starter -->
+    <dependency>
+      <groupId>com.carlos</groupId>
+      <artifactId>carlos-spring-cloud-starter</artifactId>
+    </dependency>
+
+    <!-- Carlos Web Starter -->
+    <dependency>
+      <groupId>com.carlos</groupId>
+      <artifactId>carlos-spring-boot-starter-web</artifactId>
+    </dependency>
+
+    <!-- Spring Cloud OpenFeign -->
+    <dependency>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-starter-openfeign</artifactId>
+    </dependency>
+
+    <!-- Spring Cloud LoadBalancer -->
+    <dependency>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-starter-loadbalancer</artifactId>
+    </dependency>
+
+    <!-- Spring Boot Test -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <!-- Spring Boot Maven Plugin -->
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <version>${spring-boot.version}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>repackage</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Maven Deploy Plugin - Skip deploy for sample module -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-deploy-plugin</artifactId>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>

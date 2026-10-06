@@ -1,0 +1,47 @@
+#!/usr/bin/env groovy
+
+// ============================================
+// Carlos Framework Nginx 基础镜像构建流水线
+// 构建并推送基础镜像到 Harbor
+// 镜像: 192.168.3.30:8633/carlos/carlos-base-nginx:latest
+// ============================================
+
+env.HARBOR_URL = '192.168.3.30:8633'
+env.HARBOR_PROJECT = 'carlos'
+env.BASE_IMAGE_NAME = 'carlos-base-nginx'
+
+pipeline {
+    agent any
+    options {
+        timeout(time: 30, unit: 'MINUTES')
+        buildDiscarder(logRotator(daysToKeepStr: '7', numToKeepStr: '10'))
+        disableConcurrentBuilds()
+    }
+    stages {
+        stage('构建 Nginx 基础镜像') {
+            steps {
+                script {
+                    dir('deploy/nginx') {
+                        docker.withRegistry("http://${HARBOR_URL}", 'harbor-admin') {
+                            sh """
+                                docker build \
+                                    -t ${HARBOR_URL}/${HARBOR_PROJECT}/${BASE_IMAGE_NAME}:latest \
+                                    -f Dockerfile \
+                                    .
+                                docker push ${HARBOR_URL}/${HARBOR_PROJECT}/${BASE_IMAGE_NAME}:latest
+                            """
+                        }
+                    }
+                }
+            }
+        }
+    }
+    post {
+        success {
+            echo "✅ Nginx 基础镜像构建并推送成功: ${HARBOR_URL}/${HARBOR_PROJECT}/${BASE_IMAGE_NAME}:latest"
+        }
+        failure {
+            error("❌ Nginx 基础镜像构建失败")
+        }
+    }
+}

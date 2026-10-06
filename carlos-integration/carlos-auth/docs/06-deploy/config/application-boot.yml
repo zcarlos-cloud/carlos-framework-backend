@@ -1,0 +1,32 @@
+# spring配置
+spring:
+  datasource:
+    dynamic:
+      primary: master
+      datasource:
+        # 主库数据源
+        master:
+          driver-class-name: org.postgresql.Driver
+          url: jdbc:postgresql://${DB_URL}?currentSchema=public&stringtype=unspecified
+          username: ${DB_USERNAME}
+          password: ${DB_PWD}
+
+###############################  缓存数据库配置 #################################
+---
+spring:
+  cache:
+    type: redis
+  data:
+    redis:
+      database: ${REDIS_DB}
+      host: ${REDIS_IP}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PWD}
+      lettuce:
+        pool:
+          max-active: 50
+          max-idle: 100
+          max-wait: 30s
+          min-idle: 0
+        shutdown-timeout: 100ms
+##############################  redis缓存配置 end   ###########################

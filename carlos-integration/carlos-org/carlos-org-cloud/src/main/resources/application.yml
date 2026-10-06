@@ -1,0 +1,219 @@
+# ==========================================
+# carlos-org-cloud 微服务启动配置
+# 说明：组织管理/用户中心 Spring Cloud 版本，通过 Nacos 获取共享配置
+# ==========================================
+
+# ======================== 服务基础配置 ========================
+server:
+  port: 9512
+
+# ======================== Spring 主配置 ========================
+spring:
+  profiles:
+    active: ${PROFILE:local}
+  application:
+    name: carlos-org
+
+  # ======================== Nacos 配置中心 ========================
+  cloud:
+    nacos:
+      discovery:
+        enabled: true
+      config:
+        enabled: true
+        file-extension: yml
+        refresh-enabled: true
+
+  # 配置导入（Nacos 共享配置）
+  config:
+    import:
+      # 1. 公共配置（所有环境共享）
+      # 2. Redis 共享配置
+      # 3. 数据库共享配置
+      - optional:nacos:common.yml?group=DEFAULT_GROUP&refreshEnabled=true
+      - optional:nacos:redis.yml?group=DEFAULT_GROUP&refreshEnabled=true
+      - optional:nacos:db.yml?group=DEFAULT_GROUP&refreshEnabled=true
+
+# ======================== 本地调试环境 ========================
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+  cloud:
+    nacos:
+      username: ${NACOS_USERNAME:@nacos.username@}
+      password: ${NACOS_PASSWORD:@nacos.password@}
+      discovery:
+        server-addr: ${NACOS_ADDR:@nacos.addr@}
+        namespace: ${NACOS_NAMESPACE:@nacos.namespace@}
+        group: ${NACOS_GROUP:@nacos.group@}
+      config:
+        server-addr: ${NACOS_ADDR:@nacos.addr@}
+        namespace: ${NACOS_NAMESPACE:@nacos.namespace@}
+        group: ${NACOS_GROUP:@nacos.group@}
+
+# ======================== 部署环境（使用环境变量） ========================
+---
+spring:
+  config:
+    activate:
+      on-profile: deploy
+  cloud:
+    nacos:
+      username: ${NACOS_USERNAME}
+      password: ${NACOS_PASSWORD}
+      discovery:
+        server-addr: ${NACOS_ADDR}
+        namespace: ${NACOS_NAMESPACE}
+        group: ${NACOS_GROUP}
+      config:
+        namespace: ${NACOS_NAMESPACE}
+        server-addr: ${NACOS_ADDR}
+        group: ${NACOS_GROUP}
+
+
+
+---
+# ======================== 接口文档配置（Knife4j/SpringDoc） ========================
+carlos:
+  # ======================== 枚举字典配置（`GET /app/enums`、`GET /app/enum` 的数据源） ========================
+  web:
+    enum-dict:
+      # 只扫本服务自己的枚举包（@AppEnum 的 code 需全局唯一，扫 com.carlos 会跨模块互相覆盖）
+      scan-packages: com.carlos.org
+      enabled: true
+  openapi:
+    enable: true
+    title: "用户中心文档"
+    description: "基于 Spring Boot 4 的微服务框架"
+    version: "3.0.0"
+    contact:
+      name: "Carlos"
+      email: "zhujunkeep@gmail.com"
+      url: "https://example.com"
+    license: "Apache 2.0"
+    license-url: "https://www.apache.org/licenses/LICENSE-2.0"
+
+knife4j:
+  enable: true
+  production: false
+  basic:
+    enable: false
+    username: admin
+    password: 123456
+  setting:
+    language: ZH_CN
+    enable-document-manage: true
+    enable-swagger-models: true
+    swagger-model-name: Swagger Models
+    enable-host: true
+    enable-request-cache: true
+    enable-filter-multipart-apis: true
+    enable-filter-multipart-api-method-type: POST
+    enable-dynamic-parameter: true
+    enable-open-api: true
+    enable-search: true
+    enable-after-script: true
+    enable-group: true
+    enable-response-code: true
+    enable-reload-cache-parameter: false
+    enable-debug: true
+    enable-home-custom: false
+    home-custom-path: classpath:markdown/home.md
+    enable-version: true
+    enable-footer: false
+    enable-footer-custom: false
+    footer-custom-content: "自定义Footer内容"
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+    resolve-schema-properties: true
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+    doc-expansion: list
+    display-request-duration: true
+  paths-to-exclude: /error, /actuator/**
+  cache:
+    disabled: true
+  show-actuator: false
+  show-login-endpoint: false
+  # ==================== 接口分组 ====================
+  group-configs:
+    # 用户、角色、部门管理
+    -
+      group: 'org-base-manage'
+      displayName: '用户中心-基础信息管理'
+      packagesToScan: com.carlos.org.controller
+      pathsToMatch: /**
+    # 职级、职类、职等管理
+    -
+      group: 'org-position-manage'
+      displayName: '用户中心-职级等管理'
+      packagesToScan: com.carlos.org.position.controller
+      pathsToMatch: /**
+    # Feign 接口（服务间调用）
+    -
+      group: 'org-feign-apis'
+      displayName: '用户中心-Feign 接口'
+      packagesToScan: com.carlos.org.apiimpl,com.carlos.org.position.apiimpl
+      pathsToMatch: /**
+
+
+
+---
+# ======================== Carlos 组织管理配置 ========================
+carlos:
+  # APM 链路追踪（Brave + MDC 日志关联）
+  apm:
+    enabled: true
+  # 组织管理模块配置
+  org:
+    default-password: ${ORG_DEFAULT_PASSWORD:carlos@123}
+    password-expire: 90d
+    login:
+      count-interval-time: 1440
+      fail-limit: 5
+      lock-time: 30
+
+  # ======================== Feign 服务调用配置 ========================
+  # 跨服务 Feign 调用目标 URL 配置（不配置则使用 Nacos 服务发现 + LoadBalancer）
+  feign:
+    services:
+      # 认证中心服务 URL（开发环境可配置直连地址：http://localhost:9512）
+      carlos-auth:
+        url: ${CARLOS_AUTH_SERVICE_URL:}
+
+  # 资源服务器/安全配置
+  resource-server:
+    enabled: true
+    auth:
+      user-id-header: X-User-Id
+      username-header: X-User-Name
+      roles-header: X-User-Roles
+    permission:
+      cache:
+        enabled: true
+        local-ttl: 600
+        redis-ttl: 604800
+
+
+# ======================== 日志配置 ========================
+logging:
+  config: classpath:config/logback.xml
+  level:
+    com.carlos: debug
+  file:
+    path: logs/org
+
+# ======================== 监控配置 ========================
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"

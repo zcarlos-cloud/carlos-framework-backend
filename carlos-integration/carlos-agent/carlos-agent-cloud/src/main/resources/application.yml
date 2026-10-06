@@ -1,0 +1,189 @@
+# ==========================================
+# carlos-agent-cloud AI 助手微服务启动配置
+# 说明：管理平台与 DeepSeek Harness 运行时之间的代理层（无数据源，纯代理服务）
+#       Spring Cloud 版本：Nacos 注册 + 共享配置，网关 lb://carlos-agent 路由目标
+# ==========================================
+
+# ======================== 服务基础配置 ========================
+server:
+  port: ${SERVER_PORT:9517}
+
+# ======================== Spring 主配置 ========================
+spring:
+  profiles:
+    active: ${PROFILE:local}
+  application:
+    name: carlos-agent
+
+  # ======================== Nacos 配置中心 ========================
+  cloud:
+    nacos:
+      discovery:
+        enabled: true
+      config:
+        enabled: true
+        file-extension: yml
+        refresh-enabled: true
+
+  # 配置导入（Nacos 共享配置）
+  # 注意：本服务无数据源、无 Redis 依赖，只导入公共配置
+  # （公共配置含网关签名身份断言 carlos.identity-assertion 的验签参数）
+  config:
+    import:
+      - optional:nacos:common.yml?group=DEFAULT_GROUP&refreshEnabled=true
+      - optional:nacos:redis.yml?group=DEFAULT_GROUP&refreshEnabled=true
+      - optional:nacos:db.yml?group=DEFAULT_GROUP&refreshEnabled=true
+
+# ======================== 本地调试环境 ========================
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+  cloud:
+    nacos:
+      username: ${NACOS_USERNAME:@nacos.username@}
+      password: ${NACOS_PASSWORD:@nacos.password@}
+      discovery:
+        server-addr: ${NACOS_ADDR:@nacos.addr@}
+        namespace: ${NACOS_NAMESPACE:@nacos.namespace@}
+        group: ${NACOS_GROUP:@nacos.group@}
+      config:
+        server-addr: ${NACOS_ADDR:@nacos.addr@}
+        namespace: ${NACOS_NAMESPACE:@nacos.namespace@}
+        group: ${NACOS_GROUP:@nacos.group@}
+
+# ======================== 部署环境（使用环境变量） ========================
+---
+spring:
+  config:
+    activate:
+      on-profile: deploy
+  cloud:
+    nacos:
+      username: ${NACOS_USERNAME}
+      password: ${NACOS_PASSWORD}
+      discovery:
+        server-addr: ${NACOS_ADDR}
+        namespace: ${NACOS_NAMESPACE}
+        group: ${NACOS_GROUP}
+      config:
+        namespace: ${NACOS_NAMESPACE}
+        server-addr: ${NACOS_ADDR}
+        group: ${NACOS_GROUP}
+
+# ======================== Carlos 框架配置 ========================
+---
+carlos:
+  # ======================== 资源服务器/安全配置 ========================
+  # 开启后挂载 UserContextAuthenticationFilter：校验网关签发的身份断言（X-User-Context），
+  # 并在本服务内建立登录人上下文。这是 @Log 审计日志能记录「操作人」的前提 ——
+  # 关闭时审计行会记成 principalType=ANONYMOUS、操作人为空。
+  # 注意：该过滤器链是 anyRequest().permitAll()，不收紧任何准入；准入权威仍在网关。
+  resource-server:
+    enabled: true
+  # APM 链路追踪（Brave + MDC 日志关联）
+  apm:
+    enabled: true
+  web:
+    cors:
+      enabled: true
+  # ======================== AI 助手运行服务（agent-bff 翻译层）配置 ========================
+  agent:
+    bff:
+      # 翻译层地址：Node 侧 agent-bff（默认本地开发地址）
+      base-url: ${AGENT_BFF_URL:http://127.0.0.1:8787}
+      # 单次对话最长等待时间（分钟），复杂运维诊断需要较长耗时
+      timeout-minutes: ${AGENT_BFF_TIMEOUT_MINUTES:10}
+
+# ======================== 监控配置（Actuator） ========================
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+# ======================== 日志配置 ========================
+logging:
+  config: classpath:config/logback.xml
+  level:
+    root: info
+    com.carlos: debug
+    org.springframework.security: debug
+  file:
+    path: logs/agent
+
+
+
+---
+# ======================== 接口文档配置（Knife4j/SpringDoc） ========================
+carlos:
+  openapi:
+    enable: true
+    title: "智能服务"
+    description: "基于 Spring Boot 4 的微服务框架"
+    version: "3.0.0"
+    contact:
+      name: "Carlos"
+      email: "zhujunkeep@gmail.com"
+      url: "https://example.com"
+    license: "Apache 2.0"
+    license-url: "https://www.apache.org/licenses/LICENSE-2.0"
+
+knife4j:
+  enable: true
+  production: false
+  basic:
+    enable: false
+    username: admin
+    password: 123456
+  setting:
+    language: ZH_CN
+    enable-document-manage: true
+    enable-swagger-models: true
+    swagger-model-name: Swagger Models
+    enable-host: true
+    enable-request-cache: true
+    enable-filter-multipart-apis: true
+    enable-filter-multipart-api-method-type: POST
+    enable-dynamic-parameter: true
+    enable-open-api: true
+    enable-search: true
+    enable-after-script: true
+    enable-group: true
+    enable-response-code: true
+    enable-reload-cache-parameter: false
+    enable-debug: true
+    enable-home-custom: false
+    home-custom-path: classpath:markdown/home.md
+    enable-version: true
+    enable-footer: false
+    enable-footer-custom: false
+    footer-custom-content: "自定义Footer内容"
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+    resolve-schema-properties: true
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+    doc-expansion: list
+    display-request-duration: true
+  paths-to-exclude: /error, /actuator/**
+  cache:
+    disabled: true
+  show-actuator: false
+  show-login-endpoint: false
+  # ==================== 接口分组 ====================
+  group-configs:
+    # 用户、角色、部门管理
+    -
+      group: 'agent'
+      displayName: 'AI服务'
+      packagesToScan: com.carlos.agent.controller
+      pathsToMatch: /**
+

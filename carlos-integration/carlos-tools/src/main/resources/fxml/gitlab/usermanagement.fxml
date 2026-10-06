@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<!--
+    用户管理界面 FXML 文件
+    使用 ScrollPane 包裹主内容，支持内容超出窗口时滚动
+-->
+<ScrollPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.carlos.fx.gitlab.controller.UserManagementController"
+            fitToWidth="true"
+            vbarPolicy="AS_NEEDED"
+            hbarPolicy="NEVER"
+            pannable="true"
+            style="-fx-background-color: transparent;">
+
+    <!-- 主容器：垂直布局 (VBox) -->
+    <VBox spacing="15" style="-fx-padding: 15;">
+
+        <!-- 过滤栏：水平布局 (HBox) -->
+        <HBox spacing="10" alignment="CENTER_LEFT" styleClass="card">
+            <!-- 搜索输入框：实时过滤用户列表 -->
+            <TextField fx:id="searchField" promptText="搜索用户..." prefWidth="300" HBox.hgrow="ALWAYS"/>
+
+            <!-- 刷新按钮：重新加载用户列表 -->
+            <Button fx:id="refreshButton" text="刷新" styleClass="secondary-button"/>
+            <!-- 进度指示器：显示加载状态 -->
+            <ProgressIndicator fx:id="progressIndicator" prefWidth="24" prefHeight="24"/>
+        </HBox>
+
+        <!-- 用户表格：显示所有用户信息 -->
+        <TableView fx:id="userTable" prefHeight="400">
+            <columns>
+                <!-- 选择列：复选框，用于批量操作 -->
+                <TableColumn fx:id="selectColumn" text="选择" prefWidth="60"/>
+                <!-- 用户 ID 列 -->
+                <TableColumn fx:id="idColumn" text="ID" prefWidth="60"/>
+                <!-- 用户名列 -->
+                <TableColumn fx:id="usernameColumn" text="用户名" prefWidth="150"/>
+                <!-- 姓名列 -->
+                <TableColumn fx:id="nameColumn" text="姓名" prefWidth="150"/>
+                <!-- 邮箱列 -->
+                <TableColumn fx:id="emailColumn" text="邮箱" prefWidth="250"/>
+                <!-- 状态列 -->
+                <TableColumn fx:id="stateColumn" text="状态" prefWidth="100"/>
+                <!-- 创建时间列 -->
+                <TableColumn fx:id="createdAtColumn" text="创建时间" prefWidth="120"/>
+            </columns>
+        </TableView>
+
+        <!-- 操作按钮栏：水平布局 (HBox) -->
+        <HBox spacing="10" styleClass="card">
+            <!-- 添加用户按钮 -->
+            <Button fx:id="addButton" text="添加用户" styleClass="primary-button"/>
+            <!-- 编辑用户按钮：需要先选中一个用户 -->
+            <Button fx:id="editButton" text="编辑" styleClass="secondary-button"/>
+            <!-- 删除用户按钮 -->
+            <Button fx:id="deleteButton" text="删除" styleClass="danger-button"/>
+            <!-- 封禁用户按钮 -->
+            <Button fx:id="blockButton" text="封禁" styleClass="danger-button"/>
+            <!-- 解封用户按钮 -->
+            <Button fx:id="unblockButton" text="解封" styleClass="success-button"/>
+            <Separator orientation="VERTICAL"/>
+            <!-- 从 Excel 导入用户按钮 -->
+            <Button fx:id="importButton" text="从Excel导入" styleClass="secondary-button"/>
+            <!-- 导出用户到 Excel 按钮 -->
+            <Button fx:id="exportButton" text="导出到Excel" styleClass="secondary-button"/>
+            <Separator orientation="VERTICAL"/>
+            <!-- 批量删除用户按钮 -->
+            <Button fx:id="batchDeleteButton" text="批量删除" styleClass="danger-button"/>
+        </HBox>
+
+    </VBox>
+
+</ScrollPane>

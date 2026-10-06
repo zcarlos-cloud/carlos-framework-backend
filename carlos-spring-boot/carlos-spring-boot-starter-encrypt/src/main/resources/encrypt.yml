@@ -1,0 +1,42 @@
+##############################  encrypt配置 start  ###########################
+---
+carlos:
+  encrypt:
+    # SM4 国密对称加密配置
+    sm4:
+      enabled: true                      # 启用 SM4 加密（默认启用，但必须在业务配置中提供密钥）
+      encrypt-mode: cbc                  # 加密模式：cbc 或 ecb（ecb 已被禁用，仅保留配置项兼容）
+      key:                                 # 密钥（16 字节），严禁使用默认值，必须通过外部配置注入
+      iv:                                  # 初始化向量（CBC 模式必需，16 字节），严禁使用默认值
+      store-type: base64                 # 存储格式：base64 或 hex
+
+    # SM2 国密非对称加密配置
+    sm2:
+      enabled: false                     # 默认不启用，启用时必须在业务配置中提供密钥对
+      public-key:                          # 公钥（Base64/Hex 格式），严禁使用默认值
+      private-key:                         # 私钥（Base64/Hex 格式），严禁使用默认值
+      store-type: base64                 # 存储格式：base64 或 hex
+
+    # AES 对称加密配置（可选）
+    aes:
+      enabled: false                     # 启用 AES 加密
+      key-size: 256                      # 密钥长度：128/192/256
+      encrypt-mode: cbc                  # 加密模式：cbc、gcm 等（ecb 已被禁用）
+      padding: pkcs5padding              # 填充方式
+      key:                               # 密钥（16/24/32 字节）
+      iv:                                # 初始化向量（CBC/GCM 模式需要）
+
+    # RSA 非对称加密配置（可选）
+    rsa:
+      enabled: false                     # 启用 RSA 加密
+      key-size: 2048                     # 密钥长度：1024/2048/3072/4096
+      public-key:                        # 公钥（Base64 格式）
+      private-key:                       # 私钥（Base64 格式）
+
+    # 哈希算法配置（可选）
+    hash:
+      default-algorithm: sm3             # 默认哈希算法：md5/sha1/sha256/sha512/sm3
+      salt-enabled: true                 # 是否启用加盐
+      salt:                              # 全局盐值
+
+##############################  encrypt配置 end   ###########################

@@ -1,0 +1,54 @@
+##############################  MongoDB 配置 Start  ##############################
+---
+spring:
+  data:
+    mongodb:
+      # MongoDB 连接配置
+      # 方式1：使用 URI（推荐）
+      # uri: mongodb://username:password@localhost:27017/database?authSource=admin
+
+      # 方式2：分开配置
+      host: localhost
+      port: 27017
+      database: carlos_db
+      # username:
+      # password:
+      authentication-database: admin
+
+      # 连接池配置
+      auto-index-creation: true
+
+      # 高级连接选项（通过 URI 配置）
+      # uri: mongodb://user:pass@host1:27017,host2:27017,host3:27017/database?replicaSet=rs0&w=majority
+
+carlos:
+  mongodb:
+    # 是否启用 MongoDB 模块
+    enabled: true
+
+    # 是否启用字段自动填充（由 mongo-plus @CollectionField 注解驱动）
+    field-fill-enabled: true
+
+    # 字段名配置（可根据项目需求自定义）
+    create-time-field: createTime
+    update-time-field: updateTime
+    create-by-field: createBy
+    update-by-field: updateBy
+
+    # 逻辑删除（由 mongo-plus @CollectionLogic 注解驱动）
+    logic-delete-enabled: false
+    deleted-field: deleted
+
+    # 乐观锁（由 mongo-plus @Version 注解驱动）
+    optimistic-lock-enabled: false
+    version-field: version
+
+# mongo-plus 配置
+mongo-plus:
+  # 是否打印 Banner
+  banner:
+    enabled: true
+  # 驼峰转下划线（自动将 Java 驼峰字段名映射为 MongoDB 下划线字段名）
+  camel-to-underline: true
+
+##############################  MongoDB 配置 End  ##############################

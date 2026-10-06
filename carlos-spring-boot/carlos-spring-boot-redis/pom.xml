@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <parent>
+    <groupId>com.carlos</groupId>
+    <artifactId>carlos-spring-boot</artifactId>
+    <version>${revision}</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <artifactId>carlos-spring-boot-redis</artifactId>
+  <packaging>pom</packaging>
+
+  <name>carlos-spring-boot-redis</name>
+  <description>
+    Carlos Redis 模块聚合器 - 包含 Redis 核心、同步实现和响应式实现
+  </description>
+
+  <modules>
+    <module>carlos-spring-boot-starter-redis-core</module>
+    <module>carlos-spring-boot-starter-redis</module>
+    <module>carlos-spring-boot-starter-redis-reactive</module>
+  </modules>
+</project>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.carlos.message.mapper.MessageReceiverMapper">
+    <resultMap type="com.carlos.message.pojo.entity.MessageReceiver" id="baseMap">
+                <id column="id" property="id"/>
+                <result column="message_id" property="messageId"/>
+                <result column="channel_code" property="channelCode"/>
+                <result column="receiver_id" property="receiverId"/>
+                <result column="receiver_type" property="receiverType"/>
+                <result column="receiver_number" property="receiverNumber"/>
+                <result column="receiver_audience" property="receiverAudience"/>
+                <result column="channel_message_id" property="channelMessageId"/>
+                <result column="status" property="status"/>
+                <result column="fail_count" property="failCount"/>
+                <result column="fail_reason" property="failReason"/>
+                <result column="schedule_time" property="scheduleTime"/>
+                <result column="send_time" property="sendTime"/>
+                <result column="deliver_time" property="deliverTime"/>
+                <result column="read_time" property="readTime"/>
+                <result column="callback_url" property="callbackUrl"/>
+                <result column="extras" property="extras"/>
+                <result column="create_by" property="createBy"/>
+                <result column="create_time" property="createTime"/>
+                <result column="update_by" property="updateBy"/>
+                <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+
+</mapper>

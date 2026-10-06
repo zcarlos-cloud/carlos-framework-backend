@@ -1,0 +1,22 @@
+# ==========================================
+# 测试环境配置 - Knife4j 部分开启
+# ==========================================
+
+knife4j:
+  enable: true
+  production: false
+
+  # 开启基础认证
+  basic:
+    enable: true
+    username: test
+    password: test123
+
+  setting:
+    enable-dynamic-parameter: false  # 关闭动态参数
+    enable-after-script: false       # 关闭 AfterScript
+
+
+springdoc:
+  cache:
+    disabled: false  # 启用缓存

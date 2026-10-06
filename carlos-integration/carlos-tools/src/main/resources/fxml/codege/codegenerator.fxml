@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<ScrollPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.carlos.fx.codege.CodeGeneratorController"
+            fitToWidth="true"
+            vbarPolicy="AS_NEEDED"
+            hbarPolicy="NEVER"
+            pannable="true"
+            style="-fx-background-color: transparent;">
+
+    <VBox spacing="20" style="-fx-padding: 20;">
+
+        <Label text="代码生成器" styleClass="title-large"/>
+
+        <!-- Step 1: Database Connection -->
+        <VBox spacing="10" styleClass="card">
+            <Label text="步骤 1: 数据库连接" styleClass="title-medium"/>
+
+            <GridPane styleClass="form-grid" hgap="15" vgap="12">
+                <columnConstraints>
+                    <ColumnConstraints minWidth="120" prefWidth="120"/>
+                    <ColumnConstraints hgrow="ALWAYS"/>
+                    <ColumnConstraints minWidth="120" prefWidth="120"/>
+                    <ColumnConstraints hgrow="ALWAYS"/>
+                </columnConstraints>
+
+                <Label text="数据库类型:" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                <ComboBox fx:id="databaseTypeCombo" prefWidth="200" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+
+                <Label text="主机地址:" styleClass="form-label" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+                <TextField fx:id="hostField" promptText="localhost" GridPane.columnIndex="3" GridPane.rowIndex="0"/>
+
+                <Label text="端口:" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                <TextField fx:id="portField" promptText="3306" prefWidth="200" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+
+                <Label text="数据库名:" styleClass="form-label" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+                <TextField fx:id="databaseField" promptText="database_name" GridPane.columnIndex="3" GridPane.rowIndex="1"/>
+
+                <Label text="用户名:" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                <TextField fx:id="usernameField" promptText="root" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+
+                <Label text="密码:" styleClass="form-label" GridPane.columnIndex="2" GridPane.rowIndex="2"/>
+                <PasswordField fx:id="passwordField" promptText="password" GridPane.columnIndex="3" GridPane.rowIndex="2"/>
+            </GridPane>
+
+            <HBox spacing="10" style="-fx-padding: 10 0 0 0;">
+                <Button fx:id="testConnectionButton" text="测试连接" styleClass="secondary-button"/>
+                <Button fx:id="loadTablesButton" text="加载表信息" styleClass="primary-button"/>
+            </HBox>
+            <ProgressBar fx:id="databaseProgressBar" prefWidth="Infinity" progress="0"/>
+            <Label fx:id="databaseStatus" style="-fx-text-fill: #1976d2;"/>
+        </VBox>
+
+        <!-- Step 2: Table Selection -->
+        <VBox spacing="10" styleClass="card" VBox.vgrow="ALWAYS">
+            <Label text="步骤 2: 选择表" styleClass="title-medium"/>
+
+            <TreeView fx:id="tableTreeView" VBox.vgrow="ALWAYS" minHeight="200"/>
+
+            <Label text="提示: 勾选需要生成代码的表" style="-fx-text-fill: #757575; -fx-font-size: 12px;"/>
+
+            <GridPane styleClass="form-grid" hgap="5" vgap="0">
+                <columnConstraints>
+                    <ColumnConstraints minWidth="100" prefWidth="100"/>
+                    <ColumnConstraints hgrow="ALWAYS"/>
+                </columnConstraints>
+
+                <Label text="表字段命名方式:" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                <ComboBox fx:id="fieldNameTypeCombo" prefWidth="200" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+            </GridPane>
+
+        </VBox>
+
+        <!-- Step 3: Generation Configuration -->
+        <VBox spacing="10" styleClass="card">
+            <Label text="步骤 3: 生成配置" styleClass="title-medium"/>
+
+            <GridPane styleClass="form-grid" hgap="15" vgap="12">
+                <columnConstraints>
+                    <ColumnConstraints minWidth="60" prefWidth="60"/>
+                    <ColumnConstraints hgrow="ALWAYS"/>
+                    <ColumnConstraints minWidth="70" prefWidth="70"/>
+                    <ColumnConstraints hgrow="ALWAYS"/>
+                </columnConstraints>
+
+                <Label text="项目名称:" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                <TextField fx:id="projectNameField" promptText="my-project" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+
+                <Label text="代码模板:" styleClass="form-label" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+                <ComboBox fx:id="templateCombo" prefWidth="250" GridPane.columnIndex="3" GridPane.rowIndex="0"/>
+
+                <Label text="包名:" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                <TextField fx:id="packageField" promptText="com.carlos.demo" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+
+                <Label text="作者:" styleClass="form-label" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+                <TextField fx:id="authorField" promptText="Carlos" GridPane.columnIndex="3" GridPane.rowIndex="1"/>
+
+                <Label text="输出路径:" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                <HBox spacing="10" GridPane.columnIndex="1" GridPane.rowIndex="2" GridPane.columnSpan="3">
+                    <TextField fx:id="outputPathField" promptText="选择输出目录" HBox.hgrow="ALWAYS"/>
+                    <Button fx:id="browseButton" text="浏览..." styleClass="secondary-button"/>
+                </HBox>
+
+                <Label text="表名前缀:" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+                <HBox spacing="10" GridPane.columnIndex="1" GridPane.rowIndex="3" GridPane.columnSpan="2">
+                    <CheckBox fx:id="tablePrefixCheck" prefWidth="250" text="使用表名前缀"/>
+                </HBox>
+            </GridPane>
+
+            <HBox spacing="10" style="-fx-padding: 10 0 0 0;">
+                <Button fx:id="generateButton" text="生成代码" styleClass="success-button"/>
+            </HBox>
+
+            <ProgressBar fx:id="progressBar" prefWidth="Infinity" progress="0"/>
+            <Label fx:id="statusLabel" style="-fx-text-fill: #1976d2;"/>
+        </VBox>
+    </VBox>
+</ScrollPane>

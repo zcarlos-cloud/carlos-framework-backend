@@ -1,0 +1,272 @@
+# ==========================================
+# carlos-system-boot 系统管理单体启动配置
+# 说明：系统管理服务，包含系统配置、字典、文件管理等基础功能
+# ==========================================
+
+# ======================== 服务基础配置 ========================
+server:
+  port: ${SERVER_PORT:31611}
+  servlet:
+    context-path: /system
+
+# ======================== Spring 主配置 ========================
+spring:
+  profiles:
+    active: env,boot
+  servlet:
+    multipart:
+      # 启用文件上传
+      enabled: true
+      # 单文件最大限制
+      max-file-size: 200MB
+      # 一次上传所有文件的最大限制
+      max-request-size: 200MB
+  application:
+    name: carlos-system
+
+  # ======================== 数据源配置（Druid + 动态数据源） ========================
+  datasource:
+    druid:
+      stat-view-servlet:
+        enabled: true
+        loginUsername: admin
+        loginPassword: 123456
+    dynamic:
+      primary: master
+      druid:
+        initial-size: 5
+        min-idle: 5
+        maxActive: 20
+        maxWait: 60000
+        timeBetweenEvictionRunsMillis: 60000
+        minEvictableIdleTimeMillis: 300000
+        # 验证查询（注意：PostgreSQL 使用 SELECT 1，非 Oracle 的 SELECT 1 FROM DUAL）
+        validationQuery: SELECT 1
+        testWhileIdle: true
+        testOnBorrow: false
+        testOnReturn: false
+        poolPreparedStatements: true
+        breakAfterAcquireFailure: true
+        ConnectionErrorRetryAttempts: 2
+        maxPoolPreparedStatementPerConnectionSize: 20
+        filters: stat,wall,slf4j
+        connection-properties:
+          druid.stat.mergeSql: true
+          druid.stat.slowSqlMillis: 5000
+
+# ======================== Carlos 框架配置 ========================
+carlos:
+  # APM 链路追踪（Brave + MDC 日志关联）
+  apm:
+    enabled: true
+
+  # ======================== 资源服务器（登录身份） ========================
+  # 网关认证后把「身份断言」签进 X-User-Context 头（HMAC-SHA256），这里验签后还原成
+  # Spring Security 的登录身份（SecurityUtils.getCurrentUser()）。
+  # 不开时管理面从不建立 Authentication，依赖登录人的接口拿不到用户（如公告铃铛）。
+  # 密钥与开关在 Nacos 共享配置 common.yml 的 carlos.identity-assertion.* 下，网关与本服务共读。
+  resource-server:
+    enabled: true
+    auth:
+      # 本键整体覆盖默认值，默认 6 条必须一并列出。
+      # /api/** 是模块间 Feign 调用（不经网关、不带身份断言），放行可省一次判断。
+      whitelist-paths:
+        - /actuator/**
+        - /swagger-ui/**
+        - /v3/api-docs/**
+        - /doc.html
+        - /webjars/**
+        - /error
+        - /api/**
+
+  web:
+    # 跨域配置
+    cors:
+      enabled: true
+    # 枚举字典配置
+    enum-dict:
+      # 只扫本服务自己的枚举包（@AppEnum 的 code 需全局唯一，扫 com.carlos 会跨模块互相覆盖）
+      scan-packages: com.carlos.system
+      enabled: true
+
+  # ======================== 系统文件管理配置 ========================
+  system:
+    file:
+      # 文件访问基础 URL（供前端拼接下载链接）
+      base-url: ${SYSTEM_FILE_BASE_URL:http://127.0.0.1:9511}
+      # 文件下载路径模板
+      download-path: /sys/file/load?id=
+      # 支持的文件扩展名
+      support-ext: pdf,ext,doc,docx,xls,xlsx,png,jpg,jpeg,gif,csv,zip,txt
+      # 最大文件大小
+      max-file-size: 200MB
+      # 上传超时时间（秒）
+      upload-timeout-seconds: 60
+
+  # ======================== OSS 对象存储配置 ========================
+  oss:
+    enabled: false
+    type: MINIO
+    endpoint: ${CARLOS_OSS_ENDPOINT:}
+    access-key: ${CARLOS_OSS_ACCESS_KEY:}
+    secret-key: ${CARLOS_OSS_SECRET_KEY:}
+    bucket-name: ${CARLOS_OSS_BUCKET_NAME:carlos-system}
+
+  # ======================== 加密配置（SM4 国密） ========================
+  encrypt:
+    sm4:
+      enabled: false
+      encrypt-mode: cbc
+      key: ${CARLOS_ENCRYPT_KEY:}
+      iv: ${CARLOS_ENCRYPT_IV:}
+      store-type: base64
+
+# ======================== 监控配置（Actuator） ========================
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+# ======================== 日志配置 ========================
+logging:
+  config: classpath:config/logback.xml
+  level:
+    root: info
+    com.carlos: debug
+  file:
+    path: logs/system/
+
+# ======================== MyBatis-Plus 配置 ========================
+mybatis-plus:
+  # 启动时是否检查 MyBatis XML 文件是否存在
+  check-config-location: true
+  # MyBatis 原生配置
+  configuration:
+    # 字段名称下划线转驼峰命名
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+    call-setters-on-nulls: true
+  global-config:
+    db-config:
+      # 全局默认主键类型
+      id-type: assign_id
+      # 逻辑已删除值（默认为 1）
+      logic-delete-value: 1
+      # 逻辑未删除值（默认为 0）
+      logic-not-delete-value: 0
+  # mapper xml 映射路径
+  mapper-locations: classpath*:mapper/**/*Mapper.xml
+
+---
+# ======================== 接口文档配置（Knife4j/SpringDoc） ========================
+carlos:
+  openapi:
+    enable: true
+    # 基本信息
+    title: "Carlos 系统服务 API 文档"
+    description: "系统管理、字典配置、文件管理等功能接口"
+    version: "2.0.0"
+
+    # 联系人信息
+    contact:
+      name: carlos
+      email: 13032820513@163.com
+      url: www.carlos.com
+
+  # 扫描的包
+  swagger:
+    base-package: com.carlos.system
+
+knife4j:
+  enable: true
+  production: false
+  basic:
+    enable: false
+    username: carlos
+    password: hadoop543216
+  setting:
+    enableDebug: true
+    language: zh-CN
+    enableSwaggerModels: true
+    enableDocumentManage: true
+    swaggerModelName: 实体类列表
+    enableVersion: true
+    enableReloadCacheParameter: false
+    enableAfterScript: true
+    enableFilterMultipartApiMethodType: POST
+    enableFilterMultipartApis: false
+    enableRequestCache: true
+    enableHost: false
+    enableHostText: 192.168.0.193:8000
+    enableHomeCustom: false
+    homeCustomLocation: classpath:markdown/home.md
+    enableSearch: true
+    enableFooter: false
+    enableFooterCustom: true
+    footerCustomContent: 云津智慧科技有限公司
+    enableDynamicParameter: true
+    enableOpenApi: true
+    enableGroup: true
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+    resolve-schema-properties: true
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+    doc-expansion: list
+    display-request-duration: true
+  paths-to-exclude: /error, /actuator/**
+  cache:
+    disabled: false
+  show-actuator: false
+  show-login-endpoint: false
+  # ==================== 接口分组 ====================
+  group-configs:
+    # Feign 接口（服务间调用）
+    -
+      group: 'Feign接口'
+      displayName: 'Feign 接口（服务间调用）'
+      packagesToScan: com.carlos.system.menu.apiimpl,com.carlos.system.dict.apiimpl,com.carlos.system.upload.apiimpl,com.carlos.system.region.apiimpl,com.carlos.system.configration.apiimpl
+      pathsToMatch: /**
+    # 菜单与路由管理
+    -
+      group: '菜单与路由'
+      displayName: '菜单与路由管理'
+      packagesToScan: com.carlos.system.menu.controller
+      pathsToMatch: /**
+    # 字典管理
+    -
+      group: '字典管理'
+      displayName: '字典管理'
+      packagesToScan: com.carlos.system.dict.controller
+      pathsToMatch: /**
+    # 文件管理
+    -
+      group: '文件管理'
+      displayName: '文件管理'
+      packagesToScan: com.carlos.system.upload.controller,com.carlos.system.upload.storage.controller
+      pathsToMatch: /**
+    # 系统配置
+    -
+      group: '系统配置'
+      displayName: '系统配置'
+      packagesToScan: com.carlos.system.configration.controller
+      pathsToMatch: /**
+    # 区域管理
+    -
+      group: '区域管理'
+      displayName: '区域管理'
+      packagesToScan: com.carlos.system.region.controller
+      pathsToMatch: /**
+    # 国际化
+    -
+      group: '国际化'
+      displayName: '国际化'
+      packagesToScan: com.carlos.system.i18n.controller
+      pathsToMatch: /**

@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Render OCR Results</title>
+</head>
+<body>
+
+<canvas id="ocrCanvas" width="750" height="1230" style="border:1px solid #000;"></canvas>
+
+
+<canvas id="myCanvas"></canvas>
+<style>
+    .selectable-text::selection {
+        background-color: yellow;
+        color: black;
+    }
+</style>
+
+<script>
+    const ocrData = {
+        "status_code": 200,
+        "results": [
+            {
+                "text": "eeeeeAT&T",
+                "score": 0.2342655509710312,
+                "position": [
+                    [
+                        13,
+                        10
+                    ],
+                    [
+                        135,
+                        10
+                    ],
+                    [
+                        135,
+                        30
+                    ],
+                    [
+                        13,
+                        30
+                    ]
+                ]
+            },
+            {
+                "text": "合",
+                "score": 0.29378604888916016,
+                "position": [
+                    [
+                        133,
+                        12
+                    ],
+                    [
+                        162,
+                        12
+                    ],
+                    [
+                        162,
+                        26
+                    ],
+                    [
+                        133,
+                        26
+                    ]
+                ]
+            },
+            {
+                "text": "9:41 AM",
+                "score": 0.8037384748458862,
+                "position": [
+                    [
+                        328,
+                        9
+                    ],
+                    [
+                        418,
+                        9
+                    ],
+                    [
+                        418,
+                        33
+                    ],
+                    [
+                        328,
+                        33
+                    ]
+                ]
+            },
+            {
+                "text": "100%",
+                "score": 0.8752281069755554,
+                "position": [
+                    [
+                        631,
+                        9
+                    ],
+                    [
+                        725,
+                        9
+                    ],
+                    [
+                        725,
+                        33
+                    ],
+                    [
+                        631,
+                        33
+                    ]
+                ]
+            },
+            {
+                "text": "我的账单",
+                "score": 0.8767837285995483,
+                "position": [
+                    [
+                        292,
+                        57
+                    ],
+                    [
+                        440,
+                        57
+                    ],
+                    [
+                        440,
+                        94
+                    ],
+                    [
+                        292,
+                        94
+                    ]
+                ]
+            },
+            {
+                "text": "9月应还",
+                "score": 0.9905697107315063,
+                "position": [
+                    [
+                        47,
+                        125
+                    ],
+                    [
+                        159,
+                        125
+                    ],
+                    [
+                        159,
+                        156
+                    ],
+                    [
+                        47,
+                        156
+                    ]
+                ]
+            },
+            {
+                "text": "10月待还",
+                "score": 0.7130371332168579,
+                "position": [
+                    [
+                        310,
+                        122
+                    ],
+                    [
+                        438,
+                        122
+                    ],
+                    [
+                        438,
+                        158
+                    ],
+                    [
+                        310,
+                        158
+                    ]
+                ]
+            },
+            {
+                "text": "未入账",
+                "score": 0.978984534740448,
+                "position": [
+                    [
+                        581,
+                        120
+                    ],
+                    [
+                        678,
+                        120
+                    ],
+                    [
+                        678,
+                        158
+                    ],
+                    [
+                        581,
+                        158
+                    ]
+                ]
+            },
+            {
+                "text": "10月账单",
+                "score": 0.6479209661483765,
+                "position": [
+                    [
+                        57,
+                        325
+                    ],
+                    [
+                        165,
+                        323
+                    ],
+                    [
+                        166,
+                        354
+                    ],
+                    [
+                        58,
+                        356
+                    ]
+                ]
+            },
+            {
+                "text": "1400.88元",
+                "score": 0.6142622828483582,
+                "position": [
+                    [
+                        534,
+                        323
+                    ],
+                    [
+                        700,
+                        327
+                    ],
+                    [
+                        699,
+                        356
+                    ],
+                    [
+                        533,
+                        352
+                    ]
+                ]
+            },
+            {
+                "text": "退款",
+                "score": 0.9989567995071411,
+                "position": [
+                    [
+                        58,
+                        413
+                    ],
+                    [
+                        117,
+                        413
+                    ],
+                    [
+                        117,
+                        448
+                    ],
+                    [
+                        58,
+                        448
+                    ]
+                ]
+            },
+            {
+                "text": "-100.88元",
+                "score": 0.6923841834068298,
+                "position": [
+                    [
+                        536,
+                        411
+                    ],
+                    [
+                        700,
+                        417
+                    ],
+                    [
+                        699,
+                        449
+                    ],
+                    [
+                        535,
+                        443
+                    ]
+                ]
+            },
+            {
+                "text": "已还",
+                "score": 0.9962543249130249,
+                "position": [
+                    [
+                        59,
+                        505
+                    ],
+                    [
+                        117,
+                        505
+                    ],
+                    [
+                        117,
+                        538
+                    ],
+                    [
+                        59,
+                        538
+                    ]
+                ]
+            },
+            {
+                "text": "-600.88元",
+                "score": 0.4054844081401825,
+                "position": [
+                    [
+                        532,
+                        507
+                    ],
+                    [
+                        700,
+                        507
+                    ],
+                    [
+                        700,
+                        537
+                    ],
+                    [
+                        532,
+                        537
+                    ]
+                ]
+            },
+            {
+                "text": "剩余待还（元)",
+                "score": 0.7072275280952454,
+                "position": [
+                    [
+                        59,
+                        662
+                    ],
+                    [
+                        224,
+                        662
+                    ],
+                    [
+                        224,
+                        691
+                    ],
+                    [
+                        59,
+                        691
+                    ]
+                ]
+            },
+            {
+                "text": "包图网·版权所有",
+                "score": 0.3680885434150696,
+                "position": [
+                    [
+                        192,
+                        598
+                    ],
+                    [
+                        565,
+                        692
+                    ],
+                    [
+                        553,
+                        734
+                    ],
+                    [
+                        180,
+                        640
+                    ]
+                ]
+            },
+            {
+                "text": "②",
+                "score": 0.25183284282684326,
+                "position": [
+                    [
+                        669,
+                        658
+                    ],
+                    [
+                        710,
+                        658
+                    ],
+                    [
+                        710,
+                        698
+                    ],
+                    [
+                        669,
+                        698
+                    ]
+                ]
+            },
+            {
+                "text": "457.86",
+                "score": 0.9807794094085693,
+                "position": [
+                    [
+                        61,
+                        726
+                    ],
+                    [
+                        265,
+                        726
+                    ],
+                    [
+                        265,
+                        775
+                    ],
+                    [
+                        61,
+                        775
+                    ]
+                ]
+            },
+            {
+                "text": "还款日期5月25日",
+                "score": 0.8935128450393677,
+                "position": [
+                    [
+                        61,
+                        823
+                    ],
+                    [
+                        258,
+                        823
+                    ],
+                    [
+                        258,
+                        848
+                    ],
+                    [
+                        61,
+                        848
+                    ]
+                ]
+            },
+            {
+                "text": "返回",
+                "score": 0.9908825755119324,
+                "position": [
+                    [
+                        169,
+                        1195
+                    ],
+                    [
+                        234,
+                        1195
+                    ],
+                    [
+                        234,
+                        1226
+                    ],
+                    [
+                        169,
+                        1226
+                    ]
+                ]
+            },
+            {
+                "text": "查看提现记录",
+                "score": 0.9589743614196777,
+                "position": [
+                    [
+                        458,
+                        1197
+                    ],
+                    [
+                        638,
+                        1197
+                    ],
+                    [
+                        638,
+                        1226
+                    ],
+                    [
+                        458,
+                        1226
+                    ]
+                ]
+            }
+        ]
+    };
+
+    const canvas = document.getElementById('ocrCanvas');
+    const ctx = canvas.getContext('2d');
+
+
+    ocrData.results.forEach(result => {
+        // 设置文本样式
+        ctx.font = '16px Arial';
+
+        // const canvasWidth = result.position[0][0] - result.position[1][0];
+        //
+        // const textWidth = ctx.measureText(result.text).width;
+        // if (textWidth > canvasWidth) {
+        //     const scaled = canvasWidth / textWidth;
+        //     ctx.scale(scaled, scaled);
+        // }
+
+        // 绘制文本
+        ctx.fillStyle = 'black'; // 文本颜色
+
+
+        ctx.fillText(result.text, result.position[0][0], result.position[0][1]);
+
+        const textContainer = document.createElement('div');
+        textContainer.classList.add('selectable-text');
+        textContainer.textContent = result.text;
+
+        document.body.appendChild(textContainer);
+
+        // 绘制文本边框，便于识别文本区域
+        // ctx.strokeStyle = 'red';
+        // ctx.strokeRect(
+        //     result.position[0][0],
+        //     result.position[0][1],
+        //     result.position[2][0] - result.position[0][0],
+        //     result.position[2][1] - result.position[1][1]
+        // );
+    });
+</script>
+
+</body>
+</html>

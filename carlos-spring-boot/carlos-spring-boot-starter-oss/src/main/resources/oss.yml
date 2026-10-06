@@ -1,0 +1,140 @@
+# OSS 配置示例
+# 基于 AWS S3 协议，统一配置方式
+
+# ==================== MinIO 配置 ====================
+carlos:
+  oss:
+    enabled: true
+    type: minio
+    endpoint: http://localhost:9000
+    public-endpoint: http://your-domain.com:9000  # 可选，用于生成外部访问URL
+    access-key: minioadmin
+    secret-key: minioadmin
+    region: us-east-1
+    bucket-name: default
+    path-style-access: true  # MinIO 使用路径样式访问
+    auto-create-bucket: true
+
+---
+# ==================== AWS S3 配置 ====================
+carlos:
+  oss:
+    enabled: true
+    type: aws
+    # endpoint 可以不配置，使用默认的 AWS S3 endpoint
+    # endpoint: https://s3.us-east-1.amazonaws.com
+    access-key: your-access-key-id
+    secret-key: your-secret-access-key
+    region: us-east-1
+    bucket-name: your-bucket
+    path-style-access: false  # AWS S3 推荐使用虚拟主机样式
+    auto-create-bucket: false
+
+---
+# ==================== 阿里云 OSS 配置 ====================
+# 阿里云 OSS 兼容 S3 协议
+carlos:
+  oss:
+    enabled: true
+    type: aliyun
+    endpoint: https://oss-cn-hangzhou.aliyuncs.com
+    access-key: your-access-key-id
+    secret-key: your-access-key-secret
+    region: cn-hangzhou
+    bucket-name: your-bucket
+    path-style-access: true
+    auto-create-bucket: true
+
+---
+# ==================== 腾讯云 COS 配置 ====================
+# 腾讯云 COS 兼容 S3 协议
+carlos:
+  oss:
+    enabled: true
+    type: tencent
+    endpoint: https://cos.ap-guangzhou.myqcloud.com
+    access-key: your-secret-id
+    secret-key: your-secret-key
+    region: ap-guangzhou
+    bucket-name: your-bucket-1234567890
+    path-style-access: true
+    auto-create-bucket: true
+
+---
+# ==================== 华为云 OBS 配置 ====================
+# 华为云 OBS 兼容 S3 协议
+carlos:
+  oss:
+    enabled: true
+    type: huawei
+    endpoint: https://obs.cn-north-4.myhuaweicloud.com
+    access-key: your-access-key-id
+    secret-key: your-secret-access-key
+    region: cn-north-4
+    bucket-name: your-bucket
+    path-style-access: true
+    auto-create-bucket: true
+
+---
+# ==================== 七牛云 Kodo 配置 ====================
+# 七牛云 Kodo 兼容 S3 协议
+carlos:
+  oss:
+    enabled: true
+    type: qiniu
+    endpoint: https://s3-cn-east-1.qiniucs.com
+    access-key: your-access-key
+    secret-key: your-secret-key
+    region: cn-east-1
+    bucket-name: your-bucket
+    path-style-access: true
+    auto-create-bucket: true
+
+---
+# ==================== 京东云 OSS 配置 ====================
+# 京东云 OSS 兼容 S3 协议
+carlos:
+  oss:
+    enabled: true
+    type: jd
+    endpoint: https://s3.cn-north-1.jdcloud-oss.com
+    access-key: your-access-key
+    secret-key: your-secret-key
+    region: cn-north-1
+    bucket-name: your-bucket
+    path-style-access: true
+    auto-create-bucket: true
+
+---
+# ==================== 自定义 S3 兼容服务配置 ====================
+carlos:
+  oss:
+    enabled: true
+    type: custom
+    endpoint: http://your-s3-compatible-service:9000
+    access-key: your-access-key
+    secret-key: your-secret-key
+    region: us-east-1
+    bucket-name: your-bucket
+    path-style-access: true
+    auto-create-bucket: true
+
+---
+# ==================== 完整配置示例 ====================
+carlos:
+  oss:
+    enabled: true
+    type: minio
+    endpoint: http://localhost:9000
+    public-endpoint: http://your-domain.com:9000
+    access-key: minioadmin
+    secret-key: minioadmin
+    region: us-east-1
+    bucket-name: default
+    path-style-access: true
+    auto-create-bucket: true
+    presigned-url-expires: 3600  # 预签名URL过期时间（秒）
+    connection-timeout: 10000     # 连接超时时间（毫秒）
+    socket-timeout: 60000         # 读取超时时间（毫秒）
+    max-connections: 50           # 最大连接数
+    use-https: false              # 是否使用HTTPS

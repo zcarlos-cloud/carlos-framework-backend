@@ -1,0 +1,45 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <parent>
+    <groupId>com.carlos</groupId>
+    <artifactId>carlos-integration</artifactId>
+    <version>${revision}</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+  <packaging>pom</packaging>
+
+  <version>${revision}</version>
+  <groupId>com.carlos.audit</groupId>
+  <artifactId>carlos-audit</artifactId>
+  <name>carlos-audit</name>
+
+
+  <modules>
+    <module>carlos-audit-bus</module>
+    <module>carlos-audit-api</module>
+    <module>carlos-audit-cloud</module>
+    <module>carlos-audit-boot</module>
+  </modules>
+  <modelVersion>4.0.0</modelVersion>
+
+  <properties>
+    <!--<revision>carlos-audit</revision>-->
+  </properties>
+
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>com.carlos.audit</groupId>
+        <artifactId>carlos-audit-bus</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.carlos.audit</groupId>
+        <artifactId>carlos-audit-api</artifactId>
+        <version>${revision}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+</project>

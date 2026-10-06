@@ -1,0 +1,207 @@
+# ==========================================
+# carlos-auth OAuth2 认证授权专属配置
+# 说明：包含授权服务器、JWT、客户端、登录策略、SSO、社交登录等配置
+# 注意：生产环境密钥请通过环境变量注入，不要硬编码
+# ==========================================
+
+# ======================== Carlos Auth OAuth2 配置 ========================
+carlos:
+  auth:
+    # 是否启用认证模块
+    enabled: true
+
+    # ======================== 授权服务器配置 ========================
+    # 说明：access/refresh token 的 TTL 由注册客户端（DB app_client.token_settings）决定，
+    # 该客户端未配置时回落到 carlos.auth.login.access-token-ttl / refresh-token-ttl。
+    authorization-server:
+      enabled: true
+
+    # ======================== JWT 配置 ========================
+    jwt:
+      # JWT 签发者
+      issuer: ${AUTH_JWT_ISSUER:http://localhost:9511}
+      # JWT 签名密钥（RSA 私钥，使用环境变量注入）
+      signing-key: ${AUTH_JWT_SIGNING_KEY:}
+      # JWT 验证密钥（RSA 公钥，使用环境变量注入）
+      verification-key: ${AUTH_JWT_VERIFICATION_KEY:}
+
+    # ======================== 登录配置 ========================
+    login:
+      # 默认客户端 ID
+      default-client-id: carlos-client
+      # 访问令牌有效期（秒）- 15分钟；仅在该注册客户端未配置 token_settings TTL 时生效
+      access-token-ttl: ${AUTH_ACCESS_TOKEN_TTL:900}
+      # 刷新令牌有效期（秒）- 7天；仅在该注册客户端未配置 token_settings TTL 时生效
+      refresh-token-ttl: ${AUTH_REFRESH_TOKEN_TTL:604800}
+      # SSO 模式：内部端点（/auth/user/login）已删除，强制走 /oauth2/authorize
+      internal-endpoint-enabled: false
+      # 登录失败次数上限
+      fail-limit: 5
+      # 账号锁定时间（分钟）
+      lock-time: 30
+      # 登录方式开关（控制 SSO 登录页面展示哪些登录方式）
+      methods:
+        # 账号密码登录
+        password: true
+        # 短信验证码登录
+        sms-code: true
+        # 扫码登录（需要 Carlos APP 配合；开启后还需配置 carlos.auth.qrcode.sign-secret）
+        qr-code: ${AUTH_LOGIN_QRCODE_ENABLED:false}
+        # Passkey/WebAuthn 登录（完整 FIDO2 实现，需配置 rpId/origins；默认关闭）
+        passkey: ${AUTH_LOGIN_PASSKEY_ENABLED:false}
+        # 第三方社交登录配置
+        # 说明：以下开关开启后，必须配置对应凭据，否则登录页会自动降级（不展示按钮）
+        social:
+          # 社交登录回调基础地址，用于构建微信/钉钉 OAuth2 redirect_uri
+          # 示例：https://auth.example.com（不要带末尾斜杠）
+          callback-base-url: ${AUTH_SOCIAL_CALLBACK_BASE_URL:}
+          # 钉钉扫码登录（开启后需配置 app-key/app-secret/corp-id，或启用 carlos-integration 钉钉模块复用其配置）
+          dingtalk:
+            enabled: ${DINGTALK_LOGIN_ENABLED:false}
+            app-key: ${DINGTALK_APP_KEY:}
+            app-secret: ${DINGTALK_APP_SECRET:}
+            corp-id: ${DINGTALK_CORP_ID:}
+            callback-path: /auth/oauth2/callback/dingtalk
+          # 微信扫码登录（开启后需配置 app-id/app-secret）
+          wechat:
+            enabled: ${WECHAT_LOGIN_ENABLED:false}
+            app-id: ${WECHAT_APP_ID:}
+            app-secret: ${WECHAT_APP_SECRET:}
+            callback-path: /auth/oauth2/callback/wechat
+
+    # ======================== SSO 单点登录配置 ========================
+    sso:
+      # 是否启用 Token 交换
+      token-exchange-enabled: true
+      # 是否启用全局登出
+      global-logout-enabled: true
+      # SSO 登录页面 URL
+      login-page-url: /oauth2/authorize
+
+    # ======================== 安全配置 ========================
+    security:
+      # 是否启用 CORS
+      cors-enabled: true
+      # 允许的跨域来源
+      allowed-origins:
+        - http://localhost:3000
+        - http://localhost:5173
+        - http://localhost:5200
+
+    # ======================== OAuth2 客户端定义 ========================
+    clients:
+      # 默认 Web 客户端
+      -
+        client-id: ${OAUTH2_CLIENT_ID:carlos-client}
+        client-secret: ${OAUTH2_CLIENT_SECRET:carlos-secret}
+        # 授权类型
+        authorization-grant-types:
+          - authorization_code
+          - refresh_token
+          - client_credentials
+        # 回调地址
+        redirect-uris:
+          - http://localhost:3000/login/oauth2/code/carlos
+          - http://localhost:5173/login/oauth2/code/carlos
+        # 授权范围
+        scopes:
+          - openid
+          - profile
+          - read
+          - write
+        # 客户端设置
+        client-settings:
+          # 是否需要用户同意
+          require-authorization-consent: true
+          # 是否需要 PKCE（SPA 公开客户端必须启用）
+          require-proof-key: true
+        # 令牌设置
+        token-settings:
+          # 访问令牌格式：self-contained (JWT) 或 reference (Opaque)
+          access-token-format: self-contained
+          # 是否重用刷新令牌（false = Refresh Rotation，与服务器级一致）
+          reuse-refresh-tokens: false
+          # ID Token 签名算法
+          id-token-signature-algorithm: RS256
+
+      # 网关客户端（用于网关 OAuth2 认证）
+      -
+        client-id: ${GATEWAY_CLIENT_ID:gateway-client}
+        client-secret: ${GATEWAY_CLIENT_SECRET:gateway-secret}
+        authorization-grant-types:
+          - client_credentials
+        scopes:
+          - server
+        client-settings:
+          require-authorization-consent: false
+        token-settings:
+          reuse-refresh-tokens: false
+
+      # 应用门户（公共客户端，PKCE only，无 secret）
+      -
+        client-id: carlos-framework-portal
+        client-name: Carlos 应用门户
+        authorization-grant-types:
+          - authorization_code
+          - refresh_token
+        redirect-uris:
+          - http://localhost:5200/oauth2/callback
+          - https://portal.carlos.com/oauth2/callback
+        scopes:
+          - openid
+          - profile
+        client-settings:
+          require-authorization-consent: false
+          require-proof-key: true
+        token-settings:
+          access-token-format: self-contained
+          reuse-refresh-tokens: false
+
+  # ======================== 密码安全配置 ========================
+  # 配置前缀：carlos.auth.password
+  password:
+    # Argon2id 参数（OWASP 2024 推荐）
+    argon2:
+      salt-length: 16
+      hash-length: 32
+      parallelism: 1
+      memory: 47104      # 46 MiB
+      iterations: 3
+    # 是否启用遗留 SM4 密码自动迁移（登录时自动升级到 Argon2id）
+    sm4-migration-enabled: true
+    # Pepper（生产环境通过环境变量注入）
+    pepper: ${AUTH_PASSWORD_PEPPER:}
+    # 密码强度策略
+    strength:
+      min-length: 8
+      max-length: 128
+      require-complexity: false    # NIST 800-63B: 不强制复杂度组合
+      check-pwned: true            # HaveIBeenPwned k-匿名查询
+      history-count: 5             # 禁止重用最近 5 次密码
+      max-age-days: 0              # 0=不强制过期 (NIST 推荐)
+      min-strength-score: 3        # zxcvbn 最低得分 (0-4)
+
+  # ======================== 风控引擎配置 ========================
+  # 配置前缀：carlos.auth.risk
+  risk:
+    enabled: true
+    # 风控评分阈值
+    thresholds:
+      # 低风险上界：得分 < 此值无感通过
+      low: 30
+      # 中风险上界：此值以下弹滑块验证码
+      medium: 60
+      # 高风险上界：此值以下强制 MFA
+      high: 85
+      # >= 85 拒绝登录 + 告警
+    # 各信号加分规则
+    signals:
+      new-device: 15
+      unusual-location: 20
+      impossible-travel: 30
+      proxy-detected: 10
+      datacenter-ip: 20
+      unusual-time: 10
+      recent-fail-per-count: 5
+      ip-reputation-bad: 15
+      new-account: 10

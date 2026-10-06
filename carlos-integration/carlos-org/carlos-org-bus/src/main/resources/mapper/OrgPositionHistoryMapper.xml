@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.carlos.org.position.mapper.OrgPositionHistoryMapper">
+  <resultMap type="com.carlos.org.position.pojo.entity.OrgPositionHistory" id="baseMap">
+    <id column="id" property="id"/>
+    <result column="user_id" property="userId"/>
+    <result column="change_type" property="changeType"/>
+    <result column="old_position_id" property="oldPositionId"/>
+    <result column="new_position_id" property="newPositionId"/>
+    <result column="old_level_id" property="oldLevelId"/>
+    <result column="new_level_id" property="newLevelId"/>
+    <result column="old_dept_id" property="oldDeptId"/>
+    <result column="new_dept_id" property="newDeptId"/>
+    <result column="old_salary" property="oldSalary"/>
+    <result column="new_salary" property="newSalary"/>
+    <result column="change_reason" property="changeReason"/>
+    <result column="change_date" property="changeDate"/>
+    <result column="approval_no" property="approvalNo"/>
+    <result column="attachments" property="attachments"/>
+    <result column="remark" property="remark"/>
+    <result column="operator_id" property="operatorId"/>
+    <result column="operator_name" property="operatorName"/>
+    <result column="tenant_id" property="tenantId"/>
+    <result column="create_time" property="createTime"/>
+  </resultMap>
+</mapper>

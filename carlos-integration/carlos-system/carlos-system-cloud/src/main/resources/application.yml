@@ -1,0 +1,211 @@
+# ==========================================
+# carlos-system-cloud 微服务启动配置
+# 说明：系统管理服务 Spring Cloud 版本，通过 Nacos 获取共享配置
+# ==========================================
+
+# ======================== 服务基础配置 ========================
+server:
+  port: 9513
+
+# ======================== Spring 主配置 ========================
+spring:
+  profiles:
+    active: ${PROFILE:local}
+  application:
+    name: carlos-system
+
+  # ======================== Nacos 配置中心 ========================
+  cloud:
+    nacos:
+      discovery:
+        enabled: true
+      config:
+        enabled: true
+        file-extension: yml
+        refresh-enabled: true
+
+  # 配置导入（Nacos 共享配置）
+  config:
+    import:
+      # 1. 公共配置（所有环境共享）
+      # 2. Redis 共享配置
+      # 3. 数据库共享配置
+      - optional:nacos:common.yml?group=DEFAULT_GROUP&refreshEnabled=true
+      - optional:nacos:redis.yml?group=DEFAULT_GROUP&refreshEnabled=true
+      - optional:nacos:db.yml?group=DEFAULT_GROUP&refreshEnabled=true
+
+# ======================== 本地调试环境 ========================
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+  cloud:
+    nacos:
+      username: ${NACOS_USERNAME:@nacos.username@}
+      password: ${NACOS_PASSWORD:@nacos.password@}
+      discovery:
+        server-addr: ${NACOS_ADDR:@nacos.addr@}
+        namespace: ${NACOS_NAMESPACE:@nacos.namespace@}
+        group: ${NACOS_GROUP:@nacos.group@}
+      config:
+        server-addr: ${NACOS_ADDR:@nacos.addr@}
+        namespace: ${NACOS_NAMESPACE:@nacos.namespace@}
+        group: ${NACOS_GROUP:@nacos.group@}
+
+# ======================== 部署环境（使用环境变量） ========================
+---
+spring:
+  config:
+    activate:
+      on-profile: deploy
+  cloud:
+    nacos:
+      username: ${NACOS_USERNAME}
+      password: ${NACOS_PASSWORD}
+      discovery:
+        server-addr: ${NACOS_ADDR}
+        namespace: ${NACOS_NAMESPACE}
+        group: ${NACOS_GROUP}
+      config:
+        namespace: ${NACOS_NAMESPACE}
+        server-addr: ${NACOS_ADDR}
+        group: ${NACOS_GROUP}
+
+---
+# ======================== Carlos 系统管理配置 ========================
+carlos:
+  # APM 链路追踪（Brave + MDC 日志关联）
+  apm:
+    enabled: true
+  # ======================== 枚举字典配置（`GET /app/enums`、`GET /app/enum` 的数据源） ========================
+  web:
+    enum-dict:
+      # 只扫本服务自己的枚举包（@AppEnum 的 code 需全局唯一，扫 com.carlos 会跨模块互相覆盖）
+      scan-packages: com.carlos.system
+      enabled: true
+  # ======================== 资源服务器（登录身份） ========================
+  # 网关认证后把「身份断言」签进 X-User-Context 头（HMAC-SHA256），这里验签后还原成
+  # Spring Security 的登录身份（SecurityUtils.getCurrentUser()）。
+  # 不开时管理面从不建立 Authentication，依赖登录人的接口拿不到用户（如公告铃铛）。
+  # 密钥与开关在 Nacos 共享配置 common.yml 的 carlos.identity-assertion.* 下，网关与本服务共读。
+  resource-server:
+    enabled: true
+    auth:
+      # 本键整体覆盖默认值，默认 6 条必须一并列出。
+      # /api/** 是模块间 Feign 调用（不经网关、不带身份断言），放行可省一次判断。
+      whitelist-paths:
+        - /actuator/**
+        - /swagger-ui/**
+        - /v3/api-docs/**
+        - /doc.html
+        - /webjars/**
+        - /error
+        - /api/**
+  # 系统文件管理配置
+  system:
+    file:
+      base-url: ${SYSTEM_FILE_BASE_URL:http://127.0.0.1:9511}
+      download-path: /sys/file/load?id=
+      support-ext: pdf,ext,doc,docx,xls,xlsx,png,jpg,jpeg,gif,csv,zip,txt
+      max-file-size: 104857600
+      upload-timeout-seconds: 60
+
+  # OSS 配置
+  oss:
+    enabled: true
+    type: MINIO
+    endpoint: ${CARLOS_OSS_ENDPOINT:}
+    access-key: ${CARLOS_OSS_ACCESS_KEY:}
+    secret-key: ${CARLOS_OSS_SECRET_KEY:}
+    bucket-name: ${CARLOS_OSS_BUCKET_NAME:carlos-system}
+
+  # 加密配置
+  encrypt:
+    sm4:
+      enabled: false
+      encrypt-mode: cbc
+      key: ${CARLOS_ENCRYPT_KEY:}
+      iv: ${CARLOS_ENCRYPT_IV:}
+      store-type: base64
+
+knife4j:
+  enable: true
+  production: false
+  basic:
+    enable: false
+    username: admin
+    password: 123456
+  setting:
+    language: ZH_CN
+    enable-document-manage: true
+    enable-swagger-models: true
+    swagger-model-name: Swagger Models
+    enable-host: true
+    enable-request-cache: true
+    enable-filter-multipart-apis: true
+    enable-filter-multipart-api-method-type: POST
+    enable-dynamic-parameter: true
+    enable-open-api: true
+    enable-search: true
+    enable-after-script: true
+    enable-group: true
+    enable-response-code: true
+    enable-reload-cache-parameter: false
+    enable-debug: true
+    enable-home-custom: false
+    home-custom-path: classpath:markdown/home.md
+    enable-version: true
+    enable-footer: false
+    enable-footer-custom: false
+    footer-custom-content: "自定义Footer内容"
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+    resolve-schema-properties: true
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+    doc-expansion: list
+    display-request-duration: true
+  paths-to-exclude: /error, /actuator/**
+  cache:
+    disabled: true
+  show-actuator: false
+  show-login-endpoint: false
+  # ==================== 接口分组 ====================
+  group-configs:
+    -
+      group: 'system-base-manage'
+      displayName: '系统管理-基础信息管理'
+      packagesToScan: com.carlos.system.configration.controller,com.carlos.system.dict.controller,com.carlos.system.i18n.controller,com.carlos.system.menu.controller,com.carlos.system.region.controller,com.carlos.system.upload.controller,com.carlos.system.news.controller
+      pathsToMatch: /**
+
+    # Feign 接口（服务间调用）
+    -
+      group: 'system-feign-apis'
+      displayName: '系统管理-Feign 接口'
+      packagesToScan: com.carlos.system.configration.impl,com.carlos.system.dict.impl,com.carlos.system.i18n.impl,com.carlos.system.menu.impl,com.carlos.system.region.impl,com.carlos.system.upload.impl,com.carlos.system.news.apiimpl
+      pathsToMatch: /**
+
+
+
+
+# ======================== 日志配置 ========================
+logging:
+  config: classpath:config/logback.xml
+  level:
+    com.carlos: debug
+  file:
+    path: logs/system/
+
+# ======================== 监控配置 ========================
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"

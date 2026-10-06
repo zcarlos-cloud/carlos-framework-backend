@@ -1,0 +1,113 @@
+-- ============================================================================
+-- 系统监控模块 ClickHouse 时序表 DDL
+-- ----------------------------------------------------------------------------
+-- 来源：《DESIGN-20260930-系统监控模块库表设计》第 3 节（原样提取）
+-- 用途：指标时序点、小时聚合、Redis 慢日志、DB 慢 SQL（4 个对象）
+-- 部署：单节点本地表；集群部署时按注释模板补建分布式表
+-- ============================================================================
+
+-- ============================================
+-- 1. monitor_metric_point 原始指标点（TTL 7 天）
+-- ============================================
+CREATE TABLE IF NOT EXISTS monitor_metric_point
+(
+    instance_id   UInt64                 COMMENT '实例ID（雪花）',
+    metric_source LowCardinality(String) COMMENT '指标来源：REDIS/DB/SERVICE',
+    metric_name   LowCardinality(String) COMMENT '指标名，如 redis.memory.used_percent',
+    node          String DEFAULT ''      COMMENT '节点地址（cluster/多实例拆分，单机为空）',
+    tags          Map(String, String)    COMMENT '扩展标签（db/slot/state 等）',
+    value         Float64                COMMENT '指标值',
+    ts            DateTime64(3)          COMMENT '采集时间',
+    event_date    Date DEFAULT toDate(ts) COMMENT '事件日期（分区键）'
+)
+ENGINE = MergeTree()
+PARTITION BY toYYYYMM(event_date)
+ORDER BY (instance_id, metric_name, ts)
+TTL event_date + INTERVAL 7 DAY
+SETTINGS index_granularity = 8192;
+
+-- 集群部署时创建分布式表：
+-- CREATE TABLE monitor_metric_point_all AS monitor_metric_point
+-- ENGINE = Distributed('your_cluster_name', 'default', 'monitor_metric_point', instance_id);
+
+-- ============================================
+-- 2. monitor_metric_point_hourly 小时聚合（物化视图预聚合，TTL 90 天）
+-- ============================================
+CREATE TABLE IF NOT EXISTS monitor_metric_point_hourly
+(
+    instance_id   UInt64,
+    metric_source LowCardinality(String),
+    metric_name   LowCardinality(String),
+    node          String DEFAULT '',
+    hour          DateTime                      COMMENT '小时整点',
+    avg_value     AggregateFunction(avg, Float64),
+    max_value     AggregateFunction(max, Float64),
+    min_value     AggregateFunction(min, Float64),
+    p95_value     AggregateFunction(quantile(0.95), Float64),
+    point_count   AggregateFunction(count, UInt64)
+)
+ENGINE = AggregatingMergeTree()
+PARTITION BY toYYYYMM(hour)
+ORDER BY (instance_id, metric_name, hour)
+TTL hour + INTERVAL 90 DAY
+SETTINGS index_granularity = 8192;
+
+CREATE MATERIALIZED VIEW IF NOT EXISTS monitor_metric_point_hourly_mv
+TO monitor_metric_point_hourly
+AS SELECT
+    instance_id,
+    metric_source,
+    metric_name,
+    node,
+    toStartOfHour(ts) AS hour,
+    avgState(value)   AS avg_value,
+    maxState(value)   AS max_value,
+    minState(value)   AS min_value,
+    quantileState(0.95)(value) AS p95_value,
+    countState()      AS point_count
+FROM monitor_metric_point
+GROUP BY instance_id, metric_source, metric_name, node, hour;
+
+-- 查询侧使用 -Merge 组合函数（avgMerge(avg_value) 等）。
+
+-- ============================================
+-- 3. monitor_redis_slowlog Redis 慢日志（TTL 30 天）
+-- ============================================
+CREATE TABLE IF NOT EXISTS monitor_redis_slowlog
+(
+    instance_id UInt64                 COMMENT '实例ID',
+    node        String DEFAULT ''      COMMENT '节点地址',
+    slowlog_id  UInt64                 COMMENT '实例侧 SLOWLOG ID',
+    ts          DateTime64(3)          COMMENT '命令执行时间',
+    duration_us UInt64                 COMMENT '耗时（微秒）',
+    command     String                 COMMENT '命令文本（value 已脱敏为 ***）',
+    client_addr String DEFAULT ''      COMMENT '客户端地址',
+    event_date  Date DEFAULT toDate(ts)
+)
+ENGINE = MergeTree()
+PARTITION BY toYYYYMM(event_date)
+ORDER BY (instance_id, ts)
+TTL event_date + INTERVAL 30 DAY
+SETTINGS index_granularity = 8192;
+
+-- ============================================
+-- 4. monitor_db_slow_sql 慢 SQL 采集明细（TTL 30 天）
+-- ============================================
+CREATE TABLE IF NOT EXISTS monitor_db_slow_sql
+(
+    instance_id    UInt64                 COMMENT '实例ID',
+    fingerprint    String                 COMMENT 'SQL 指纹（参数归一化后的哈希）',
+    sample_sql     String                 COMMENT '样例 SQL（参数脱敏，截断 4000）',
+    db_name        LowCardinality(String) COMMENT '库名',
+    exec_count     UInt64                 COMMENT '统计窗口内执行次数',
+    avg_ms         Float64                COMMENT '平均耗时（毫秒）',
+    max_ms         Float64                COMMENT '最大耗时（毫秒）',
+    last_exec_time DateTime64(3)          COMMENT '最近执行时间',
+    collect_time   DateTime64(3)          COMMENT '采集时间',
+    event_date     Date DEFAULT toDate(collect_time)
+)
+ENGINE = MergeTree()
+PARTITION BY toYYYYMM(event_date)
+ORDER BY (instance_id, fingerprint, collect_time)
+TTL event_date + INTERVAL 30 DAY
+SETTINGS index_granularity = 8192;

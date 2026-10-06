@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Carlos Web Starter 日志配置
+
+  特性：
+  1. 支持链路追踪：Trace ID + Span ID
+  2. 支持 SkyWalking 集成
+  3. 彩色控制台输出
+  4. 分级别日志文件（debug/info/error）
+  5. 异步日志提升性能
+
+  MDC 变量：
+  - traceId: Micrometer Tracing Trace ID
+  - spanId: Micrometer Tracing Span ID
+  - tid: SkyWalking Trace ID
+-->
+<configuration scan="true" scanPeriod="60 seconds" debug="false">
+
+  <!-- ==================== 基础配置 ==================== -->
+  <!-- 单文件最大 -->
+  <property name="MAX_FILE_SIZE" value="50MB"/>
+  <!-- 最长保存时间 -->
+  <property name="MAX_HISTORY" value="360"/>
+  <!-- 日志路径 -->
+  <property name="LOG_PATH" value="${LOG_PATH:-.}"/>
+  <!-- 应用名称 -->
+  <property name="APP_NAME" value="${spring.application.name:-carlos-app}"/>
+
+  <contextName>${APP_NAME}</contextName>
+
+  <!-- 禁用 logback 自身日志输出 -->
+  <statusListener class="ch.qos.logback.core.status.NopStatusListener"/>
+
+  <!-- ==================== 彩色日志 ==================== -->
+  <conversionRule conversionWord="clr" class="org.springframework.boot.logging.logback.ColorConverter"/>
+  <conversionRule conversionWord="wex"
+                  class="org.springframework.boot.logging.logback.WhitespaceThrowableProxyConverter"/>
+  <conversionRule conversionWord="wEx"
+                  class="org.springframework.boot.logging.logback.ExtendedWhitespaceThrowableProxyConverter"/>
+
+  <!-- ==================== 日志格式 ==================== -->
+  <!--
+      格式说明：
+      %d: 日期时间
+      %thread: 线程名
+      %-5level: 级别，5个字符宽度，左对齐
+      %logger: Logger 名
+      %X{traceId}: Trace ID（分布式链路追踪）
+      %X{spanId}: Span ID
+      %msg: 日志消息
+      %n: 换行符
+  -->
+
+  <!-- 控制台日志样式（彩色，包含链路追踪信息） -->
+  <property name="CONSOLE_LOG_PATTERN"
+            value="%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(%5p) %clr([%15.15t]){faint} [%clr(%X{traceId:-}-%X{spanId:-}){cyan}] %clr(%-40.40logger{39}){cyan}[%L]%clr(:){faint} %m%n%wEx"/>
+
+  <!-- 文件日志样式（包含链路追踪信息） -->
+  <property name="FILE_LOG_PATTERN"
+            value="%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%thread] [%X{traceId:-}-%X{spanId:-}] %-40.40logger{39} [%L]:%m%n%wEx"/>
+
+  <!-- ==================== Appender 定义 ==================== -->
+
+  <!-- 控制台输出 -->
+  <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+      <charset>UTF-8</charset>
+    </encoder>
+  </appender>
+
+  <!-- Debug 日志文件 -->
+  <appender name="DEBUG" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <encoder>
+      <pattern>${FILE_LOG_PATTERN}</pattern>
+      <charset>UTF-8</charset>
+    </encoder>
+    <file>${LOG_PATH}/debug.log</file>
+    <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+      <fileNamePattern>${LOG_PATH}/debug-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+      <maxFileSize>${MAX_FILE_SIZE}</maxFileSize>
+      <maxHistory>7</maxHistory>
+    </rollingPolicy>
+  </appender>
+
+  <!-- Info 日志文件 -->
+  <appender name="INFO" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <encoder>
+      <pattern>${FILE_LOG_PATTERN}</pattern>
+      <charset>UTF-8</charset>
+    </encoder>
+    <file>${LOG_PATH}/info.log</file>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <fileNamePattern>${LOG_PATH}/info-%d{yyyy-MM-dd}.log</fileNamePattern>
+      <maxHistory>${MAX_HISTORY}</maxHistory>
+    </rollingPolicy>
+    <filter class="ch.qos.logback.classic.filter.LevelFilter">
+      <level>info</level>
+      <onMatch>ACCEPT</onMatch>
+      <onMismatch>DENY</onMismatch>
+    </filter>
+  </appender>
+
+  <!-- Warn 日志文件（默认注释，需要时取消注释） -->
+  <!--<appender name="WARN" class="ch.qos.logback.core.rolling.RollingFileAppender">-->
+  <!--    <encoder>-->
+  <!--        <pattern>${FILE_LOG_PATTERN}</pattern>-->
+  <!--        <charset>UTF-8</charset>-->
+  <!--    </encoder>-->
+  <!--    <file>${LOG_PATH}/warn.log</file>-->
+  <!--    <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">-->
+  <!--        <fileNamePattern>${LOG_PATH}/warn-%d{yyyy-MM-dd}.%i.log</fileNamePattern>-->
+  <!--        <maxFileSize>${MAX_FILE_SIZE}</maxFileSize>-->
+  <!--        <maxHistory>${MAX_HISTORY}</maxHistory>-->
+  <!--    </rollingPolicy>-->
+  <!--    <filter class="ch.qos.logback.classic.filter.LevelFilter">-->
+  <!--        <level>warn</level>-->
+  <!--        <onMatch>ACCEPT</onMatch>-->
+  <!--        <onMismatch>DENY</onMismatch>-->
+  <!--    </filter>-->
+  <!--</appender>-->
+
+  <!-- 错误日志文件 -->
+  <appender name="ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <encoder>
+      <pattern>${FILE_LOG_PATTERN}</pattern>
+      <charset>UTF-8</charset>
+    </encoder>
+    <file>${LOG_PATH}/error.log</file>
+    <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+      <fileNamePattern>${LOG_PATH}/error-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+      <maxFileSize>${MAX_FILE_SIZE}</maxFileSize>
+      <maxHistory>${MAX_HISTORY}</maxHistory>
+    </rollingPolicy>
+    <filter class="ch.qos.logback.classic.filter.LevelFilter">
+      <level>error</level>
+      <onMatch>ACCEPT</onMatch>
+      <onMismatch>DENY</onMismatch>
+    </filter>
+  </appender>
+
+  <!-- 异步写日志（提升性能，减少日志 I/O 对业务的影响） -->
+  <appender name="ASYNC_DEBUG_FILE" class="ch.qos.logback.classic.AsyncAppender">
+    <discardingThreshold>0</discardingThreshold>
+    <queueSize>8192</queueSize>
+    <neverBlock>true</neverBlock>
+    <appender-ref ref="DEBUG"/>
+  </appender>
+  <appender name="ASYNC_INFO_FILE" class="ch.qos.logback.classic.AsyncAppender">
+    <discardingThreshold>0</discardingThreshold>
+    <queueSize>8192</queueSize>
+    <neverBlock>true</neverBlock>
+    <appender-ref ref="INFO"/>
+  </appender>
+  <appender name="ASYNC_ERROR_FILE" class="ch.qos.logback.classic.AsyncAppender">
+    <discardingThreshold>0</discardingThreshold>
+    <queueSize>8192</queueSize>
+    <neverBlock>true</neverBlock>
+    <appender-ref ref="ERROR"/>
+  </appender>
+
+  <!-- SkyWalking GRPC 日志上报（可选，需启用 SkyWalking agent 时取消注释） -->
+  <!--
+  <appender name="SKYWALKING" class="org.apache.skywalking.apm.toolkit.log.logback.v1.x.log.GRPCLogClientAppender">
+    <encoder>
+      <pattern>${FILE_LOG_PATTERN}</pattern>
+      <charset>UTF-8</charset>
+    </encoder>
+  </appender>
+  -->
+
+  <!-- 解决 SpringBootAdmin 错误日志问题 -->
+  <logger name="org.apache.catalina.connector.CoyoteAdapter" level="OFF"/>
+
+  <!-- ==================== JSON 结构化日志（按需启用） ==================== -->
+  <!--
+      使用方法：
+      1. 添加依赖（已在 carlos-spring-boot-starter-web 中声明为 optional）
+         <dependency>
+           <groupId>net.logstash.logback</groupId>
+           <artifactId>logstash-logback-encoder</artifactId>
+         </dependency>
+      2. 取消下方 appender 的注释
+      3. 在 <root> 中添加 <appender-ref ref="JSON_FILE"/> 和/或 <appender-ref ref="JSON_CONSOLE"/>
+      4. 重启应用
+
+      优势：结构化日志可直接导入 ELK（Elasticsearch/Logstash/Kibana）、Loki 等日志平台，
+      支持字段级搜索和分析。包含 traceId/spanId/appName 等上下文信息。
+  -->
+
+  <!-- JSON 文件日志 -->
+  <!--
+  <appender name="JSON_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+      <includeMdcKeyName>traceId</includeMdcKeyName>
+      <includeMdcKeyName>spanId</includeMdcKeyName>
+      <includeMdcKeyName>appName</includeMdcKeyName>
+      <customFields>{"application":"${APP_NAME}"}</customFields>
+    </encoder>
+    <file>${LOG_PATH}/app.json.log</file>
+    <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+      <fileNamePattern>${LOG_PATH}/app-%d{yyyy-MM-dd}.%i.json.log</fileNamePattern>
+      <maxFileSize>${MAX_FILE_SIZE}</maxFileSize>
+      <maxHistory>7</maxHistory>
+    </rollingPolicy>
+  </appender>
+  -->
+
+  <!-- JSON 控制台日志 -->
+  <!--
+  <appender name="JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+      <includeMdcKeyName>traceId</includeMdcKeyName>
+      <includeMdcKeyName>spanId</includeMdcKeyName>
+      <customFields>{"application":"${APP_NAME}"}</customFields>
+    </encoder>
+  </appender>
+  -->
+
+  <!-- ==================== Root 配置 ==================== -->
+  <root level="INFO">
+    <appender-ref ref="CONSOLE"/>
+    <appender-ref ref="ASYNC_DEBUG_FILE"/>
+    <appender-ref ref="ASYNC_INFO_FILE"/>
+    <appender-ref ref="ASYNC_ERROR_FILE"/>
+    <!--<appender-ref ref="WARN"/>-->
+    <!--<appender-ref ref="SKYWALKING"/>-->
+  </root>
+
+</configuration>

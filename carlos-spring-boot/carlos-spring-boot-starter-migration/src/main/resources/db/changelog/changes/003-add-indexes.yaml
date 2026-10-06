@@ -1,0 +1,56 @@
+databaseChangeLog:
+  -
+    changeSet:
+      id: 3
+      author: carlos
+      context: develop,test,production
+      comment: 添加数据库索引优化查询性能
+      changes:
+        # 为 demo_user 表添加索引
+        -
+          createIndex:
+            tableName: demo_user
+            indexName: idx_user_status
+            columns:
+              -
+                column:
+                  name: status
+                  descending: false
+            remarks: 用户状态索引
+
+        -
+          createIndex:
+            tableName: demo_user
+            indexName: idx_user_create_time
+            columns:
+              -
+                column:
+                  name: create_time
+                  descending: true
+            remarks: 用户创建时间索引
+
+        # 为 demo_config 表添加索引
+        -
+          createIndex:
+            tableName: demo_config
+            indexName: idx_config_name
+            columns:
+              -
+                column:
+                  name: config_name
+                  descending: false
+            remarks: 配置名称索引
+
+      rollback:
+        -
+          dropIndex:
+            tableName: demo_user
+            indexName: idx_user_status
+        -
+          dropIndex:
+            tableName: demo_user
+            indexName: idx_user_create_time
+        -
+          dropIndex:
+            tableName: demo_config
+            indexName: idx_config_name

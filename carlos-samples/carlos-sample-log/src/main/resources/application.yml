@@ -1,0 +1,21 @@
+server:
+  port: 9813
+
+spring:
+  application:
+    name: carlos-sample-log
+
+# 日志配置
+carlos:
+  log:
+    enabled: true
+    # 是否异步记录日志
+    async: true
+    # 日志保留天数
+    save-days: 30
+
+# 日志级别配置
+logging:
+  level:
+    com.carlos: debug
+    com.carlos.log.aspect: debug

@@ -1,0 +1,14 @@
+# License 相关配置
+carlos:
+  license:
+    verify:
+      # 主题
+      subject: license_demo
+      # 公钥别称
+      publicAlias: publicCert
+      # 访问公钥的密码
+      storePass: pubwd123456
+      # license 位置
+      licensePath: ./src/main/resources/license/license.lic
+      # 公钥位置
+      publicKeysStorePath: ./src/main/resources/license/publicCerts.keystore

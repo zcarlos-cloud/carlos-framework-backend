@@ -1,0 +1,259 @@
+# ==========================================
+# carlos-audit-cloud 微服务启动配置
+# 说明：审计服务 Spring Cloud 版本，通过 Nacos 获取共享配置
+# ==========================================
+
+# ======================== 服务基础配置 ========================
+server:
+  port: 9514
+
+# ======================== Spring 主配置 ========================
+spring:
+  profiles:
+    active: ${PROFILE:local}
+  application:
+    name: carlos-audit
+
+  # ======================== Nacos 配置中心 ========================
+  cloud:
+    nacos:
+      discovery:
+        enabled: true
+      config:
+        enabled: true
+        file-extension: yml
+        refresh-enabled: true
+
+  # 配置导入（Nacos 共享配置）
+  config:
+    import:
+      # 1. 公共配置（所有环境共享）
+      # 2. Redis 共享配置
+      # 3. 数据库共享配置（审计服务使用 ClickHouse，可由 Nacos 管理）
+      - optional:nacos:common.yml?group=DEFAULT_GROUP&refreshEnabled=true
+      - optional:nacos:redis.yml?group=DEFAULT_GROUP&refreshEnabled=true
+      - optional:nacos:db.yml?group=DEFAULT_GROUP&refreshEnabled=true
+
+# ======================== 本地调试环境 ========================
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+  cloud:
+    nacos:
+      username: ${NACOS_USERNAME:@nacos.username@}
+      password: ${NACOS_PASSWORD:@nacos.password@}
+      discovery:
+        server-addr: ${NACOS_ADDR:@nacos.addr@}
+        namespace: ${NACOS_NAMESPACE:@nacos.namespace@}
+        group: ${NACOS_GROUP:@nacos.group@}
+      config:
+        server-addr: ${NACOS_ADDR:@nacos.addr@}
+        namespace: ${NACOS_NAMESPACE:@nacos.namespace@}
+        group: ${NACOS_GROUP:@nacos.group@}
+
+# ======================== 部署环境（使用环境变量） ========================
+---
+spring:
+  config:
+    activate:
+      on-profile: deploy
+  cloud:
+    nacos:
+      username: ${NACOS_USERNAME}
+      password: ${NACOS_PASSWORD}
+      discovery:
+        server-addr: ${NACOS_ADDR}
+        namespace: ${NACOS_NAMESPACE}
+        group: ${NACOS_GROUP}
+      config:
+        namespace: ${NACOS_NAMESPACE}
+        server-addr: ${NACOS_ADDR}
+        group: ${NACOS_GROUP}
+
+---
+# ======================== Carlos 审计服务配置 ========================
+carlos:
+  # ======================== 资源服务器/安全配置 ========================
+  # 开启后挂载 UserContextAuthenticationFilter：校验网关签发的身份断言（X-User-Context），
+  # 并在本服务内建立登录人上下文。这是 @Log 审计日志能记录「操作人」的前提 ——
+  # 关闭时审计行会记成 principalType=ANONYMOUS、操作人为空。
+  # 注意：该过滤器链是 anyRequest().permitAll()，不收紧任何准入；准入权威仍在网关。
+  resource-server:
+    enabled: true
+  # APM 链路追踪（Brave + MDC 日志关联）
+  apm:
+    enabled: true
+  # ======================== 枚举字典配置（`GET /app/enums`、`GET /app/enum` 的数据源） ========================
+  web:
+    enum-dict:
+      # 只扫本服务自己的枚举包（@AppEnum 的 code 需全局唯一，扫 com.carlos 会跨模块互相覆盖）
+      scan-packages: com.carlos.audit
+      enabled: true
+  # 审计模块配置
+  audit:
+    enabled: true
+    # Disruptor 高性能队列配置
+    disruptor:
+      buffer-size: 1048576
+      consumer-count: 4
+      wait-strategy: blocking
+      multi-producer: true
+    # ClickHouse 配置（Nacos 配置中心可覆盖）
+    clickhouse:
+      enabled: true
+      host: ${CLICKHOUSE_HOST:localhost}
+      port: ${CLICKHOUSE_PORT:8123}
+      database: ${CLICKHOUSE_DATABASE:carlos_audit}
+      username: ${CLICKHOUSE_USERNAME:default}
+      password: ${CLICKHOUSE_PASSWORD:}
+      socket-timeout: 300000
+      connection-timeout: 10000
+    # 批量写入配置
+    batch-writer:
+      batch-size: 500
+      flush-interval: 1000
+      max-buffer-size: 10000
+      retry-times: 3
+      local-backup-on-failure: true
+      local-backup-path: ./audit-log-backup
+    # 归档配置
+    archive:
+      enabled: true
+      cold-days: 7
+      cron: "0 0 2 * * ?"
+      format: CSV
+      storage-type: MINIO
+      oss:
+        endpoint: ${MINIO_HOST:}
+        access-key-id: ${MINIO_USERNAME:}
+        access-key-secret: ${MINIO_PWD:}
+        bucket-name: ${CARLOS_AUDIT_BUCKET:carlos-audit}
+        prefix: audit-logs/
+
+  # ======================== 定时任务（carlos-job 调度中心派发） ========================
+  # 审计模块的周期任务（ClickHouse 批量刷新、冷数据归档）已统一为 @ScheduleJob 注解任务，
+  # 由 carlos-job 调度中心派发，不再使用本地 @Scheduled；job_info 库表是调度配置的唯一真相源。
+  # 注意：carlos.job.client.admin-url / access-token 由 Nacos common.yml 下发，此处切不可再写
+  #       ${CARLOS_JOB_ADMIN_URL:} 之类的占位符 —— spring.config.import 场景下本地文档优先级高于
+  #       Nacos 导入源，空默认值会把 Nacos 的值覆盖成空串，导致启动时静默跳过注解任务注册。
+  #       boot 单体模式（不导 Nacos）才需要在本模块 application-boot.yml 用环境变量占位。
+
+  # Disruptor 公共配置
+  disruptor:
+    enabled: true
+    buffer-size: 1024
+    wait-strategy: blocking
+    thread-pool:
+      thread-name-prefix: audit-disruptor-
+
+  # 雪花 ID 配置
+  snowflake:
+    tag: audit
+
+  # OSS 配置
+  oss:
+    enabled: false
+    type: MINIO
+    endpoint: ${CARLOS_OSS_ENDPOINT:}
+    access-key: ${CARLOS_OSS_ACCESS_KEY:}
+    secret-key: ${CARLOS_OSS_SECRET_KEY:}
+    bucket-name: ${CARLOS_OSS_BUCKET_NAME:carlos-audit}
+    auto-create-bucket: true
+
+# ======================== 监控配置 ========================
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+# ======================== 日志配置 ========================
+logging:
+  config: classpath:config/logback.xml
+  level:
+    com.carlos: debug
+    com.carlos.audit: INFO
+    com.carlos.audit.disruptor: DEBUG
+    com.carlos.audit.clickhouse: DEBUG
+  file:
+    path: logs/audit/
+
+---
+# ======================== 接口文档配置（Knife4j/SpringDoc） ========================
+carlos:
+  openapi:
+    enable: true
+    title: "Carlos 审计服务 API 文档"
+    description: "审计日志查询与管理接口"
+    version: "3.0.0"
+    contact:
+      name: "技术支持"
+      email: "zhujunkeep@gmail.com"
+      url: "https://example.com"
+    license: "Apache 2.0"
+    license-url: "https://www.apache.org/licenses/LICENSE-2.0"
+
+knife4j:
+  enable: true
+  production: false
+  basic:
+    enable: false
+    username: admin
+    password: 123456
+  setting:
+    language: ZH_CN
+    enable-document-manage: true
+    enable-swagger-models: true
+    swagger-model-name: Swagger Models
+    enable-host: true
+    enable-request-cache: true
+    enable-filter-multipart-apis: true
+    enable-filter-multipart-api-method-type: POST
+    enable-dynamic-parameter: true
+    enable-open-api: true
+    enable-search: true
+    enable-after-script: true
+    enable-group: true
+    enable-response-code: true
+    enable-reload-cache-parameter: false
+    enable-debug: true
+    enable-home-custom: false
+    home-custom-path: classpath:markdown/home.md
+    enable-version: true
+    enable-footer: false
+    enable-footer-custom: false
+    footer-custom-content: "自定义Footer内容"
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+    resolve-schema-properties: true
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+    doc-expansion: list
+    display-request-duration: true
+  paths-to-exclude: /error, /actuator/**
+  cache:
+    disabled: false
+  show-actuator: false
+  show-login-endpoint: false
+  # ==================== 接口分组 ====================
+  group-configs:
+    # Feign 接口（服务间调用）
+    -
+      group: 'Feign接口'
+      displayName: 'Feign 接口（服务间调用）'
+      packagesToScan: com.carlos.audit.apiimpl
+      pathsToMatch: /**
+    # 审计日志管理
+    -
+      group: '审计日志'
+      displayName: '审计日志管理'
+      packagesToScan: com.carlos.audit.controller
+      pathsToMatch: /**

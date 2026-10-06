@@ -1,0 +1,270 @@
+# ==========================================
+# carlos-job-cloud 微服务启动配置
+# 说明：调度中心 Spring Cloud 版本，通过 Nacos 获取共享配置
+# ==========================================
+
+# ======================== 服务基础配置 ========================
+server:
+  port: 9516
+
+# ======================== Spring 主配置 ========================
+spring:
+  profiles:
+    active: ${PROFILE:local}
+  application:
+    name: carlos-job
+
+  # ======================== Nacos 配置中心 ========================
+  cloud:
+    nacos:
+      discovery:
+        enabled: true
+      config:
+        enabled: true
+        file-extension: yml
+        refresh-enabled: true
+
+  # 配置导入（Nacos 共享配置）
+  config:
+    import:
+      # 1. 公共配置（所有环境共享）
+      # 2. Redis 共享配置
+      # 3. 数据库共享配置
+      - optional:nacos:common.yml?group=DEFAULT_GROUP&refreshEnabled=true
+      - optional:nacos:redis.yml?group=DEFAULT_GROUP&refreshEnabled=true
+      - optional:nacos:db.yml?group=DEFAULT_GROUP&refreshEnabled=true
+
+
+
+# ======================== 本地调试环境 ========================
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+  cloud:
+    nacos:
+      username: ${NACOS_USERNAME:@nacos.username@}
+      password: ${NACOS_PASSWORD:@nacos.password@}
+      discovery:
+        server-addr: ${NACOS_ADDR:@nacos.addr@}
+        namespace: ${NACOS_NAMESPACE:@nacos.namespace@}
+        group: ${NACOS_GROUP:@nacos.group@}
+      config:
+        server-addr: ${NACOS_ADDR:@nacos.addr@}
+        namespace: ${NACOS_NAMESPACE:@nacos.namespace@}
+        group: ${NACOS_GROUP:@nacos.group@}
+
+# ======================== 部署环境（使用环境变量） ========================
+---
+spring:
+  config:
+    activate:
+      on-profile: deploy
+  cloud:
+    nacos:
+      username: ${NACOS_USERNAME:nacos}
+      password: ${NACOS_PASSWORD:nacos}
+      discovery:
+        server-addr: ${NACOS_ADDR}
+        namespace: ${NACOS_NAMESPACE}
+        group: ${NACOS_GROUP:DEFAULT_GROUP}
+      config:
+        server-addr: ${NACOS_ADDR}
+        namespace: ${NACOS_NAMESPACE}
+        group: ${NACOS_GROUP:DEFAULT_GROUP}
+
+
+  # ======================== Quartz 调度配置（JDBC Store 集群模式） ========================
+  quartz:
+    job-store-type: jdbc
+    jdbc:
+      # 建表脚本见 docs/sql/quartz_tables_postgres.sql，不自动初始化
+      initialize-schema: never
+    properties:
+      org:
+        quartz:
+          scheduler:
+            instanceName: carlosJobScheduler
+            instanceId: AUTO
+          jobStore:
+            driverDelegateClass: org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
+            tablePrefix: QRTZ_
+            isClustered: true
+            clusterCheckinInterval: 10000
+            misfireThreshold: 60000
+          threadPool:
+            threadCount: 10
+
+
+---
+# ======================== 数据源配置（Druid + 动态数据源） ========================
+spring:
+  datasource:
+    druid:
+      stat-view-servlet:
+        enabled: true
+        loginUsername: admin
+        loginPassword: 123456
+    dynamic:
+      primary: master
+      druid:
+        initial-size: 5
+        min-idle: 5
+        maxActive: 20
+        maxWait: 60000
+        timeBetweenEvictionRunsMillis: 60000
+        minEvictableIdleTimeMillis: 300000
+        validationQuery: SELECT 1
+        testWhileIdle: true
+        testOnBorrow: false
+        testOnReturn: false
+        poolPreparedStatements: true
+        breakAfterAcquireFailure: true
+        ConnectionErrorRetryAttempts: 2
+        maxPoolPreparedStatementPerConnectionSize: 20
+        filters: stat,wall,slf4j
+        connection-properties:
+          druid.stat.mergeSql: true
+          druid.stat.slowSqlMillis: 5000
+
+
+# ======================== Carlos 框架配置 ========================
+carlos:
+  # ======================== 资源服务器/安全配置 ========================
+  # 开启后挂载 UserContextAuthenticationFilter：校验网关签发的身份断言（X-User-Context），
+  # 并在本服务内建立登录人上下文。这是 @Log 审计日志能记录「操作人」的前提 ——
+  # 关闭时审计行会记成 principalType=ANONYMOUS、操作人为空。
+  # 注意：该过滤器链是 anyRequest().permitAll()，不收紧任何准入；准入权威仍在网关。
+  resource-server:
+    enabled: true
+  apm:
+    enabled: true
+  web:
+    cors:
+      enabled: true
+    enum-dict:
+      # 只扫本服务自己的枚举包（@AppEnum 的 code 需全局唯一，扫 com.carlos 会跨模块互相覆盖）
+      scan-packages: com.carlos.job
+      enabled: true
+  # ======================== 调度中心配置 ========================
+  job:
+    # 回调业务服务时携带的访问令牌（与业务端 carlos.job.client.access-token 配对）。
+    # 注意：cloud 模式的令牌由 Nacos common.yml 的 carlos.job.access-token 下发，此处切不可再写
+    #       ${CARLOS_JOB_ACCESS_TOKEN:} 空默认占位符 —— spring.config.import 场景下本地文档优先级高于
+    #       Nacos 导入源，会把令牌覆盖成空串：注册校验「期望值为空一律放行」看似正常，
+    #       但回调时调度中心带不出 X-Job-Token，被业务端拒（任务回调鉴权失败）。
+    #       boot 单体模式（不导 Nacos）才需要在 application.yml 用环境变量占位。
+    connect-timeout-ms: 5000
+    read-timeout-ms: 300000
+    # ===== 注解式接入（carlos-job-client，调度中心自身也可当业务端）=====
+    # 填上 admin-url，本进程启动即把注解任务播种进 job_info（AnnotationSampleJob 每天 3 点跑一次）；
+    # 业务服务侧的写法见 README「业务模块接入（注解式，推荐）」
+    # client:
+    #   admin-url: http://127.0.0.1:9516
+    #   # 注册令牌需与上面的 carlos.job.access-token 配对（两者都空则不校验）
+    #   access-token: ${CARLOS_JOB_ACCESS_TOKEN:}
+
+# ======================== 日志配置 ========================
+logging:
+  config: classpath:config/logback.xml
+  level:
+    root: info
+    com.carlos: debug
+    org.springframework.security: debug
+  file:
+    path: logs/job
+
+
+
+# ======================== MyBatis-Plus 配置 ========================
+mybatis-plus:
+  check-config-location: true
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+    call-setters-on-nulls: true
+  global-config:
+    db-config:
+      id-type: assign_id
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+  mapper-locations: classpath*:mapper/**/*Mapper.xml
+
+---
+# ======================== 接口文档配置（Knife4j/SpringDoc） ========================
+carlos:
+  openapi:
+    enable: true
+    title: "任务调度中心"
+    description: "基于 Quartz 的任务调度封装"
+    version: "3.0.0"
+    contact:
+      name: "Carlos"
+      email: "zhujunkeep@gmail.com"
+      url: "https://example.com"
+    license: "Apache 2.0"
+    license-url: "https://www.apache.org/licenses/LICENSE-2.0"
+
+knife4j:
+  enable: true
+  production: false
+  basic:
+    enable: false
+    username: admin
+    password: 123456
+  setting:
+    language: ZH_CN
+    enable-document-manage: true
+    enable-swagger-models: true
+    swagger-model-name: Swagger Models
+    enable-host: true
+    enable-request-cache: true
+    enable-filter-multipart-apis: true
+    enable-filter-multipart-api-method-type: POST
+    enable-dynamic-parameter: true
+    enable-open-api: true
+    enable-search: true
+    enable-after-script: true
+    enable-group: true
+    enable-response-code: true
+    enable-reload-cache-parameter: false
+    enable-debug: true
+    enable-home-custom: false
+    home-custom-path: classpath:markdown/home.md
+    enable-version: true
+    enable-footer: false
+    enable-footer-custom: false
+    footer-custom-content: "自定义Footer内容"
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+    resolve-schema-properties: true
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+    doc-expansion: list
+    display-request-duration: true
+  paths-to-exclude: /error, /actuator/**
+  cache:
+    disabled: true
+  show-actuator: false
+  show-login-endpoint: false
+  # ==================== 接口分组 ====================
+  group-configs:
+    -
+      group: 'system-job-manage'
+      displayName: '任务调度-任务管理'
+      packagesToScan: com.carlos.job.controller
+      pathsToMatch: /**
+
+    -
+      group: 'system-job-apis'
+      displayName: '任务调度-Feign 接口'
+      packagesToScan: com.carlos.job.apiimpl
+      pathsToMatch: /**
+

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <parent>
+    <groupId>com.carlos</groupId>
+    <artifactId>carlos-parent</artifactId>
+    <version>${revision}</version>
+    <relativePath>../carlos-parent/pom.xml</relativePath>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+
+  <artifactId>carlos-spring-boot</artifactId>
+  <packaging>pom</packaging>
+
+  <name>carlos-spring-boot</name>
+  <description>
+    Carlos Spring Boot 集成模块 - 包含所有 Spring Boot Starters
+  </description>
+
+  <modules>
+    <module>carlos-spring-boot-core</module>
+    <module>carlos-spring-boot-starter-ai</module>
+    <module>carlos-spring-boot-starter-apm</module>
+    <module>carlos-spring-boot-starter-datacenter</module>
+    <module>carlos-spring-boot-starter-datascope</module>
+    <module>carlos-spring-boot-starter-disruptor</module>
+    <module>carlos-spring-boot-starter-migration</module>
+    <module>carlos-spring-boot-starter-integration</module>
+    <module>carlos-spring-boot-starter-encrypt</module>
+    <module>carlos-spring-boot-starter-json</module>
+    <module>carlos-spring-boot-starter-log</module>
+    <module>carlos-spring-boot-starter-mongodb</module>
+    <module>carlos-spring-boot-starter-mq</module>
+    <module>carlos-spring-boot-starter-mybatis</module>
+    <module>carlos-spring-boot-starter-openapi</module>
+    <module>carlos-spring-boot-starter-oss</module>
+    <module>carlos-spring-boot-redis</module>
+    <module>carlos-spring-boot-starter-security</module>
+    <module>carlos-spring-boot-starter-sms</module>
+    <module>carlos-spring-boot-starter-snowflake</module>
+    <module>carlos-spring-boot-starter-translation</module>
+    <module>carlos-spring-boot-starter-web</module>
+    <module>carlos-spring-cloud-starter</module>
+  </modules>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-configuration-processor</artifactId>
+    </dependency>
+  </dependencies>
+</project>

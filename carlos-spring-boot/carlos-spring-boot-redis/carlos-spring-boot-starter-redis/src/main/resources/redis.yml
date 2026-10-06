@@ -1,0 +1,26 @@
+##########  缓存数据库配置 ##############
+---
+spring:
+  cache:
+    type: redis
+  redis:
+    database: 0
+    host: carlos.com
+    port: 6379
+    password: hadoop543216
+    lettuce:
+      pool:
+        max-active: 50
+        max-idle: 100
+        max-wait: 30s
+        min-idle: 0
+      shutdown-timeout: 100ms
+##############################  redis缓存配置 end   ###########################
+
+
+
+
+
+
+
+

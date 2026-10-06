@@ -1,0 +1,42 @@
+# ==========================================
+# carlos-monitor-boot 本地数据源/缓存补充配置
+# 说明：补充 boot profile 下的 PostgreSQL 元数据库、Redis 缓存等配置
+# ==========================================
+
+# ======================== 数据源配置（PostgreSQL 元数据库） ========================
+spring:
+  datasource:
+    dynamic:
+      primary: master
+      datasource:
+        # 主库数据源（监控元数据：monitor_* 表所在库）
+        master:
+          driver-class-name: org.postgresql.Driver
+          url: jdbc:postgresql://${DB_URL}?currentSchema=public&stringtype=unspecified
+          username: ${DB_USERNAME}
+          password: ${DB_PWD}
+
+---
+# ======================== 缓存数据库配置（Redis） ========================
+spring:
+  data:
+    redis:
+      database: ${REDIS_DB:0}
+      host: ${REDIS_IP:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PWD:}
+      timeout: 10s
+      lettuce:
+        pool:
+          max-active: 100
+          max-idle: 50
+          min-idle: 10
+          max-wait: 2000ms
+
+---
+# ======================== MyBatis 实体 fill 注解启动期校验 ========================
+carlos:
+  mybatis:
+    # 实体包扫描路径：启动时校验实体上 fill 注解的字段是否可自动填充（error 告警不阻断）
+    entity-packages:
+      - com.carlos.monitor

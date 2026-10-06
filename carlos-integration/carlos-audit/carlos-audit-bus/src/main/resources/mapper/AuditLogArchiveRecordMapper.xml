@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.carlos.audit.mapper.AuditLogArchiveRecordMapper">
+  <resultMap type="com.carlos.audit.pojo.entity.AuditLogArchiveRecord" id="baseMap">
+    <id column="id" property="id"/>
+    <result column="archive_id" property="archiveId"/>
+    <result column="archive_date" property="archiveDate"/>
+    <result column="start_time" property="startTime"/>
+    <result column="end_time" property="endTime"/>
+    <result column="record_count" property="recordCount"/>
+    <result column="file_size_bytes" property="fileSizeBytes"/>
+    <result column="storage_path" property="storagePath"/>
+    <result column="storage_type" property="storageType"/>
+    <result column="verify_checksum" property="verifyChecksum"/>
+    <result column="archive_status" property="archiveStatus"/>
+    <result column="created_time" property="createdTime"/>
+  </resultMap>
+</mapper>

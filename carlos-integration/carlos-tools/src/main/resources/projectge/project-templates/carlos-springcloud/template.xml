@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--模板配置文件
+ 1.配置模板的基本信息，下拉展示和GUI介绍；
+ 2.当模板的文件名和对应文件的文件名不一致时，需要配置映射关系
+
+-->
+<templates>
+    <name>carlos-spring-cloud</name>
+    <describe>基于carlos自行封装的 Spring Cloud Alibaba 的微服务架构模板，包含api接口模块，bus业务模块，boot单体启动模块，cloud微服务启动模块</describe>
+</templates>

@@ -1,0 +1,40 @@
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <parent>
+    <groupId>com.carlos</groupId>
+    <artifactId>carlos-integration</artifactId>
+    <version>${revision}</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+  <packaging>pom</packaging>
+  <groupId>com.carlos.system</groupId>
+  <artifactId>carlos-system</artifactId>
+  <description>融合治理平台系统模块</description>
+
+
+  <modules>
+    <module>carlos-system-bus</module>
+    <module>carlos-system-api</module>
+    <module>carlos-system-cloud</module>
+    <module>carlos-system-boot</module>
+  </modules>
+  <modelVersion>4.0.0</modelVersion>
+
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>com.carlos.system</groupId>
+        <artifactId>carlos-system-bus</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.carlos.system</groupId>
+        <artifactId>carlos-system-api</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+
+</project>

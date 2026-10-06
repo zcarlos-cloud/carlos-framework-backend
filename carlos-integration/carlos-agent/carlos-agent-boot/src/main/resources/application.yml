@@ -1,0 +1,46 @@
+# ==========================================
+# carlos-agent-boot AI 助手服务启动配置
+# 说明：管理平台与 DeepSeek Harness 运行时之间的代理层（无数据源，纯代理服务）
+# ==========================================
+
+# ======================== 服务基础配置 ========================
+server:
+  port: ${SERVER_PORT:9517}
+
+# ======================== Spring 主配置 ========================
+spring:
+  application:
+    name: carlos-agent
+
+# ======================== Carlos 框架配置 ========================
+carlos:
+  # ======================== 资源服务器/安全配置 ========================
+  # 开启后挂载 UserContextAuthenticationFilter：校验网关签发的身份断言（X-User-Context），
+  # 并在本服务内建立登录人上下文。这是 @Log 审计日志能记录「操作人」的前提 ——
+  # 关闭时审计行会记成 principalType=ANONYMOUS、操作人为空。
+  # 注意：该过滤器链是 anyRequest().permitAll()，不收紧任何准入；准入权威仍在网关。
+  resource-server:
+    enabled: true
+  web:
+    cors:
+      enabled: true
+  # ======================== AI 助手运行服务（agent-bff 翻译层）配置 ========================
+  agent:
+    bff:
+      # 翻译层地址：Node 侧 agent-bff（默认本地开发地址）
+      base-url: ${AGENT_BFF_URL:http://127.0.0.1:8787}
+      # 单次对话最长等待时间（分钟），复杂运维诊断需要较长耗时
+      timeout-minutes: ${AGENT_BFF_TIMEOUT_MINUTES:10}
+
+# ======================== 监控配置（Actuator） ========================
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+# ======================== 日志配置 ========================
+logging:
+  level:
+    root: info
+    com.carlos: debug

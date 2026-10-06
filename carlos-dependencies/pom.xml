@@ -1,0 +1,1076 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.carlos</groupId>
+  <artifactId>carlos-dependencies</artifactId>
+  <version>${revision}</version>
+
+  <name>carlos-dependencies</name>
+
+  <url>https://www.zcarlos.com</url>
+
+  <description>carlos依赖管理</description>
+
+
+  <packaging>pom</packaging>
+
+  <properties>
+    <revision>3.0.0-SNAPSHOT</revision>
+    <java.version>21</java.version>
+    <maven.compiler.source>${java.version}</maven.compiler.source>
+    <maven.compiler.target>${java.version}</maven.compiler.target>
+    <utf8>UTF-8</utf8>
+    <project.build.sourceEncoding>${utf8}</project.build.sourceEncoding>
+
+
+    <!-- Spring 全家桶 -->
+    <spring-boot.version>4.0.6</spring-boot.version>
+    <spring-cloud.version>2025.1.1</spring-cloud.version>
+    <spring-cloud-alibaba.version>2025.1.0.0</spring-cloud-alibaba.version>
+    <langchain4j.version>1.13.1</langchain4j.version>
+
+    <yauaa.version>7.32.0</yauaa.version>
+
+    <!-- 安全相关 -->
+    <spring-security-oauth2-jose.version>6.2.7</spring-security-oauth2-jose.version>
+
+    <!-- 数据层 -->
+    <mybatis-plus.version>3.5.16</mybatis-plus.version>          <!-- 已支持 SB3 -->
+    <mybatis-plus-join.version>1.5.7</mybatis-plus-join.version>
+    <alibaba.seata.version>2.5.0</alibaba.seata.version>        <!-- SCA 2025.1.0.0 推荐版本 -->
+
+    <!-- 工具 -->
+    <knife4j.version>4.5.0</knife4j.version>
+    <!-- ⚠️ Carlos Fork: 需发布稳定版本替换 SNAPSHOT -->
+    <knife4j-carlos.version>4.6.0-SNAPSHOT</knife4j-carlos.version>
+    <hutool.version>5.8.40</hutool.version>
+    <fastexcel.version>1.3.0</fastexcel.version>
+    <commons-collections4.version>4.4</commons-collections4.version>
+    <mapstruct.version>1.6.3</mapstruct.version>
+    <okhttp.version>4.12.0</okhttp.version>
+    <poi.version>5.4.0</poi.version>
+    <kaptcha.version>2.3.3</kaptcha.version>
+    <transmittable-thread-local.version>2.14.5</transmittable-thread-local.version>
+    <jsqlparser.version>4.9</jsqlparser.version>
+    <kryo.version>5.6.2</kryo.version>
+
+    <fastjson2.version>2.0.62</fastjson2.version>
+    <logstash-logback-encoder.version>8.0</logstash-logback-encoder.version>
+    <gson.version>2.11.0</gson.version>
+    <json-path.version>2.9.0</json-path.version>
+    <guava.version>33.4.8-jre</guava.version>
+
+    <!-- Redis & Cache -->
+    <redisson.version>4.5.0</redisson.version>
+
+    <!-- Database -->
+    <dynamic-datasource.version>4.5.0</dynamic-datasource.version>
+    <postgresql.version>42.7.5</postgresql.version>
+    <mysql.version>8.4.0</mysql.version>
+    <dm-jdbc.version>8.1.3.62</dm-jdbc.version>
+    <druid-spring-boot.version>1.2.28</druid-spring-boot.version>
+    <mongodb-plus.version>2.1.9</mongodb-plus.version>
+
+    <!-- Storage -->
+    <aliyun-oss.version>2.20.26</aliyun-oss.version>
+
+    <!-- SMS -->
+    <aliyun-dysmsapi.version>3.3.4</aliyun-dysmsapi.version>
+
+    <!-- Workflow -->
+    <warm-flow.version>1.8.9</warm-flow.version>
+
+    <!-- High Performance -->
+    <disruptor.version>3.4.4</disruptor.version>
+
+    <!-- Database Migration -->
+    <liquibase.version>4.29.0</liquibase.version>
+
+    <!-- Encryption -->
+    <bouncycastle.version>1.81</bouncycastle.version>
+
+    <!-- WebAuthn / Passkey -->
+    <yubico-webauthn.version>2.9.0</yubico-webauthn.version>
+
+    <!-- Web & Validation -->
+    <ip2region.version>2.0.0</ip2region.version>
+    <easyexcel.version>4.1.5</easyexcel.version>
+    <jsoup.version>1.18.3</jsoup.version>
+    <commons-io.version>2.18.0</commons-io.version>
+    <commons-fileupload.version>1.5</commons-fileupload.version>
+    <commons-codec.version>1.17.1</commons-codec.version>
+    <arthas.version>4.1.5</arthas.version>
+    <spring-boot-admin.version>4.0.0</spring-boot-admin.version>
+    <reflections.version>0.10.2</reflections.version>
+    <commons-text.version>1.15.0</commons-text.version>
+    <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
+    <sms4j.version>3.3.4</sms4j.version>
+    <dingtalk-sdk.version>2.0.0</dingtalk-sdk.version>
+    <aws-s3.version>2.20.26</aws-s3.version>
+    <rocketmq-spring-boot.version>2.3.4</rocketmq-spring-boot.version>        <!-- SCA 2025.0.0.0 推荐版本 -->
+    <nacos-client.version>3.1.1</nacos-client.version>              <!-- SCA 2025.1.0.0 推荐版本 -->
+    <swagger-annotations.version>2.2.36</swagger-annotations.version>
+    <swagger-core-jakarta.version>2.2.36</swagger-core-jakarta.version>
+    <jakarta-validation.version>3.1.1</jakarta-validation.version>
+
+    <freemarker.version>2.3.34</freemarker.version>                <!-- 须与 Spring Boot 4.x 管理版本一致，低于 2.3.32 缺 freemarker.ext.jakarta.jsp.TaglibFactory -->
+    <resilience4j.version>2.4.0</resilience4j.version>
+    <clickhouse-jdbc.version>0.9.6</clickhouse-jdbc.version>
+
+    <!-- SkyWalking -->
+    <skywalking.version>9.5.0</skywalking.version>
+
+    <!-- Maven 插件 -->
+    <maven-compiler-plugin.version>3.15.0</maven-compiler-plugin.version>
+    <maven-surefire-plugin.version>3.5.5</maven-surefire-plugin.version>
+
+    <!--专跑 集成/端到端测试（ *IT.java ）。-->
+    <!--生命周期与 surefire 隔离，支持 pre-integration-test / post-integration-test 阶段启动/关闭容器。-->
+    <maven-failsafe-plugin.version>3.5.5</maven-failsafe-plugin.version>
+    <maven-resources-plugin.version>3.5.0</maven-resources-plugin.version>
+    <maven-source-plugin.version>3.4.0</maven-source-plugin.version>
+    <maven-javadoc-plugin.version>3.12.0</maven-javadoc-plugin.version>
+    <maven-jar-plugin.version>3.5.0</maven-jar-plugin.version>
+    <maven-clean-plugin.version>3.5.0</maven-clean-plugin.version>
+    <maven-deploy-plugin.version>3.1.4</maven-deploy-plugin.version>
+    <maven-install-plugin.version>3.1.4</maven-install-plugin.version>
+    <maven-dependency-plugin.version>3.10.0</maven-dependency-plugin.version>
+    <maven-enforcer-plugin.version>3.6.2</maven-enforcer-plugin.version>
+    <maven-assembly-plugin.version>3.8.0</maven-assembly-plugin.version>
+    <flatten-maven-plugin.version>1.7.3</flatten-maven-plugin.version>
+    <versions-maven-plugin.version>2.18.0</versions-maven-plugin.version>
+    <build-helper-maven-plugin.version>3.6.1</build-helper-maven-plugin.version>
+    <!-- 查看运行时真相 -->
+    <maven-help-plugin.version>3.5.1</maven-help-plugin.version>
+
+    <resource.delimiter>@</resource.delimiter>
+  </properties>
+
+  <!-- 依赖声明 -->
+  <dependencyManagement>
+    <dependencies>
+      <!-- SpringBoot 依赖配置 -->
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-dependencies</artifactId>
+        <version>${spring-boot.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <!-- SpringCloud 微服务 -->
+      <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-dependencies</artifactId>
+        <version>${spring-cloud.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <!-- SpringCloud Alibaba 微服务 -->
+      <dependency>
+        <groupId>com.alibaba.cloud</groupId>
+        <artifactId>spring-cloud-alibaba-dependencies</artifactId>
+        <version>${spring-cloud-alibaba.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <!-- MyBatis-Plus BOM 统一版本管理 -->
+      <dependency>
+        <groupId>com.baomidou</groupId>
+        <artifactId>mybatis-plus-bom</artifactId>
+        <version>${mybatis-plus.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <!-- LangChain4j BOM 统一管理版本 -->
+      <dependency>
+        <groupId>dev.langchain4j</groupId>
+        <artifactId>langchain4j-bom</artifactId>
+        <version>${langchain4j.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>com.mongoplus</groupId>
+        <artifactId>mongo-plus-bom</artifactId>
+        <version>2.1.9</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <!-- Apache Seata 配置 -->
+      <dependency>
+        <groupId>org.apache.seata</groupId>
+        <artifactId>seata-spring-boot-starter</artifactId>
+        <version>${alibaba.seata.version}</version>
+      </dependency>
+      <!--okhttp-->
+      <dependency>
+        <groupId>com.squareup.okhttp3</groupId>
+        <artifactId>okhttp</artifactId>
+        <version>${okhttp.version}</version>
+      </dependency>
+
+      <!-- mapstruct 转换器 -->
+      <dependency>
+        <groupId>org.mapstruct</groupId>
+        <artifactId>mapstruct</artifactId>
+        <version>${mapstruct.version}</version>
+      </dependency>
+      <!-- mapstruct 转换器 -->
+      <dependency>
+        <groupId>org.mapstruct</groupId>
+        <artifactId>mapstruct-processor</artifactId>
+        <version>${mapstruct.version}</version>
+      </dependency>
+      <!-- Fastjson2 -->
+      <dependency>
+        <groupId>com.alibaba.fastjson2</groupId>
+        <artifactId>fastjson2</artifactId>
+        <version>${fastjson2.version}</version>
+      </dependency>
+      <!-- Gson -->
+      <dependency>
+        <groupId>com.google.code.gson</groupId>
+        <artifactId>gson</artifactId>
+        <version>${gson.version}</version>
+      </dependency>
+      <!-- JsonPath -->
+      <dependency>
+        <groupId>com.jayway.jsonpath</groupId>
+        <artifactId>json-path</artifactId>
+        <version>${json-path.version}</version>
+      </dependency>
+      <!-- 解析客户端操作系统、浏览器等 -->
+      <dependency>
+        <groupId>nl.basjes.parse.useragent</groupId>
+        <artifactId>yauaa</artifactId>
+        <version>${yauaa.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.github.anwen-mp</groupId>
+        <artifactId>mongo-plus-boot-starter</artifactId>
+        <version>${mongodb-plus.version}</version>
+      </dependency>
+
+      <!-- 连表查询 -->
+      <dependency>
+        <groupId>com.github.yulichang</groupId>
+        <artifactId>mybatis-plus-join-boot-starter</artifactId>
+        <version>${mybatis-plus-join.version}</version>
+      </dependency>
+      <!-- knife4j -->
+      <dependency>
+        <groupId>com.github.xingfudeshi</groupId>
+        <artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
+        <version>${knife4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.github.xingfudeshi</groupId>
+        <artifactId>knife4j-gateway-spring-boot-starter</artifactId>
+        <version>${knife4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.github.carlos</groupId>
+        <artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
+        <version>${knife4j-carlos.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.github.carlos</groupId>
+        <artifactId>knife4j-gateway-spring-boot-starter</artifactId>
+        <version>${knife4j-carlos.version}</version>
+      </dependency>
+
+      <!-- 日志 JSON 编码器 -->
+      <dependency>
+        <groupId>net.logstash.logback</groupId>
+        <artifactId>logstash-logback-encoder</artifactId>
+        <version>${logstash-logback-encoder.version}</version>
+      </dependency>
+
+      <!-- 验证码 -->
+      <dependency>
+        <groupId>com.github.penggle</groupId>
+        <artifactId>kaptcha</artifactId>
+        <version>${kaptcha.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
+        <version>${guava.version}</version>
+      </dependency>
+
+      <!-- Apache POI 核心组件统一版本管理，避免 fastexcel/easyexcel 传递依赖导致版本混用 -->
+      <dependency>
+        <groupId>org.apache.poi</groupId>
+        <artifactId>poi</artifactId>
+        <version>${poi.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.poi</groupId>
+        <artifactId>poi-ooxml</artifactId>
+        <version>${poi.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.poi</groupId>
+        <artifactId>poi-ooxml-lite</artifactId>
+        <version>${poi.version}</version>
+      </dependency>
+
+      <!-- 线程传递值 -->
+      <dependency>
+        <groupId>com.alibaba</groupId>
+        <artifactId>transmittable-thread-local</artifactId>
+        <version>${transmittable-thread-local.version}</version>
+      </dependency>
+      <!-- SQL 解析 -->
+      <dependency>
+        <groupId>com.github.jsqlparser</groupId>
+        <artifactId>jsqlparser</artifactId>
+        <version>${jsqlparser.version}</version>
+      </dependency>
+      <!-- Kryo 高性能序列化 -->
+      <dependency>
+        <groupId>com.esotericsoftware</groupId>
+        <artifactId>kryo</artifactId>
+        <version>${kryo.version}</version>
+      </dependency>
+
+      <!-- apm监控 -->
+      <dependency>
+        <groupId>org.apache.skywalking</groupId>
+        <artifactId>apm-toolkit-trace</artifactId>
+        <version>${skywalking.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.skywalking</groupId>
+        <artifactId>apm-toolkit-logback-1.x</artifactId>
+        <version>${skywalking.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.skywalking</groupId>
+        <artifactId>apm-toolkit-webflux</artifactId>
+        <version>${skywalking.version}</version>
+      </dependency>
+      <!--工具类版本锁定-->
+      <!-- https://mvnrepository.com/artifact/org.dromara.hutool/hutool-all -->
+      <dependency>
+        <groupId>cn.hutool</groupId>
+        <artifactId>hutool-all</artifactId>
+        <version>${hutool.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>cn.hutool</groupId>
+        <artifactId>hutool-core</artifactId>
+        <version>${hutool.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-collections4</artifactId>
+        <version>${commons-collections4.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>cn.idev.excel</groupId>
+        <artifactId>fastexcel</artifactId>
+        <version>${fastexcel.version}</version>
+        <exclusions>
+          <!-- 强制使用统一管理的 Apache POI 版本，避免传递依赖引入其他版本 -->
+          <exclusion>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>*</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <!-- 核心模块 -->
+      <dependency>
+        <groupId>com.carlos</groupId>
+        <artifactId>carlos-spring-boot-core</artifactId>
+        <version>${revision}</version>
+      </dependency>
+
+      <!-- 核心模块 -->
+      <dependency>
+        <groupId>com.carlos</groupId>
+        <artifactId>carlos-spring-boot-starter-encrypt</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <!-- 工作流审批中心（集成模块，见 carlos-integration/carlos-workflow） -->
+      <dependency>
+        <groupId>com.carlos.workflow</groupId>
+        <artifactId>carlos-workflow</artifactId>
+        <version>${revision}</version>
+        <type>pom</type>
+      </dependency>
+      <dependency>
+        <groupId>com.carlos.workflow</groupId>
+        <artifactId>carlos-workflow-api</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.carlos.workflow</groupId>
+        <artifactId>carlos-workflow-bus</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <!-- 核心模块 -->
+      <dependency>
+        <groupId>com.carlos</groupId>
+        <artifactId>carlos-spring-boot-starter-integration</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <!-- 数据权限 -->
+      <dependency>
+        <groupId>com.carlos</groupId>
+        <artifactId>carlos-spring-boot-starter-datascope</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <!-- springboot模块 -->
+      <dependency>
+        <groupId>com.carlos</groupId>
+        <artifactId>carlos-spring-boot-starter-web</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <!-- Security模块 -->
+      <dependency>
+        <groupId>com.carlos</groupId>
+        <artifactId>carlos-spring-boot-starter-security</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <!-- springcloud模块 -->
+      <dependency>
+        <groupId>com.carlos</groupId>
+        <artifactId>carlos-spring-cloud-starter</artifactId>
+        <version>${revision}</version>
+      </dependency>
+
+      <!-- 核心模块 -->
+      <dependency>
+        <groupId>com.carlos</groupId>
+        <artifactId>carlos-utils</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <!-- 接口模块 -->
+      <dependency>
+        <groupId>com.carlos</groupId>
+        <artifactId>carlos-spring-boot-starter-json</artifactId>
+        <version>${revision}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.carlos</groupId>
+        <artifactId>carlos-spring-boot-starter-oss</artifactId>
+        <version>${revision}</version>
+      </dependency>
+
+      <!-- 多数据源 -->
+      <dependency>
+        <groupId>com.carlos</groupId>
+        <artifactId>carlos-spring-boot-starter-mybatis</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <!-- 日志记录 -->
+      <dependency>
+        <groupId>com.carlos</groupId>
+        <artifactId>carlos-spring-boot-starter-log</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <!-- 缓存服务 -->
+      <dependency>
+        <groupId>com.carlos</groupId>
+        <artifactId>carlos-spring-boot-starter-redis-core</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.carlos</groupId>
+        <artifactId>carlos-spring-boot-starter-redis</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.carlos</groupId>
+        <artifactId>carlos-spring-boot-starter-redis-reactive</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <!-- mongodb -->
+      <dependency>
+        <groupId>com.carlos</groupId>
+        <artifactId>carlos-spring-boot-starter-mongodb</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <!-- 雪花算法组件 -->
+      <dependency>
+        <groupId>com.carlos</groupId>
+        <artifactId>carlos-spring-boot-starter-snowflake</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <!-- 短信组件 -->
+      <dependency>
+        <groupId>com.carlos</groupId>
+        <artifactId>carlos-spring-boot-starter-sms</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <!-- 监控组件 -->
+      <dependency>
+        <groupId>com.carlos</groupId>
+        <artifactId>carlos-spring-boot-starter-apm</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <!-- 数据对接组件 -->
+      <dependency>
+        <groupId>com.carlos</groupId>
+        <artifactId>carlos-spring-boot-starter-datacenter</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <!-- GUI工具组件 -->
+      <dependency>
+        <groupId>com.carlos</groupId>
+        <artifactId>carlos-tools</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <!-- License工具组件 -->
+      <dependency>
+        <groupId>com.carlos.license</groupId>
+        <artifactId>carlos-license</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.carlos.license</groupId>
+        <artifactId>carlos-license-core</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.carlos.license</groupId>
+        <artifactId>carlos-spring-boot-starter-license-verify</artifactId>
+        <version>${revision}</version>
+      </dependency>
+
+      <!-- Disruptor高性能队列组件 -->
+      <dependency>
+        <groupId>com.carlos</groupId>
+        <artifactId>carlos-spring-boot-starter-disruptor</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <!-- 数据库迁移组件 -->
+      <dependency>
+        <groupId>com.carlos</groupId>
+        <artifactId>carlos-spring-boot-starter-migration</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.carlos</groupId>
+        <artifactId>carlos-spring-boot-starter-openapi</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <!-- 消息队列组件 -->
+      <dependency>
+        <groupId>com.carlos</groupId>
+        <artifactId>carlos-spring-boot-starter-mq</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <!-- 字段翻译组件 -->
+      <dependency>
+        <groupId>com.carlos</groupId>
+        <artifactId>carlos-spring-boot-starter-translation</artifactId>
+        <version>${revision}</version>
+      </dependency>
+
+      <!-- Redis & Redisson -->
+      <dependency>
+        <groupId>org.redisson</groupId>
+        <artifactId>redisson-spring-boot-starter</artifactId>
+        <version>${redisson.version}</version>
+      </dependency>
+
+      <!-- Database Drivers & DataSource -->
+      <dependency>
+        <groupId>com.alibaba</groupId>
+        <artifactId>druid-spring-boot-4-starter</artifactId>
+        <version>${druid-spring-boot.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.baomidou</groupId>
+        <artifactId>dynamic-datasource-spring-boot4-starter</artifactId>
+        <version>${dynamic-datasource.version}</version>
+      </dependency>
+      <!-- PostgreSQL JDBC Driver -->
+      <dependency>
+        <groupId>org.postgresql</groupId>
+        <artifactId>postgresql</artifactId>
+        <version>${postgresql.version}</version>
+      </dependency>
+      <!-- MySQL JDBC Driver（carlos-devkit 代码生成器连接目标 MySQL 库读取元数据） -->
+      <dependency>
+        <groupId>com.mysql</groupId>
+        <artifactId>mysql-connector-j</artifactId>
+        <version>${mysql.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.dameng</groupId>
+        <artifactId>DmJdbcDriver18</artifactId>
+        <version>${dm-jdbc.version}</version>
+      </dependency>
+
+      <!-- Object Storage -->
+      <dependency>
+        <groupId>com.aliyun.oss</groupId>
+        <artifactId>aliyun-sdk-oss</artifactId>
+        <version>${aliyun-oss.version}</version>
+      </dependency>
+
+      <!-- SMS -->
+      <dependency>
+        <groupId>com.aliyun</groupId>
+        <artifactId>dysmsapi20170525</artifactId>
+        <version>${aliyun-dysmsapi.version}</version>
+      </dependency>
+
+      <!-- Workflow Engine -->
+      <dependency>
+        <groupId>org.dromara.warm</groupId>
+        <artifactId>warm-flow-mybatis-plus-sb4-starter</artifactId>
+        <version>${warm-flow.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.dromara.warm</groupId>
+        <artifactId>warm-flow-plugin-ui-sb-web</artifactId>
+        <version>${warm-flow.version}</version>
+      </dependency>
+
+      <!-- High Performance Queue -->
+      <dependency>
+        <groupId>com.lmax</groupId>
+        <artifactId>disruptor</artifactId>
+        <version>${disruptor.version}</version>
+      </dependency>
+
+      <!-- Database Migration -->
+      <dependency>
+        <groupId>org.liquibase</groupId>
+        <artifactId>liquibase-core</artifactId>
+        <version>${liquibase.version}</version>
+      </dependency>
+
+      <!-- Encryption -->
+      <dependency>
+        <groupId>org.bouncycastle</groupId>
+        <artifactId>bcprov-jdk18on</artifactId>
+        <version>${bouncycastle.version}</version>
+      </dependency>
+
+      <!-- WebAuthn / Passkey -->
+      <dependency>
+        <groupId>com.yubico</groupId>
+        <artifactId>webauthn-server-core</artifactId>
+        <version>${yubico-webauthn.version}</version>
+      </dependency>
+
+      <!-- Web Utilities -->
+      <dependency>
+        <groupId>org.lionsoul</groupId>
+        <artifactId>ip2region</artifactId>
+        <version>${ip2region.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.alibaba</groupId>
+        <artifactId>easyexcel</artifactId>
+        <version>${easyexcel.version}</version>
+        <exclusions>
+          <!-- 强制使用统一管理的 Apache POI 版本，避免传递依赖引入其他版本 -->
+          <exclusion>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>*</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.jsoup</groupId>
+        <artifactId>jsoup</artifactId>
+        <version>${jsoup.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-io</groupId>
+        <artifactId>commons-io</artifactId>
+        <version>${commons-io.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-fileupload</groupId>
+        <artifactId>commons-fileupload</artifactId>
+        <version>${commons-fileupload.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-codec</groupId>
+        <artifactId>commons-codec</artifactId>
+        <version>${commons-codec.version}</version>
+      </dependency>
+
+      <!-- Monitoring & Diagnostics -->
+      <dependency>
+        <groupId>com.taobao.arthas</groupId>
+        <artifactId>arthas-spring-boot-starter</artifactId>
+        <version>${arthas.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>de.codecentric</groupId>
+        <artifactId>spring-boot-admin-starter-client</artifactId>
+        <version>${spring-boot-admin.version}</version>
+      </dependency>
+
+      <!-- Utilities -->
+      <dependency>
+        <groupId>org.reflections</groupId>
+        <artifactId>reflections</artifactId>
+        <version>${reflections.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-text</artifactId>
+        <version>${commons-text.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.projectlombok</groupId>
+        <artifactId>lombok-mapstruct-binding</artifactId>
+        <version>${lombok-mapstruct-binding.version}</version>
+      </dependency>
+
+      <!-- SMS & Third-party Integration -->
+      <dependency>
+        <groupId>org.dromara.sms4j</groupId>
+        <artifactId>sms4j-spring-boot-starter</artifactId>
+        <version>${sms4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.aliyun</groupId>
+        <artifactId>alibaba-dingtalk-service-sdk</artifactId>
+        <version>${dingtalk-sdk.version}</version>
+      </dependency>
+
+      <!-- AWS S3 SDK -->
+      <dependency>
+        <groupId>software.amazon.awssdk</groupId>
+        <artifactId>s3</artifactId>
+        <version>${aws-s3.version}</version>
+      </dependency>
+
+      <!-- RocketMQ -->
+      <dependency>
+        <groupId>org.apache.rocketmq</groupId>
+        <artifactId>rocketmq-spring-boot-starter</artifactId>
+        <version>${rocketmq-spring-boot.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.alibaba.nacos</groupId>
+        <artifactId>nacos-client</artifactId>
+        <version>${nacos-client.version}</version>
+      </dependency>
+
+      <!-- Swagger & Validation -->
+      <dependency>
+        <groupId>io.swagger.core.v3</groupId>
+        <artifactId>swagger-annotations-jakarta</artifactId>
+        <version>${swagger-core-jakarta.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>jakarta.validation</groupId>
+        <artifactId>jakarta.validation-api</artifactId>
+        <version>${jakarta-validation.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.freemarker</groupId>
+        <artifactId>freemarker</artifactId>
+        <version>${freemarker.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.github.resilience4j</groupId>
+        <artifactId>resilience4j-spring-boot4</artifactId>
+        <version>${resilience4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.github.resilience4j</groupId>
+        <artifactId>resilience4j-reactor</artifactId>
+        <version>${resilience4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.clickhouse</groupId>
+        <artifactId>clickhouse-jdbc-all</artifactId>
+        <version>${clickhouse-jdbc.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+
+  <build>
+    <resources>
+      <resource>
+        <directory>${basedir}/src/main/resources</directory>
+        <filtering>true</filtering>
+        <includes>
+          <include>**/application*.yml</include>
+          <include>**/application*.yaml</include>
+          <include>**/application*.properties</include>
+        </includes>
+      </resource>
+      <resource>
+        <directory>${basedir}/src/main/resources</directory>
+        <excludes>
+          <exclude>**/application*.yml</exclude>
+          <exclude>**/application*.yaml</exclude>
+          <exclude>**/application*.properties</exclude>
+        </excludes>
+      </resource>
+    </resources>
+
+    <plugins>
+      <!-- 占位符替换插件 -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>flatten-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+      </plugin>
+
+      <!-- 源码打包插件 -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+      </plugin>
+
+      <!-- 打包时跳过测试 -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+      </plugin>
+      <!-- 版本统一管理插件  批量检查/更新 依赖 & 插件版本，告别手动改  pom.xml 。
+      mvn versions:display-dependency-updates     # 看可升级依赖
+      mvn versions:display-plugin-updates         # 看可升级插件
+      mvn versions:use-latest-versions            # 一键升级到最新 RELEASE
+      mvn versions:use-latest-releases            # 仅升级 release
+      mvn versions:commit                         # 确认修改
+      mvn versions:revert                         # 回滚
+      -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>versions-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-help-plugin</artifactId>
+      </plugin>
+    </plugins>
+
+    <pluginManagement>
+      <plugins>
+        <!-- 版本占位符替换 -->
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>flatten-maven-plugin</artifactId>
+          <version>${flatten-maven-plugin.version}</version>
+          <inherited>true</inherited>
+          <configuration>
+            <updatePomFile>true</updatePomFile>
+            <!-- <flattenMode>oss</flattenMode> -->
+            <flattenMode>resolveCiFriendliesOnly</flattenMode>
+          </configuration>
+          <executions>
+            <execution>
+              <id>flatten</id>
+              <phase>process-resources</phase>
+              <goals>
+                <goal>flatten</goal>
+              </goals>
+            </execution>
+            <execution>
+              <id>flatten.clean</id>
+              <phase>clean</phase>
+              <goals>
+                <goal>clean</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-maven-plugin</artifactId>
+          <version>${spring-boot.version}</version>
+          <executions>
+            <execution>
+              <goals>
+                <goal>repackage</goal>
+              </goals>
+            </execution>
+          </executions>
+          <configuration>
+            <!-- <jvmArguments>-parameters</jvmArguments> -->
+            <!--suppress UnresolvedMavenProperty -->
+            <mainClass>${start-class}</mainClass>
+          </configuration>
+        </plugin>
+        <!--清理插件-->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-clean-plugin</artifactId>
+          <version>${maven-clean-plugin.version}</version>
+        </plugin>
+        <!--编译插件-->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>${maven-compiler-plugin.version}</version>
+          <configuration>
+            <source>${java.version}</source>
+            <target>${java.version}</target>
+            <!-- 关键：保留方法参数名，用于 Spring Boot 3.x + OpenAPI 识别参数名 -->
+            <compilerArgs>
+              <arg>-parameters</arg>
+            </compilerArgs>
+          </configuration>
+        </plugin>
+        <!--项目依赖分析-->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <version>${maven-dependency-plugin.version}</version>
+        </plugin>
+        <!--远程打包部署插件-->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-deploy-plugin</artifactId>
+          <version>${maven-deploy-plugin.version}</version>
+
+        </plugin>
+        <!--辅助工具插件 打印系统属性-->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-help-plugin</artifactId>
+          <version>${maven-help-plugin.version}</version>
+        </plugin>
+        <!--安装到本地仓库-->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-install-plugin</artifactId>
+          <version>${maven-install-plugin.version}</version>
+        </plugin>
+        <!--打包jar插件-->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>${maven-jar-plugin.version}</version>
+        </plugin>
+        <!--文档打包插件-->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>${maven-javadoc-plugin.version}</version>
+          <configuration>
+            <encoding>UTF-8</encoding>
+            <charset>UTF-8</charset>
+            <docencoding>UTF-8</docencoding>
+            <doclint>none</doclint>   <!-- 忽略 @param 缺失等警告 -->
+            <failOnError>false</failOnError>   <!-- javadoc 错误不中断构建 -->
+            <additionalJOptions>
+              <additionalJOption>-J-Dfile.encoding=UTF-8</additionalJOption>
+              <additionalJOption>-J-Duser.language=en</additionalJOption>
+            </additionalJOptions>
+          </configuration>
+          <executions>
+            <execution>
+              <id>attach-javadocs</id>
+              <goals>
+                <goal>jar</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <!--源码打包插件-->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-source-plugin</artifactId>
+          <version>${maven-source-plugin.version}</version>
+          <configuration>
+            <attach>true</attach>
+          </configuration>
+          <executions>
+            <!-- 编译时会将源码打包到本地仓库-->
+            <execution>
+              <phase>compile</phase>
+              <goals>
+                <goal>jar</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+
+        <!--统一管理版本插件-->
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>versions-maven-plugin</artifactId>
+          <version>${versions-maven-plugin.version}</version>
+          <configuration>
+            <generateBackupPoms>false</generateBackupPoms>
+          </configuration>
+        </plugin>
+
+        <!-- 打包时跳过测试 -->
+        <!--执行 单元测试（ src/test/java 下 *Test.java ）。-->
+        <!--支持 JUnit 4/5、TestNG；可并行、跳过、失败重试。-->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>${maven-surefire-plugin.version}</version>
+          <configuration>
+            <skipTests>true</skipTests>
+            <testFailureIgnore>true</testFailureIgnore>
+            <includes>
+              <include>**/*Tests.java</include>
+              <include>**/*com.carlos.test.Test.java</include>
+            </includes>
+            <excludes>
+              <exclude>**/Abstract*.java</exclude>
+            </excludes>
+            <!-- JUnit 5 并行 -->
+            <properties>
+              <configurationParameters>
+                junit.jupiter.execution.parallel.enabled=true
+                junit.jupiter.execution.parallel.mode.default=concurrent
+              </configurationParameters>
+            </properties>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>${maven-resources-plugin.version}</version>
+          <configuration>
+            <encoding>${utf8}</encoding>
+            <delimiters>
+              <delimiter>${resource.delimiter}</delimiter>
+            </delimiters>
+            <useDefaultDelimiters>false</useDefaultDelimiters>
+          </configuration>
+        </plugin>
+        <!--专跑 集成/端到端测试（ *IT.java ）。-->
+        <!--生命周期与 surefire 隔离，支持 pre-integration-test / post-integration-test 阶段启动/关闭容器。-->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-failsafe-plugin</artifactId>
+          <version>${maven-failsafe-plugin.version}</version>
+          <executions>
+            <execution>
+              <goals>
+                <goal>integration-test</goal>
+                <goal>verify</goal>   <!-- 必须，否则阶段不失败构建 -->
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+
+
+      </plugins>
+    </pluginManagement>
+  </build>
+
+
+</project>

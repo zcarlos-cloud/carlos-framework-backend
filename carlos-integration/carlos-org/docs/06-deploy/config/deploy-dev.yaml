@@ -1,0 +1,76 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: #APP_NAME
+  namespace: #NAMESPACE
+  labels:
+    app: #APP_NAME
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: #APP_NAME
+  template:
+    metadata:
+      labels:
+        app: #APP_NAME
+    spec:
+      containers:
+        -
+          name: #APP_NAME
+          image: #APP_IMAGE_NAME
+          imagePullPolicy: IfNotPresent
+          ports:
+            -
+              containerPort: #SERVER_PORT
+              protocol: TCP
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "500Mi"
+            limits:
+              cpu: "1000m"
+              memory: "5Gi"
+          env:
+            -
+              name: TZ
+              value: Asia/Shanghai
+            -
+              name: NACOS_ADDR
+              value: 192.168.1.169:18848
+            -
+              name: SERVER_PORT
+              value: '#SERVER_PORT'
+            -
+              name: NACOS_NAMESPACE
+              value: carlos--feature
+            -
+              name: NACOS_USERNAME
+              value: bbt
+            -
+              name: NACOS_PASSWORD
+              value: bbt@123456
+            -
+              name: NACOS_GROUP
+              value: DEFAULT_GROUP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: #APP_NAME
+  namespace: #NAMESPACE
+spec:
+  selector:
+    app: #APP_NAME
+  type: NodePort
+  ports:
+    -
+      name: #APP_NAME
+      port: #SERVER_PORT
+      nodePort: #NODE_PORT
+
+
+
+
+
+

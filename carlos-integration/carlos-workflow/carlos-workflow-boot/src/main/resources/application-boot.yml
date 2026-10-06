@@ -1,0 +1,25 @@
+# ==========================================
+# carlos-workflow-boot 本地数据源补充配置
+# ==========================================
+
+# ======================== 数据源配置 ========================
+# 说明：数据源由 carlos-spring-boot-starter-mybatis 的动态数据源栈接管（Druid + dynamic-datasource），
+#       连接必须写在 spring.datasource.dynamic.datasource.<名字> 下，主库固定叫 master；
+#       只写 spring.datasource.url 会被静默忽略（启动不报错，但没有可用数据源）。
+#       Warm-Flow 的 8 张 flow_* 表与业务同库，因此本服务只需要 master 一个数据源。
+#       池参数见 application.yml 的 spring.datasource.dynamic.druid 段。
+spring:
+  datasource:
+    dynamic:
+      primary: master
+      datasource:
+        # 主库数据源（PostgreSQL）
+        master:
+          driver-class-name: org.postgresql.Driver
+          url: jdbc:postgresql://${DB_URL}?currentSchema=public&stringtype=unspecified
+          username: ${DB_USERNAME}
+          password: ${DB_PWD}
+          # 达梦（DM）等国产数据库改这两行即可，同时把 carlos.mybatis.db-type 改成 dm，
+          # 建表脚本需按 README「达梦（DM）等国产数据库需要转换」自行转换：
+          # driver-class-name: dm.jdbc.driver.DmDriver
+          # url: jdbc:dm://${DB_HOST}:${DB_PORT}/CARLOS

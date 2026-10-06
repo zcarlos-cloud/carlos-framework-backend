@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <parent>
+    <groupId>com.carlos</groupId>
+    <artifactId>carlos-integration</artifactId>
+    <version>${revision}</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+
+  <packaging>pom</packaging>
+  <groupId>com.carlos.workflow</groupId>
+  <artifactId>carlos-workflow</artifactId>
+  <description>Carlos 工作流审批中心（基于 Warm-Flow 的人工审批能力）</description>
+
+  <modules>
+    <module>carlos-workflow-api</module>
+    <module>carlos-workflow-bus</module>
+    <module>carlos-workflow-boot</module>
+    <module>carlos-workflow-cloud</module>
+  </modules>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>com.carlos.workflow</groupId>
+        <artifactId>carlos-workflow-api</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.carlos.workflow</groupId>
+        <artifactId>carlos-workflow-bus</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+</project>

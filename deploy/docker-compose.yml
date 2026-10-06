@@ -1,0 +1,169 @@
+# ============================================
+# Carlos Framework Docker Compose
+# 部署服务器: 192.168.3.20
+# 容器内部统一端口: 8080
+# 外部依赖通过 .env 文件或环境变量注入
+# ============================================
+version: "3.8"
+
+networks:
+  carlos_net:
+    driver: bridge
+
+services:
+  carlos-gateway:
+    image: 192.168.3.30:8633/carlos/carlos-gateway:latest
+    container_name: carlos-gateway
+    restart: unless-stopped
+    ports:
+      - "9510:8080"
+    environment:
+      - PROFILE=deploy
+      - JAVA_OPTS=-Xms512m -Xmx1024m -XX:+UseG1GC
+      - NACOS_ADDR=${NACOS_ADDR}
+      - NACOS_NAMESPACE=${NACOS_NAMESPACE}
+      - NACOS_GROUP=${NACOS_GROUP}
+      - NACOS_USERNAME=${NACOS_USERNAME}
+      - NACOS_PASSWORD=${NACOS_PASSWORD}
+    networks:
+      - carlos_net
+    healthcheck:
+      test: [ "CMD", "wget", "-qO-", "http://localhost:8080/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  carlos-auth:
+    image: 192.168.3.30:8633/carlos/carlos-auth:latest
+    container_name: carlos-auth
+    restart: unless-stopped
+    ports:
+      - "9514:8080"
+    environment:
+      - PROFILE=deploy
+      - JAVA_OPTS=-Xms512m -Xmx1024m -XX:+UseG1GC
+      - NACOS_ADDR=${NACOS_ADDR}
+      - NACOS_NAMESPACE=${NACOS_NAMESPACE}
+      - NACOS_GROUP=${NACOS_GROUP}
+      - NACOS_USERNAME=${NACOS_USERNAME}
+      - NACOS_PASSWORD=${NACOS_PASSWORD}
+    networks:
+      - carlos_net
+    healthcheck:
+      test: [ "CMD", "wget", "-qO-", "http://localhost:8080/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  carlos-system:
+    image: 192.168.3.30:8633/carlos/carlos-system:latest
+    container_name: carlos-system
+    restart: unless-stopped
+    ports:
+      - "9515:8080"
+    environment:
+      - PROFILE=deploy
+      - JAVA_OPTS=-Xms512m -Xmx1024m -XX:+UseG1GC
+      - NACOS_ADDR=${NACOS_ADDR}
+      - NACOS_NAMESPACE=${NACOS_NAMESPACE}
+      - NACOS_GROUP=${NACOS_GROUP}
+      - NACOS_USERNAME=${NACOS_USERNAME}
+      - NACOS_PASSWORD=${NACOS_PASSWORD}
+    networks:
+      - carlos_net
+    healthcheck:
+      test: [ "CMD", "wget", "-qO-", "http://localhost:8080/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  carlos-org:
+    image: 192.168.3.30:8633/carlos/carlos-org:latest
+    container_name: carlos-org
+    restart: unless-stopped
+    ports:
+      - "9511:8080"
+    environment:
+      - PROFILE=deploy
+      - JAVA_OPTS=-Xms512m -Xmx1024m -XX:+UseG1GC
+      - NACOS_ADDR=${NACOS_ADDR}
+      - NACOS_NAMESPACE=${NACOS_NAMESPACE}
+      - NACOS_GROUP=${NACOS_GROUP}
+      - NACOS_USERNAME=${NACOS_USERNAME}
+      - NACOS_PASSWORD=${NACOS_PASSWORD}
+    networks:
+      - carlos_net
+    healthcheck:
+      test: [ "CMD", "wget", "-qO-", "http://localhost:8080/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  carlos-message:
+    image: 192.168.3.30:8633/carlos/carlos-message:latest
+    container_name: carlos-message
+    restart: unless-stopped
+    ports:
+      - "9512:8080"
+    environment:
+      - PROFILE=deploy
+      - JAVA_OPTS=-Xms512m -Xmx1024m -XX:+UseG1GC
+      - NACOS_ADDR=${NACOS_ADDR}
+      - NACOS_NAMESPACE=${NACOS_NAMESPACE}
+      - NACOS_GROUP=${NACOS_GROUP}
+      - NACOS_USERNAME=${NACOS_USERNAME}
+      - NACOS_PASSWORD=${NACOS_PASSWORD}
+    networks:
+      - carlos_net
+    healthcheck:
+      test: [ "CMD", "wget", "-qO-", "http://localhost:8080/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  carlos-audit:
+    image: 192.168.3.30:8633/carlos/carlos-audit:latest
+    container_name: carlos-audit
+    restart: unless-stopped
+    ports:
+      - "9513:8080"
+    environment:
+      - PROFILE=deploy
+      - JAVA_OPTS=-Xms512m -Xmx1024m -XX:+UseG1GC
+      - NACOS_ADDR=${NACOS_ADDR}
+      - NACOS_NAMESPACE=${NACOS_NAMESPACE}
+      - NACOS_GROUP=${NACOS_GROUP}
+      - NACOS_USERNAME=${NACOS_USERNAME}
+      - NACOS_PASSWORD=${NACOS_PASSWORD}
+    networks:
+      - carlos_net
+    healthcheck:
+      test: [ "CMD", "wget", "-qO-", "http://localhost:8080/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  carlos-ui:
+    image: 192.168.3.30:8633/carlos/carlos-ui:latest
+    container_name: carlos-ui
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    environment:
+      - TZ=Asia/Shanghai
+    networks:
+      - carlos_net
+    depends_on:
+      - carlos-gateway
+    healthcheck:
+      test: [ "CMD", "wget", "-qO-", "http://localhost/" ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s

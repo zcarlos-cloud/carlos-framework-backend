@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<!--
+    问题管理界面 FXML 文件
+    使用 ScrollPane 包裹主内容，支持内容超出窗口时滚动
+-->
+<ScrollPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.carlos.fx.gitlab.controller.IssueManagementController"
+            fitToWidth="true"
+            vbarPolicy="AS_NEEDED"
+            hbarPolicy="NEVER"
+            pannable="true"
+            style="-fx-background-color: transparent;">
+
+    <!-- 主容器：垂直布局 (VBox) -->
+    <VBox spacing="15" style="-fx-padding: 15;">
+
+        <!-- 过滤栏：水平布局 (HBox) -->
+        <HBox spacing="10" alignment="CENTER_LEFT" styleClass="card">
+            <Label text="项目:" styleClass="form-label"/>
+            <!-- 项目下拉框：选择要管理的 GitLab 项目 -->
+            <ComboBox fx:id="projectCombo" prefWidth="200"/>
+
+            <Label text="状态:" styleClass="form-label"/>
+            <!-- 状态下拉框：过滤问题状态（全部/opened/closed） -->
+            <ComboBox fx:id="stateCombo" prefWidth="120"/>
+
+            <!-- 搜索输入框：实时过滤问题列表 -->
+            <TextField fx:id="searchField" promptText="搜索问题..." prefWidth="200" HBox.hgrow="ALWAYS"/>
+
+            <!-- 刷新按钮：重新加载问题列表 -->
+            <Button fx:id="refreshButton" text="刷新" styleClass="secondary-button"/>
+            <!-- 进度指示器：显示加载状态 -->
+            <ProgressIndicator fx:id="progressIndicator" prefWidth="24" prefHeight="24"/>
+        </HBox>
+
+        <!-- 问题表格：显示所有问题信息 -->
+        <TableView fx:id="issueTable" prefHeight="400">
+            <columns>
+                <!-- 选择列：复选框，用于批量操作 -->
+                <TableColumn fx:id="selectColumn" text="选择" prefWidth="60"/>
+                <!-- 问题 ID 列 -->
+                <TableColumn fx:id="iidColumn" text="ID" prefWidth="60"/>
+                <!-- 问题标题列 -->
+                <TableColumn fx:id="titleColumn" text="标题" prefWidth="350"/>
+                <!-- 作者列 -->
+                <TableColumn fx:id="authorColumn" text="作者" prefWidth="120"/>
+                <!-- 创建时间列 -->
+                <TableColumn fx:id="dateColumn" text="创建时间" prefWidth="150"/>
+                <!-- 状态列 -->
+                <TableColumn fx:id="stateColumn" text="状态" prefWidth="100"/>
+                <!-- 评论数列 -->
+                <TableColumn fx:id="commentsColumn" text="评论数" prefWidth="80"/>
+            </columns>
+        </TableView>
+
+        <!-- 操作按钮栏：水平布局 (HBox) -->
+        <HBox spacing="10" styleClass="card">
+            <!-- 创建问题按钮 -->
+            <Button fx:id="createButton" text="创建问题" styleClass="primary-button"/>
+            <!-- 查看详情按钮：需要先选中一个问题 -->
+            <Button fx:id="viewButton" text="查看详情" styleClass="secondary-button"/>
+            <!-- 关闭问题按钮 -->
+            <Button fx:id="closeButton" text="关闭" styleClass="danger-button"/>
+            <!-- 重新打开问题按钮 -->
+            <Button fx:id="reopenButton" text="重新打开" styleClass="success-button"/>
+            <!-- 分配问题按钮 -->
+            <Button fx:id="assignButton" text="分配" styleClass="secondary-button"/>
+            <!-- 添加标签按钮 -->
+            <Button fx:id="addLabelButton" text="添加标签" styleClass="secondary-button"/>
+            <Separator orientation="VERTICAL"/>
+            <!-- 批量关闭按钮 -->
+            <Button fx:id="batchCloseButton" text="批量关闭" styleClass="danger-button"/>
+        </HBox>
+
+    </VBox>
+
+</ScrollPane>

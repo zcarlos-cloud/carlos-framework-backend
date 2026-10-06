@@ -1,0 +1,62 @@
+# Carlos Redis Starter 配置示例
+# 将此配置复制到 application.yml 中使用
+
+carlos:
+  cache:
+    # ==================== 序列化配置 ====================
+    # 序列化类型：jackson（默认）、fastjson、kryo、jdk
+    # jackson: 可读性好，适合调试，默认方案
+    # fastjson: 性能较好，兼容性好
+    # kryo: 高性能二进制，性能最好但不可读
+    # jdk: 原生序列化，兼容性最好但性能一般
+    serializer: jackson
+
+  # ==================== Caffeine L1 缓存配置 ====================
+  redis:
+    caffeine:
+      # 是否启用 Caffeine 本地缓存
+      enabled: true
+      # 初始容量
+      initial-capacity: 100
+      # 最大容量
+      maximum-size: 10000
+      # 写入后过期时间（秒），默认 5 分钟
+      # 注意：L1 过期时间应短于 L2 过期时间
+      expire-after-write: 300
+      # 访问后过期时间（秒），不配置则不启用
+      # expire-after-access: 600
+      # 刷新时间（秒），不配置则不启用
+      # refresh-after-write: 60
+      # 是否记录统计信息
+      record-stats: true
+
+    # ==================== 分布式锁配置 ====================
+    lock:
+      # 是否启用分布式锁
+      enabled: true
+      # 锁前缀
+      prefix: "framework:lock:"
+
+---
+# ==================== 不同环境的推荐配置 ====================
+
+# 开发环境 - 使用 Jackson 便于调试
+# carlos:
+#   cache:
+#     serializer: jackson
+
+# 测试环境 - 使用 Fastjson 平衡性能和可读性
+# carlos:
+#   cache:
+#     serializer: fastjson
+
+# 生产环境 - 使用 Kryo 追求极致性能
+# carlos:
+#   cache:
+#     serializer: kryo
+#   redis:
+#     caffeine:
+#       enabled: true
+#       maximum-size: 50000
+#       expire-after-write: 300
+#       record-stats: true

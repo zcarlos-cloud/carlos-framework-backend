@@ -1,0 +1,56 @@
+databaseChangeLog:
+  -
+    changeSet:
+      id: 1
+      author: carlos
+      context: develop,test,production
+      comment: 初始化数据库基础结构，创建 Liquibase 所需的系统表
+      changes:
+        # 此处放置初始化 SQL，例如创建基础配置表
+        -
+          createTable:
+            tableName: migration_config
+            remarks: 迁移配置表
+            columns:
+              -
+                column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              -
+                column:
+                  name: config_key
+                  type: VARCHAR(128)
+                  remarks: 配置键
+                  constraints:
+                    nullable: false
+                    unique: true
+              -
+                column:
+                  name: config_value
+                  type: VARCHAR(512)
+                  remarks: 配置值
+              -
+                column:
+                  name: description
+                  type: VARCHAR(256)
+                  remarks: 配置描述
+              -
+                column:
+                  name: create_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  remarks: 创建时间
+              -
+                column:
+                  name: update_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  remarks: 更新时间
+      rollback:
+        -
+          dropTable:
+            tableName: migration_config

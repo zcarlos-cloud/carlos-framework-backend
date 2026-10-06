@@ -1,0 +1,63 @@
+# Carlos Audit 审计日志模块配置
+carlos:
+  audit:
+    # 是否启用审计日志
+    enabled: true
+
+    # Disruptor 高性能队列配置
+    disruptor:
+      # RingBuffer 大小（必须是 2 的幂次）
+      buffer-size: 1048576  # 2^20 = 1,048,576
+      # 消费者线程数
+      consumer-count: 4
+      # 等待策略：blocking, busy_spin, lite_blocking, sleeping, yielding
+      wait-strategy: blocking
+      # 是否启用多生产者模式
+      multi-producer: true
+
+    # ClickHouse 配置
+    clickhouse:
+      enabled: true
+      host: localhost
+      port: 8123
+      database: default
+      username: default
+      password: ""
+      socket-timeout: 300000
+      connection-timeout: 10000
+
+    # 批量写入配置
+    batch-writer:
+      # 批次大小
+      batch-size: 500
+      # 刷新间隔（毫秒）
+      flush-interval: 1000
+      # 最大缓冲区大小
+      max-buffer-size: 10000
+      # 重试次数
+      retry-times: 3
+      # 失败时是否写入本地文件备份
+      local-backup-on-failure: true
+      # 本地备份路径
+      local-backup-path: ./audit-log-backup
+
+    # 归档配置
+    archive:
+      enabled: true
+      # 冷数据天数（超过此天数的数据将被归档）
+      cold-days: 7
+      # 存储类型：OSS, S3, MINIO, LOCAL
+      storage-type: OSS
+      oss:
+        endpoint: ""
+        access-key-id: ""
+        access-key-secret: ""
+        bucket-name: ""
+        prefix: audit-logs/
+
+# 日志配置
+logging:
+  level:
+    com.carlos.audit: INFO
+    com.carlos.audit.disruptor: DEBUG
+    com.carlos.audit.clickhouse: DEBUG

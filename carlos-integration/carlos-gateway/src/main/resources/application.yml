@@ -1,0 +1,607 @@
+# ==========================================
+# carlos-gateway 网关配置
+# 说明：Spring Cloud Gateway 网关，包含路由、安全、限流、熔断、灰度、缓存、可观测性等完整功能
+# 统一前缀由 carlos.gateway.prefix 定义（默认 /manage-api），PrefixWebFilter 在路由匹配前剥离此前缀
+# 路由配置中的 Path predicate 无需再写 /manage-api 前缀
+# ==========================================
+
+# ======================== 服务基础配置 ========================
+server:
+  port: 9510
+
+# ======================== Spring 主配置 ========================
+spring:
+  profiles:
+    active: ${PROFILE:local}
+  application:
+    name: carlos-gateway
+
+  # ======================== 缓存配置（Redis） ========================
+  redis:
+    lettuce:
+      pool:
+        # 最大活跃连接数
+        max-active: 100
+        # 最大空闲连接数
+        max-idle: 50
+        # 最小空闲连接数
+        min-idle: 10
+        # 最大等待时间
+        max-wait: 2000ms
+
+  # ======================== Nacos 配置中心 ========================
+  cloud:
+    nacos:
+      discovery:
+        enabled: true
+      config:
+        enabled: true
+        file-extension: yml
+        refresh-enabled: true
+
+  # 配置导入（Nacos 共享配置）
+  config:
+    import:
+      # 1. 公共配置（所有环境共享）
+      # 2. Redis 共享配置
+      # 3. 数据库共享配置
+      - optional:nacos:common.yml?group=DEFAULT_GROUP&refreshEnabled=true
+      - optional:nacos:redis.yml?group=DEFAULT_GROUP&refreshEnabled=true
+      - optional:nacos:db.yml?group=DEFAULT_GROUP&refreshEnabled=true
+
+# ======================== 本地调试环境 ========================
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+  cloud:
+    nacos:
+      username: ${NACOS_USERNAME:@nacos.username@}
+      password: ${NACOS_PASSWORD:@nacos.password@}
+      discovery:
+        server-addr: ${NACOS_ADDR:@nacos.addr@}
+        namespace: ${NACOS_NAMESPACE:@nacos.namespace@}
+        group: ${NACOS_GROUP:@nacos.group@}
+      config:
+        server-addr: ${NACOS_ADDR:@nacos.addr@}
+        namespace: ${NACOS_NAMESPACE:@nacos.namespace@}
+        group: ${NACOS_GROUP:@nacos.group@}
+
+# ======================== 部署环境（使用环境变量） ========================
+---
+spring:
+  config:
+    activate:
+      on-profile: deploy
+  cloud:
+    nacos:
+      username: ${NACOS_USERNAME}
+      password: ${NACOS_PASSWORD}
+      discovery:
+        server-addr: ${NACOS_ADDR}
+        namespace: ${NACOS_NAMESPACE}
+        group: ${NACOS_GROUP}
+      config:
+        namespace: ${NACOS_NAMESPACE}
+        server-addr: ${NACOS_ADDR}
+        group: ${NACOS_GROUP}
+
+---
+# ======================== Spring Cloud Gateway 配置 ========================
+spring:
+  cloud:
+    gateway:
+      # WebFlux 服务发现
+      server:
+        webflux:
+          discovery:
+            locator:
+              # 启用服务发现路由
+              enabled: true
+              # 服务 ID 转小写
+              lower-case-service-id: true
+          # ======================== 路由配置 ========================
+          # ⚠️ 这份列表是**本地兜底**，运行时会被 Nacos 覆盖：
+          #   网关的 spring.config.import 引了 common.yml，而 common.yml 里有一份同内容的
+          #   spring.cloud.gateway.server.webflux.routes（为了让路由具备动态刷新能力）。
+          #   导入的配置源优先级高于本文件，且 **YAML 列表是整体替换、不合并** ——
+          #   所以新增/改路由必须**同时**改这两处，否则只改这里重启也不会生效。
+          #   另外：Nacos 上的 carlos-gateway.yml 是历史遗留 dataId，**未被 import，不生效**。
+          routes:
+            # 认证服务路由
+            -
+              id: carlos-auth
+              uri: lb://carlos-auth
+              predicates:
+                - Path=/auth/**,/oauth2/**
+              filters:
+                - SelectStripPrefix=1
+
+            # 系统管理服务路由
+            -
+              id: carlos-system
+              uri: lb://carlos-system
+              predicates:
+                - Path=/sys/**,/app/**
+              filters:
+                - SelectStripPrefix=1
+
+            # 组织管理服务路由
+            -
+              id: carlos-org
+              uri: lb://carlos-org
+              predicates:
+                - Path=/org/**
+              filters:
+                - SelectStripPrefix=1
+
+            # 审计服务路由
+            -
+              id: carlos-audit
+              uri: lb://carlos-audit
+              predicates:
+                - Path=/audit/**
+              filters:
+                - SelectStripPrefix=1
+
+            # 消息中心服务路由
+            -
+              id: carlos-message
+              uri: lb://carlos-message
+              predicates:
+                - Path=/message/**
+              filters:
+                - SelectStripPrefix=1
+
+            # 调度中心服务路由
+            -
+              id: carlos-job
+              uri: lb://carlos-job
+              predicates:
+                - Path=/job/**
+              filters:
+                - SelectStripPrefix=1
+
+            # 系统监控服务路由
+            -
+              id: carlos-monitor
+              uri: lb://carlos-monitor
+              predicates:
+                - Path=/monitor/**
+              filters:
+                - SelectStripPrefix=1
+
+            # AI 助手服务路由
+            -
+              id: carlos-agent
+              uri: lb://carlos-agent
+              predicates:
+                - Path=/agent/**
+              filters:
+                - SelectStripPrefix=1
+
+            # 工作流审批中心（前端接口，经网关）
+            # 与 /sys/**、/org/**、/agent/** 同形：前端调 /manage-api/workflow/**，
+            # PrefixWebFilter 剥掉统一前缀 /manage-api 后剩 /workflow/**，控制器就挂在 /workflow/** 上。
+            # SelectStripPrefix 对业务路径**不生效**（它只处理 swagger/doc 路径，见
+            # SelectStripPrefixGatewayFilterFactory#computeShouldStrip），加上纯为与兄弟路由保持一致。
+            -
+              id: carlos-workflow
+              uri: lb://carlos-workflow
+              predicates:
+                - Path=/workflow/**
+              filters:
+                - SelectStripPrefix=1
+
+            # 工作流审批中心：Warm-Flow 设计器（静态资源 + 引擎数据接口）
+            # 不加 SelectStripPrefix（虽然它对业务路径本就不生效，但显式省略以表明这里靠
+            # PrefixWebFilter 剥 /manage-api 就够了）。
+            # 设计器 SPA 内部所有请求都是相对路径（url: "../warm-flow/xxx"），
+            # 所以只要「文档路径深度 - 后端真实路径深度」恰好是 1 层即可。
+            #
+            # ⚠️ 不要在这里路由 /api/workflow/** —— 那是**服务间 Feign 契约**的命名空间
+            # （ApiXxx 接口的 @FeignClient path 就是 /api/workflow/**），
+            # 和其它模块一样（/api/org/**、/api/sys/**）**只走服务发现、不经网关**。
+            # 曾经把它路由出去过，等于把 Feign 命名空间暴露到了外部。
+            -
+              id: carlos-workflow-warmflow
+              uri: lb://carlos-workflow
+              predicates:
+                - Path=/warm-flow-ui/**,/warm-flow/**
+
+            # 开发工具平台（代码生成器 / 工程生成器 / 模板管理）
+            # 与 /message/**、/monitor/** 同形：前端调 /manage-api/devkit/**，
+            # PrefixWebFilter 剥掉统一前缀 /manage-api 后剩 /devkit/**，
+            # 而 devkit 的控制器自带 devkit/ 前缀（见 TemplateGroupController 的
+            # @RequestMapping("devkit/template/group")）—— 因为 SelectStripPrefix 对业务路径
+            # 不生效（只处理 swagger 与 /*/app/enum(s) 白名单），业务前缀必须由服务自己带。
+            -
+              id: carlos-devkit
+              uri: lb://carlos-devkit
+              predicates:
+                - Path=/devkit/**
+              filters:
+                - SelectStripPrefix=1
+
+      # ======================== 全局 CORS 配置 ========================
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            # 允许的来源（生产环境应限制具体域名）
+            allowedOrigins: "*"
+            # 允许的 HTTP 方法
+            allowedMethods: "*"
+            # 允许的请求头
+            allowedHeaders: "*"
+            # 是否允许发送凭证
+            allowCredentials: true
+            # 预检请求缓存时间
+            maxAge: 3600
+
+      # ======================== 默认过滤器 ========================
+      default-filters:
+        # 去重响应头（解决 CORS 重复头问题）
+        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+
+# ======================== Carlos 网关配置 ========================
+carlos:
+  gateway:
+    # ======================== 统一前缀配置 ========================
+    prefix: /manage-api
+    prefix-enabled: true
+    # 白名单路径（不需要前缀校验）
+    whitelist:
+      - /custom/public/**
+      - /doc.html
+      - /webjars/**
+      - /swagger-ui/**
+      - /v3/api-docs/**
+      - /actuator/**
+
+    # ======================== 链路追踪配置 ========================
+    tracing:
+      enabled: true
+      # 采样率（0.0 ~ 1.0，生产环境建议 0.1）
+      sampling-rate: 1.0
+      # 是否记录请求体
+      record-request-body: false
+      # 是否记录响应体
+      record-response-body: false
+      # 忽略的路径（不进行追踪）
+      ignore-patterns:
+        - /actuator/**
+        - /health
+
+    # ======================== OAuth2 认证配置 ========================
+    oauth2:
+      enabled: true
+      # Token 类型：JWT 或 OPAQUE
+      token-type: OPAQUE
+
+      # JWT 配置（token-type 为 JWT 时使用）
+      jwt-issuer: carlos-auth
+      jwt-audience: carlos-gateway
+
+      # Opaque Token 配置（token-type 为 OPAQUE 时使用）
+      introspection-uri: ${GATEWAY_INTROSPECTION_URI:http://localhost:9511/oauth2/introspect}
+      client-id: ${GATEWAY_CLIENT_ID:gateway-client}
+      client-secret: ${GATEWAY_CLIENT_SECRET:gateway-secret}
+      # 内省结果缓存时间
+      introspection-cache-duration: 5m
+
+      # 权限配置
+      # 注意：RBAC 路径级鉴权依赖 auth:permissions:{userId} 权限数据（METHOD:path 格式），
+      # 当前权限数据按角色存储（auth:permissions:{roleId}，权限码为 resource:action 格式），
+      # 且 org_role_operation 无数据，开启会拦截所有业务请求。待权限模型对齐后再开启。
+      authorization-enabled: false
+      # 授权模式：RBAC、ABAC
+      authorization-mode: RBAC
+
+      # 认证白名单
+      whitelist:
+        - /public/**
+        - /static/**
+        - /auth/public-key
+        - /auth/user/login
+        - /auth/user/pre-check
+        - /auth/user/logout
+        - /auth/user/refreshToken
+        - /auth/captcha/**
+        - /auth/mfa/step-up-verify
+        - /sys/i18n/messages
+        # Warm-Flow 设计器：静态资源与 /warm-flow-ui/config。
+        # config 是设计器启动后**第一个**请求，此时它还没从 localStorage 读到 token 名，
+        # 拼不出鉴权头，必须匿名（官方文档第 4 节也是这么要求的）。
+        # ⚠️ 绝不能顺带放行 /warm-flow/** —— 那是引擎的数据接口（含 POST /warm-flow/save-json
+        # 直接写流程定义），必须保持鉴权。
+        - /warm-flow-ui/**
+
+    # ======================== 灰度发布配置 ========================
+    gray:
+      enabled: true
+      strategies:
+        # 用户服务灰度策略
+        user-service:
+          enabled: true
+          # 灰度流量权重
+          weight: 10
+          # 灰度版本号
+          version: "2.0.0"
+          # 哈希键类型：USER, IP, HEADER
+          hash-key: USER
+        # 订单服务灰度策略
+        order-service:
+          enabled: true
+          # 指定灰度用户列表
+          user-ids:
+            - "10001"
+            - "10002"
+
+    # ======================== WAF 安全配置 ========================
+    waf:
+      enabled: false
+      # SQL 注入防护
+      sql-injection-protection: true
+      # XSS 跨站脚本防护
+      xss-protection: true
+      # 路径遍历防护
+      path-traversal-protection: true
+      # 敏感文件访问防护
+      sensitive-file-protection: false
+      # 命令注入防护
+      command-injection-protection: true
+      # 是否检查请求体
+      check-body: true
+      # CSRF 防护
+      csrf-protection: true
+      # 允许的跨域来源
+      allowed-origin: "http://localhost:3000"
+      # 最大请求体大小
+      max-body-size: 10485760
+
+    # ======================== 防重放配置 ========================
+    replay:
+      enabled: false
+      # 严格模式（时间戳 + Nonce 双重校验）
+      strict-mode: false
+      # 签名密钥（使用环境变量注入）
+      secret-key: ${REPLAY_SECRET_KEY:}
+      # 白名单路径
+      whitelist:
+        - /public/**
+
+    # ======================== 异常处理配置 ========================
+    exception:
+      # 开发模式：显示详细错误信息（包括异常详情和堆栈）
+      dev-mode: false
+      # 是否显示异常堆栈信息（生产环境建议关闭）
+      show-stack-trace: false
+
+    # ======================== 限流配置 ========================
+    rate-limiter:
+      enabled: true
+
+      # 默认限流配置（全局生效）
+      default-config:
+        # 每秒产生令牌数
+        replenish-rate: 100
+        # 令牌桶容量
+        burst-capacity: 200
+        # 每次请求消耗令牌数
+        requested-tokens: 1
+        # 限流键解析策略：IP, USER, PATH, HEADER
+        key-resolver: IP
+
+      # 路由特定配置（可选，覆盖默认配置）
+      routes:
+        -
+          route-id: carlos-org
+          replenish-rate: 100
+          burst-capacity: 200
+          key-resolver: IP
+        -
+          route-id: order-service
+          replenish-rate: 50
+          burst-capacity: 100
+          key-resolver: USER
+          inherit-default: false
+
+      # 白名单（不限流的 IP）
+      whitelist:
+        - "127.0.0.1"
+        - "10.0.0.1"
+
+      # 黑名单（直接拒绝的 IP）
+      blacklist: [ ]
+      # - "192.168.1.100"
+
+      # 响应配置
+      response:
+        # 包含限流响应头
+        include-headers: true
+        # 使用 Carlos ErrorResponse 格式
+        uniform-error-response: true
+        # 建议重试时间（秒）
+        retry-after: 60
+
+      # 监控配置
+      metrics:
+        enabled: true
+        publish-events: true
+        sample-rate: 1.0
+
+    # ======================== 缓存配置 ========================
+    cache:
+      enabled: true
+      # 本地缓存大小
+      local-size: 10000
+      # 本地缓存过期时间
+      local-expire: 5m
+      # 是否启用 Redis 缓存
+      redis-enabled: true
+      # Redis 缓存过期时间
+      redis-expire: 10m
+      # 缓存路径前缀
+      path-prefix: /api/cache
+
+    # ======================== 转换配置 ========================
+    transform:
+      enabled: true
+      # 是否启用 API 版本控制
+      api-version-enabled: true
+      # 路径重写规则
+      path-rewrites:
+        "/api/v1/(.*)": "/v1/$1"
+      # 请求头转换规则
+      header-transforms:
+        -
+          source: X-Old-Header
+          target: X-New-Header
+          operation: REPLACE
+        -
+          source: X-Internal-Token
+          operation: REMOVE
+
+  # ======================== Carlos 缓存配置 ========================
+  cache:
+    # 响应式缓存
+    reactive:
+      enabled: true
+    # 序列化方式：jackson、fastjson、kryo、jdk
+    serializer: fastjson
+
+# ======================== Resilience4j 熔断器配置注释（已移除） ========================
+# 说明：Resilience4j 在 Spring Boot 4.x + Spring Cloud Refresh Scope 下存在循环引用 Bug：
+#   "Circular reference detected in instance config: default"
+# 如需启用熔断功能，请在引入 resilience4j-spring-boot4（非 refresh scoped 版本）后
+# 取消下方配置并重启验证。
+# ========================
+# resilience4j:
+#   circuitbreaker:
+#     configs:
+#       default:
+#         # 从关闭到半开的最小等待时间
+#         wait-duration-in-open-state: 30s
+#         # 半开状态允许的请求数
+#         permitted-number-of-calls-in-half-open-state: 10
+#         # 滑动窗口大小
+#         sliding-window-size: 100
+#         # 滑动窗口类型：COUNT_BASED, TIME_BASED
+#         sliding-window-type: COUNT_BASED
+#         # 熔断触发失败率阈值
+#         failure-rate-threshold: 50
+#         # 慢调用时间阈值
+#         slow-call-duration-threshold: 10s
+#         # 慢调用率阈值
+#         slow-call-rate-threshold: 50
+#         # 自动从半开到关闭
+#         automatic-transition-from-open-to-half-open-enabled: true
+#     instances:
+#       default:
+#         base-config: default
+#
+#   timelimiter:
+#     configs:
+#       default:
+#         # 请求超时时间
+#         timeout-duration: 30s
+#     instances:
+#       default:
+#         base-config: default
+
+# ======================== Sentinel 流量控制配置（可选） ========================
+#spring:
+#  cloud:
+#    sentinel:
+#      enabled: ${SENTINEL_ENABLED:false}
+#      transport:
+#        # Sentinel 控制台地址
+#        dashboard: ${SENTINEL_DASHBOARD:localhost:8080}
+#      # 数据源配置（推送规则到 Nacos）
+#      datasource:
+#        flow:
+#          nacos:
+#            server-addr: ${NACOS_ADDR:localhost:8848}
+#            namespace: ${NACOS_NAMESPACE}
+#            group-id: DEFAULT_GROUP
+#            data-id: ${spring.application.name}-flow-rules
+#            rule-type: flow
+
+# ======================== Knife4j 网关聚合配置 ========================
+knife4j:
+  gateway:
+    enabled: true
+    # 标签排序方式
+    tags-sorter: order
+    # 操作排序方式
+    operations-sorter: order
+    # 发现模式：discover（自动发现）、manual（手动配置）
+    strategy: discover
+    discover:
+      service-config:
+        carlos-auth:
+          context-path: ""
+          skip-route-prefix: true
+        carlos-org:
+          context-path: ""
+          skip-route-prefix: true
+          group-names:
+            - org-feign-apis
+            - org-base-manage
+            - org-position-manage
+
+
+
+# ======================== 日志配置 ========================
+logging:
+  config: classpath:config/logback.xml
+  level:
+    root: info
+    com.carlos: debug
+    # Spring Security 日志
+    org.springframework.security: debug
+    # Gateway 日志
+    org.springframework.cloud.gateway: DEBUG
+    # Knife4j 日志
+    com.github.xiaoymin.knife4j: debug
+    com.github.xingfudeshi.knife4j: debug
+  file:
+    path: logs/gateway
+
+# ======================== 监控配置（Actuator + Micrometer） ========================
+management:
+  # ======================== 链路追踪 ========================
+  tracing:
+    sampling:
+      # 采样概率（1.0 = 100%，生产环境建议 0.1）
+      probability: 1.0
+    export:
+      # Zipkin 上报
+      zipkin:
+        # Zipkin 服务端点
+        endpoint: ${ZIPKIN_ENDPOINT:http://localhost:9411/api/v2/spans}
+      enabled: true
+
+  # ======================== 端点配置 ========================
+  endpoints:
+    web:
+      exposure:
+        # 暴露的端点
+        include: health,info,metrics,prometheus,gateway
+    health:
+      # 健康检查展示详情
+      show-details: when-authorized
+    gateway:
+      enabled: true
+
+  # ======================== Prometheus 指标配置 ========================
+  metrics:
+    tags:
+      # 应用标签
+      application: ${spring.application.name}
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+        step: 30s

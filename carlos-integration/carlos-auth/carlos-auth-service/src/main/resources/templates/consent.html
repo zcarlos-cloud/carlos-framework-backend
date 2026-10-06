@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>授权确认 - Carlos OAuth2</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: #f5f7fa;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .consent-container {
+      background: #fff;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      width: 100%;
+      max-width: 480px;
+    }
+
+    .consent-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .consent-header h2 {
+      font-size: 20px;
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    .consent-header p {
+      font-size: 14px;
+      color: #666;
+    }
+
+    .client-name {
+      font-weight: 600;
+      color: #667eea;
+    }
+
+    .scope-list {
+      margin: 25px 0;
+    }
+
+    .scope-item {
+      display: flex;
+      align-items: flex-start;
+      padding: 15px;
+      border: 1px solid #eee;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      background: #fafbfc;
+    }
+
+    .scope-item input[type="checkbox"] {
+      margin-top: 3px;
+      margin-right: 12px;
+      width: 16px;
+      height: 16px;
+      accent-color: #667eea;
+      flex-shrink: 0;
+    }
+
+    .scope-info {
+      flex: 1;
+    }
+
+    .scope-name {
+      font-weight: 500;
+      color: #333;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    .scope-desc {
+      font-size: 13px;
+      color: #888;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 12px;
+      margin-top: 30px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 12px;
+      border-radius: 6px;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+
+    .btn-approve {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff;
+    }
+
+    .btn-approve:hover {
+      opacity: 0.9;
+    }
+
+    .btn-cancel {
+      background: #f0f0f0;
+      color: #666;
+    }
+
+    .btn-cancel:hover {
+      background: #e0e0e0;
+    }
+
+    .consent-footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 12px;
+      color: #aaa;
+    }
+  </style>
+</head>
+<body>
+<div class="consent-container">
+  <div class="consent-header">
+    <h2>授权确认</h2>
+    <p>
+      应用 <span class="client-name" th:text="${clientName}">应用名称</span> 请求访问您的账号信息
+    </p>
+  </div>
+
+  <!-- 安全提示：本模板使用 th:text 自动转义所有动态内容，禁止改为 th:utext -->
+  <form th:action="@{/oauth2/authorize}" method="post">
+    <!-- 注意：当前配置已全局禁用 CSRF，_csrf 始终为 null，此 token 不会渲染。
+         保留条件渲染代码以便未来若启用 CSRF 时可自动生效，无需修改模板。 -->
+    <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+    <input type="hidden" name="client_id" th:value="${clientId}">
+    <input type="hidden" name="state" th:value="${state}">
+
+    <div class="scope-list">
+      <div class="scope-item" th:each="scope : ${scopes}">
+        <input type="checkbox"
+               name="scope"
+               th:value="${scope}"
+               th:id="${'scope-' + scope}"
+               checked>
+        <div class="scope-info">
+          <div class="scope-name" th:text="${scope}">scope</div>
+          <div class="scope-desc" th:text="${scopeDescriptions[scope]}">描述</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="button-group">
+      <button type="submit" name="action" value="approve" class="btn btn-approve">同意授权</button>
+      <button type="submit" name="action" value="cancel" class="btn btn-cancel">拒绝</button>
+    </div>
+  </form>
+
+  <div class="consent-footer">Carlos Framework OAuth2 Authorization Server</div>
+</div>
+</body>
+</html>

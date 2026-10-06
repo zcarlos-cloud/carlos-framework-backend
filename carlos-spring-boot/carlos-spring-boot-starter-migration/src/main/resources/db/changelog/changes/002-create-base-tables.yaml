@@ -1,0 +1,101 @@
+databaseChangeLog:
+  -
+    changeSet:
+      id: 2
+      author: carlos
+      context: develop,test,production
+      comment: 创建示例业务表结构
+      changes:
+        # 示例：创建用户表
+        -
+          createTable:
+            tableName: demo_user
+            remarks: 示例用户表
+            columns:
+              -
+                column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              -
+                column:
+                  name: username
+                  type: VARCHAR(64)
+                  remarks: 用户名
+                  constraints:
+                    nullable: false
+                    unique: true
+              -
+                column:
+                  name: email
+                  type: VARCHAR(128)
+                  remarks: 邮箱
+                  constraints:
+                    unique: true
+              -
+                column:
+                  name: status
+                  type: TINYINT
+                  defaultValue: "1"
+                  remarks: 状态：0-禁用，1-启用
+              -
+                column:
+                  name: create_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  remarks: 创建时间
+              -
+                column:
+                  name: update_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  remarks: 更新时间
+
+        # 示例：创建配置表
+        -
+          createTable:
+            tableName: demo_config
+            remarks: 示例配置表
+            columns:
+              -
+                column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              -
+                column:
+                  name: config_name
+                  type: VARCHAR(128)
+                  remarks: 配置名称
+                  constraints:
+                    nullable: false
+              -
+                column:
+                  name: config_value
+                  type: TEXT
+                  remarks: 配置值
+              -
+                column:
+                  name: config_type
+                  type: VARCHAR(32)
+                  defaultValue: "STRING"
+                  remarks: 配置类型：STRING/JSON/NUMBER
+              -
+                column:
+                  name: create_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+
+      rollback:
+        -
+          dropTable:
+            tableName: demo_user
+        -
+          dropTable:
+            tableName: demo_config

@@ -1,0 +1,18 @@
+## 数据库配置
+MYSQL_URL: '100.127.6.234:13306/carlos_szt_feature'
+MYSQL_USERNAME: 'root'
+MYSQL_PWD: 'carlos@123456'
+
+
+
+#minio配置
+MINIO_HOST: 'http://100.127.6.234:19000'
+MINIO_PUBLIC_HOST: 'http://100.127.6.234:19000'
+MINIO_USERNAME: 'carlos'
+MINIO_PWD: 'carlos@123456'
+
+#redis配置
+REDIS_IP: '100.127.6.234'
+REDIS_PORT: '16379'
+REDIS_DB: '15'
+REDIS_PWD: 'carlos@123456'

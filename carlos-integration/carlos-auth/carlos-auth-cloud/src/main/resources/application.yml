@@ -1,0 +1,429 @@
+# ==========================================
+# carlos-auth-cloud 微服务启动配置
+# 说明：认证服务 Spring Cloud 版本，通过 Nacos 获取共享配置
+# ==========================================
+
+# ======================== 服务基础配置 ========================
+server:
+  port: ${SERVER_PORT:9511}
+
+# ======================== Spring 主配置 ========================
+spring:
+  profiles:
+    active: ${PROFILE:local}
+  application:
+    name: carlos-auth
+
+  # ======================== Nacos 配置中心 ========================
+  cloud:
+    nacos:
+      discovery:
+        enabled: true
+      config:
+        enabled: true
+        file-extension: yml
+        refresh-enabled: true
+
+  # 配置导入（Nacos 共享配置）
+  config:
+    import:
+      # 1. 公共配置（所有环境共享）
+      # 2. Redis 共享配置
+      # 3. 数据库共享配置
+      - optional:nacos:common.yml?group=DEFAULT_GROUP&refreshEnabled=true
+      - optional:nacos:redis.yml?group=DEFAULT_GROUP&refreshEnabled=true
+      - optional:nacos:db.yml?group=DEFAULT_GROUP&refreshEnabled=true
+
+  # ======================== 模板引擎配置（Thymeleaf） ========================
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    encoding: UTF-8
+    cache: false
+    mode: HTML
+
+# ======================== 本地调试环境 ========================
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+  cloud:
+    nacos:
+      username: ${NACOS_USERNAME:@nacos.username@}
+      password: ${NACOS_PASSWORD:@nacos.password@}
+      discovery:
+        server-addr: ${NACOS_ADDR:@nacos.addr@}
+        namespace: ${NACOS_NAMESPACE:@nacos.namespace@}
+        group: ${NACOS_GROUP:@nacos.group@}
+      config:
+        server-addr: ${NACOS_ADDR:@nacos.addr@}
+        namespace: ${NACOS_NAMESPACE:@nacos.namespace@}
+        group: ${NACOS_GROUP:@nacos.group@}
+
+# ======================== 部署环境（使用环境变量） ========================
+---
+spring:
+  config:
+    activate:
+      on-profile: deploy
+  cloud:
+    nacos:
+      username: ${NACOS_USERNAME:nacos}
+      password: ${NACOS_PASSWORD:nacos}
+      discovery:
+        server-addr: ${NACOS_ADDR}
+        namespace: ${NACOS_NAMESPACE}
+        group: ${NACOS_GROUP:DEFAULT_GROUP}
+      config:
+        server-addr: ${NACOS_ADDR}
+        namespace: ${NACOS_NAMESPACE}
+        group: ${NACOS_GROUP:DEFAULT_GROUP}
+
+
+
+---
+# ======================== 数据源配置（Druid + 动态数据源） ========================
+spring:
+  datasource:
+    druid:
+      stat-view-servlet:
+        enabled: true
+        loginUsername: admin
+        loginPassword: 123456
+    dynamic:
+      primary: master
+      druid:
+        initial-size: 5
+        min-idle: 5
+        maxActive: 20
+        maxWait: 60000
+        timeBetweenEvictionRunsMillis: 60000
+        minEvictableIdleTimeMillis: 300000
+        validationQuery: SELECT 1
+        testWhileIdle: true
+        testOnBorrow: false
+        testOnReturn: false
+        poolPreparedStatements: true
+        breakAfterAcquireFailure: true
+        ConnectionErrorRetryAttempts: 2
+        maxPoolPreparedStatementPerConnectionSize: 20
+        filters: stat,wall,slf4j
+        connection-properties:
+          druid.stat.mergeSql: true
+          druid.stat.slowSqlMillis: 5000
+
+# ======================== Carlos 框架配置 ========================
+carlos:
+  # APM 链路追踪（Brave + MDC 日志关联）
+  apm:
+    enabled: true
+  web:
+    cors:
+      enabled: true
+    enum-dict:
+      # 只扫本服务自己的枚举包（@AppEnum 的 code 需全局唯一，扫 com.carlos 会跨模块互相覆盖）
+      scan-packages: com.carlos.auth
+      enabled: true
+
+  # ======================== OAuth2 认证授权配置（carlos.auth） ========================
+  auth:
+    # 是否启用 OAuth2 功能
+    enabled: ${CARLOS_AUTH_ENABLED:true}
+
+    # ======================== 授权服务器配置 ========================
+    authorization-server:
+      # 是否启用授权服务器
+      enabled: ${AUTH_SERVER_ENABLED:true}
+      # 授权端点路径
+      authorization-endpoint: /oauth2/authorize
+      # Token 端点路径
+      token-endpoint: /oauth2/token
+      # Token 撤销端点路径
+      token-revocation-endpoint: /oauth2/revoke
+      # Token 自省端点路径
+      token-introspection-endpoint: /oauth2/introspect
+      # JWK Set 端点路径
+      jwk-set-endpoint: /oauth2/jwks
+      # OIDC 用户信息端点路径
+      oidc-user-info-endpoint: /userinfo
+      # 是否启用 OIDC 支持
+      oidc-enabled: true
+
+    # ======================== JWT 配置 ========================
+    jwt:
+      # JWT 签名算法（RS256 / HS256）
+      algorithm: ${JWT_ALGORITHM:RS256}
+      # RSA 私钥路径（classpath 下）
+      private-key-path: ${JWT_PRIVATE_KEY_PATH:}
+      # RSA 公钥路径（classpath 下）
+      public-key-path: ${JWT_PUBLIC_KEY_PATH:}
+      # 密钥 ID
+      key-id: ${JWT_KEY_ID:carlos-key}
+      # JWT Issuer（生产环境必须配置为实际域名）
+      issuer: ${JWT_ISSUER:http://localhost:9511}
+      # JKS 密钥库路径
+      key-store: ${JWT_KEY_STORE:}
+      # 密钥库密码
+      key-store-password: ${JWT_KEY_STORE_PASSWORD:}
+      # 密钥别名
+      key-alias: ${JWT_KEY_ALIAS:auth-key}
+      # 密钥密码
+      key-password: ${JWT_KEY_PASSWORD:}
+      # 密钥长度
+      key-size: 2048
+      # Token 中是否包含用户信息
+      include-user-info: true
+      # Token 自定义声明（Map）
+      # custom-claims:
+      #   key1: value1
+
+    # ======================== 安全配置 ========================
+    security:
+      # 密码编码器类型（BCRYPT）
+      password-encoder: BCRYPT
+      # 登录失败限制
+      login-limit:
+        # 是否启用登录限制
+        enabled: true
+        # 最大失败次数
+        max-attempts: 5
+        # 锁定时间
+        lock-duration: 30m
+      # IP 封禁配置
+      ip-block:
+        # 是否启用 IP 封禁
+        enabled: true
+        # 最大失败次数
+        max-attempts: 20
+        # 时间窗口
+        time-window: 5m
+        # 封禁时长
+        block-duration: 1h
+
+    # ======================== 客户端认证配置 ========================
+    client:
+      # 是否启用数据库客户端仓库
+      db-repository: ${CLIENT_DB_REPOSITORY:true}
+      # 是否启用自定义 Token 生成器
+      custom-token-generator: ${CLIENT_CUSTOM_TOKEN_GENERATOR:true}
+      # 是否启用客户端 Token 增强
+      token-customizer-enabled: true
+      # 是否支持 POST Body 方式提交客户端凭证
+      post-body-auth-enabled: true
+
+    # ======================== 登录配置 ========================
+    login:
+      # 默认客户端 ID
+      default-client-id: ${LOGIN_DEFAULT_CLIENT_ID:335606b2-a2db-4e73-90c5-d0d6bee7bf90}
+      # 访问令牌有效期（秒）- 仅在该注册客户端未配置 token_settings TTL 时生效
+      access-token-ttl: 7200
+      # 刷新令牌有效期（秒）- 仅在该注册客户端未配置 token_settings TTL 时生效
+      refresh-token-ttl: 604800
+      # 是否启用内部登录端点 /auth/login
+      internal-endpoint-enabled: true
+
+    # ======================== 告警通知配置 ========================
+    alert-notification:
+      # 短信告警模板编码
+      sms-template-code: ${ALERT_SMS_TEMPLATE_CODE:}
+      # 钉钉 Webhook URL
+      dingtalk-webhook-url: ${ALERT_DINGTALK_WEBHOOK:}
+      # 短信验证码模板编码
+      captcha-sms-template-code: ${CAPTCHA_SMS_TEMPLATE_CODE:}
+
+    # ======================== SSO 单点登录配置 ========================
+    sso:
+      # 是否启用 SSO Token 交换
+      token-exchange-enabled: true
+      # 是否启用 SSO 全局登出
+      global-logout-enabled: true
+      # 用户会话索引 TTL（秒），默认 7 天
+      user-session-ttl: 604800
+      # Token 交换时允许的 scope 列表（为空则使用目标客户端默认 scopes）
+      # exchange-allowed-scopes:
+      #   - openid
+      #   - profile
+
+    # ======================== 第三方社交登录配置 ========================
+    social:
+      # 社交登录回调基础地址（用于构建 OAuth2 redirect_uri）
+      callback-base-url: ${SOCIAL_CALLBACK_BASE_URL:http://localhost:9511}
+      # 钉钉登录配置
+      dingtalk:
+        # 是否启用钉钉登录
+        enabled: ${DINGTALK_LOGIN_ENABLED:false}
+        # 钉钉应用 appKey（复用 integration 模块配置时可为空）
+        app-key: ${DINGTALK_APP_KEY:}
+        # 钉钉应用 appSecret
+        app-secret: ${DINGTALK_APP_SECRET:}
+        # 企业 corpId
+        corp-id: ${DINGTALK_CORP_ID:}
+        # 扫码登录回调地址（相对路径）
+        callback-path: /auth/oauth2/callback/dingtalk
+      # 微信登录配置
+      wechat:
+        # 是否启用微信登录
+        enabled: ${WECHAT_LOGIN_ENABLED:false}
+        # 微信开放平台 appId
+        app-id: ${WECHAT_APP_ID:}
+        # 微信开放平台 appSecret
+        app-secret: ${WECHAT_APP_SECRET:}
+        # 微信登录回调地址（相对路径）
+        callback-path: /auth/oauth2/callback/wechat
+
+  # ======================== 加密配置（SM4/SM2 国密） ========================
+  encrypt:
+    # SM4 国密对称加密配置
+    sm4:
+      enabled: true                      # 启用 SM4 加密
+      encrypt-mode: cbc                  # 加密模式：cbc 或 ecb
+      key: "asdfghjklmnbvcxz"           # 密钥（16 字节）
+      iv: "mnbvcxzpoiuytre1"            # 初始化向量（CBC 模式必需，16 字节）
+      store-type: base64                 # 存储格式：base64 或 hex
+
+    # SM2 国密非对称加密配置
+    sm2:
+      enabled: true                      # 启用 SM2 加密
+      public-key: "0403c7a7250306531238d49c2e0146e48217f2d65b28ed1d61565bd40472c7516bc78574de0a89f9067328558d656ecdc2504f49bb2bd843a9cfa9b404463ed453"
+      private-key: "3134665e1e009bab370738fd5ff1dabc7f390b683885c321f1523f4f725e8aa1"
+      store-type: base64                 # 存储格式：base64 或 hex
+
+  # ======================== 钉钉集成配置 ========================
+  integration:
+    dingtalk:
+      enabled: ${DINGTALK_ENABLED:false}
+      host: ${DINGTALK_HOST:https://oapi.dingtalk.com}
+      appkey: ${DINGTALK_APPKEY:}
+      appsecret: ${DINGTALK_APPSECRET:}
+
+
+
+# ======================== 监控配置 ========================
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+    health:
+      show-details: when-authorized
+
+# ======================== 日志配置 ========================
+logging:
+  config: classpath:config/logback.xml
+  level:
+    root: info
+    com.carlos: debug
+    org.springframework.security: debug
+  file:
+    path: logs/auth
+
+# ======================== MyBatis-Plus 配置 ========================
+mybatis-plus:
+  check-config-location: true
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+    call-setters-on-nulls: true
+  global-config:
+    db-config:
+      id-type: assign_id
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+  mapper-locations: classpath*:mapper/**/*Mapper.xml
+
+---
+# ======================== 接口文档配置（Knife4j/SpringDoc） ========================
+carlos:
+  openapi:
+    enable: true
+    title: "Oauth2统一认证中心文档"
+    description: "基于 Spring Boot 4 的微服务框架"
+    version: "3.0.0"
+    contact:
+      name: "Carlos"
+      email: "zhujunkeep@gmail.com"
+      url: "https://example.com"
+    license: "Apache 2.0"
+    license-url: "https://www.apache.org/licenses/LICENSE-2.0"
+
+knife4j:
+  enable: true
+  production: false
+  basic:
+    enable: false
+    username: admin
+    password: 123456
+  setting:
+    language: ZH_CN
+    enable-document-manage: true
+    enable-swagger-models: true
+    swagger-model-name: Swagger Models
+    enable-host: true
+    enable-request-cache: true
+    enable-filter-multipart-apis: true
+    enable-filter-multipart-api-method-type: POST
+    enable-dynamic-parameter: true
+    enable-open-api: true
+    enable-search: true
+    enable-after-script: true
+    enable-group: true
+    enable-response-code: true
+    enable-reload-cache-parameter: false
+    enable-debug: true
+    enable-home-custom: false
+    home-custom-path: classpath:markdown/home.md
+    enable-version: true
+    enable-footer: false
+    enable-footer-custom: false
+    footer-custom-content: "自定义Footer内容"
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+    resolve-schema-properties: true
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+    doc-expansion: list
+    display-request-duration: true
+  paths-to-exclude: /error, /actuator/**
+  cache:
+    disabled: true
+  show-actuator: false
+  show-login-endpoint: false
+  # ==================== 接口分组 ====================
+  group-configs:
+    # Feign 接口（服务间调用）
+    -
+      group: 'Feign接口'
+      displayName: 'Feign 接口（服务间调用）'
+      packagesToScan: com.carlos.auth.app.apiimpl
+      pathsToMatch: /**
+    # 登录认证
+    -
+      group: '登录认证'
+      displayName: '登录与认证'
+      packagesToScan: com.carlos.auth.login,com.carlos.auth.web,com.carlos.auth.captcha
+      pathsToMatch: /**
+    # 应用管理
+    -
+      group: '应用管理'
+      displayName: '应用客户端管理'
+      packagesToScan: com.carlos.auth.app.controller
+      pathsToMatch: /**
+    # 联合登录
+    -
+      group: '联合登录'
+      displayName: '联合登录'
+      packagesToScan: com.carlos.auth.idp.web,com.carlos.auth.sso.web
+      pathsToMatch: /**
+    # MFA多因素认证
+    -
+      group: 'MFA认证'
+      displayName: 'MFA多因素认证'
+      packagesToScan: com.carlos.auth.mfa.controller
+      pathsToMatch: /**

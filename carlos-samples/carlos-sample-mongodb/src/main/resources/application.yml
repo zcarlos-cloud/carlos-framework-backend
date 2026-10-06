@@ -1,0 +1,35 @@
+server:
+  port: 9818
+
+spring:
+  application:
+    name: carlos-sample-mongodb
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/carlos_sample
+
+# Carlos 框架配置
+carlos:
+  boot:
+    cors:
+      allowed-origins:
+        - "*"
+    enums:
+      enabled: true
+      scan-package: com.carlos
+  mongodb:
+    enabled: true
+    field-fill-enabled: true
+
+# mongo-plus 配置
+mongo-plus:
+  banner:
+    enabled: true
+  # 驼峰转下划线（自动将 Java 驼峰字段名映射为 MongoDB 下划线字段名）
+  camel-to-underline: true
+
+# 日志配置
+logging:
+  level:
+    com.carlos.mongodb: debug
+    com.mongoplus: debug

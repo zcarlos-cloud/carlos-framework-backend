@@ -1,0 +1,54 @@
+# spring配置
+spring:
+  datasource:
+    dynamic:
+      primary: master
+      datasource:
+        # 主库数据源
+        master:
+          driver-class-name: org.postgresql.Driver
+          url: jdbc:postgresql://${DB_URL}?currentSchema=public&stringtype=unspecified
+          username: ${DB_USERNAME}
+          password: ${DB_PWD}
+
+
+
+---
+carlos:
+  system:
+    file:
+      base-url: http://127.0.0.1:9511
+      support-ext: .pdf,.ext,.doc
+  ##############################  minio配置 start  ###########################
+  minio:
+    enabled: true
+    endpoint: ${MINIO_HOST}
+    access-key: ${MINIO_USERNAME}
+    secret-key: ${MINIO_PWD}
+    public-endpoint: ${MINIO_PUBLIC_HOST}
+    bucket: carlos-default
+    connect-timeout: 10s
+    write-timeout: 60s
+    read-timeout: 10s
+    check-bucket: true
+    create-bucket: true
+  ##############################  minio配置 end   ###########################
+
+###############################  缓存数据库配置 #################################
+---
+spring:
+  cache:
+    type: redis
+  redis:
+    database: ${REDIS_DB}
+    host: ${REDIS_IP}
+    port: ${REDIS_PORT}
+    password: ${REDIS_PWD}
+    lettuce:
+      pool:
+        max-active: 50
+        max-idle: 100
+        max-wait: 30s
+        min-idle: 0
+      shutdown-timeout: 100ms
+##############################  redis缓存配置 end   ###########################

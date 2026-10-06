@@ -1,0 +1,86 @@
+server:
+  port: 9819
+
+spring:
+  application:
+    name: carlos-sample-mq
+  # Redis 连接（本框架约定使用 spring.redis.*，见 carlos-sample-redis）
+  # database 用 2，与开发机已使用的 db0/db1/db5 隔离
+  redis:
+    host: localhost
+    port: 6379
+    password:
+    database: 2
+    timeout: 5000ms
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
+        max-wait: -1ms
+
+carlos:
+  mq:
+    # MQ 类型：auto(自动检测) / redis / none
+    # none 表示显式不接 MQ；配成不存在的类型会直接启动失败（不静默降级）
+    type: redis
+
+    # 单条负载上限（字节）
+    max-payload-bytes: 65536
+
+    # 按主题覆盖
+    topics:
+      "order-topic":
+        # 本主题的 Stream 长度上限（不写则用 carlos.redis.stream.max-length）
+        max-length: 20000
+      "order-delay-topic":
+        bucket: normal
+
+  # Redis Stream / 延时 原语层配置（物理量）
+  redis:
+    stream:
+      enabled: true
+      max-length: 20000
+      approximate-trim: true
+      block-timeout: 2s
+      claim-batch-size: 50
+    delay:
+      enabled: true
+      buckets:
+        - normal
+      # 延迟上限：刻意默认 1 小时——「到点触发业务动作」属 carlos-job(Quartz)
+      max-delay: 1h
+
+  boot:
+    cors:
+      allowed-origins:
+        - 'http://localhost:8080'
+        - 'http://localhost:8081'
+
+  openapi:
+    enable: true
+    title: MQ示例接口
+    description: Carlos MQ 消息队列示例接口文档
+    version: 1.0.0
+    base-package: com.carlos.mq.controller
+
+knife4j:
+  enable: true
+  production: false
+  setting:
+    enableDebug: true
+    language: zh-CN
+
+# 暴露健康与指标端点（验证脚本需要）
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,info
+
+logging:
+  level:
+    root: info
+    com.carlos: debug
+  file:
+    path: logs/mq-sample

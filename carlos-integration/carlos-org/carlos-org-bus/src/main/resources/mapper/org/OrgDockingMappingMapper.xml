@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.carlos.org.mapper.OrgDockingMappingMapper">
+  <resultMap type="com.carlos.org.pojo.entity.OrgDockingMapping" id="baseMap">
+    <id column="id" property="id"/>
+    <result column="system_id" property="systemId"/>
+    <result column="target_id" property="targetId"/>
+    <result column="target_code" property="targetCode"/>
+    <result column="docking_type" property="dockingType"/>
+    <result column="create_by" property="createBy"/>
+    <result column="create_time" property="createTime"/>
+    <result column="update_by" property="updateBy"/>
+    <result column="update_time" property="updateTime"/>
+  </resultMap>
+</mapper>

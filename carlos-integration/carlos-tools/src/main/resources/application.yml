@@ -1,0 +1,101 @@
+# ==========================================
+# carlos-tools 工具模块配置文件
+# 说明：基于 Swing 的桌面端工具，包含代码生成器、项目脚手架、加密工具等
+# 注意：非 Web 应用，禁用 Spring Web 服务器
+# ==========================================
+
+# ======================== Spring 主配置 ========================
+spring:
+  # 应用名称
+  application:
+    name: carlos-tools
+
+  # 主配置
+  main:
+    # 关键：禁用 Web 服务器（桌面 Swing 应用不需要内嵌 Tomcat）
+    web-application-type: none
+    # 关闭启动 Banner
+    banner-mode: off
+
+  # 自动配置排除
+  autoconfigure:
+    exclude:
+      # 排除加密模块自动配置，避免桌面工具触发不必要的安全配置
+      - com.carlos.encrypt.config.EncryptConfig
+
+  # ======================== 模板引擎配置 ========================
+  freemarker:
+    # 模板文件编码
+    charset: UTF-8
+    # 是否缓存模板（开发环境建议关闭）
+    cache: false
+    # 模板文件后缀
+    suffix: .ftl
+    # 模板文件路径
+    template-loader-path: classpath:/templates/
+
+# ======================== Carlos 工具模块配置 ========================
+carlos:
+  tools:
+    # ======================== 代码生成器配置 ========================
+    code-generator:
+      # 默认作者
+      default-author: Carlos
+      # 默认包名
+      default-package: com.carlos.demo
+      # 默认表前缀（生成代码时自动去除）
+      # table-prefix: t_
+      # 是否生成控制器层
+      # controller-enabled: true
+      # 是否生成 Service 层
+      # service-enabled: true
+      # 是否生成 Manager 层
+      # manager-enabled: true
+      # 是否生成 Mapper 层
+      # mapper-enabled: true
+      # 是否生成 XML 映射文件
+      # xml-enabled: true
+      # 是否生成实体类
+      # entity-enabled: true
+      # 是否生成前端代码
+      # frontend-enabled: false
+
+    # ======================== 项目脚手架配置 ========================
+    project-generator:
+      # 默认 Maven groupId
+      default-group-id: com.carlos
+      # 默认 Maven artifactId
+      default-artifact-id: carlos-demo
+      # 默认版本号
+      default-version: 1.0.0-SNAPSHOT
+      # 默认项目描述
+      default-description: Carlos 框架示例项目
+      # 默认 JDK 版本
+      default-java-version: 21
+
+# ======================== 代码生成器数据源配置（可选） ========================
+# 用于从数据库反向生成代码，生产环境建议通过环境变量注入
+codegen:
+  datasource:
+    # 数据库 URL
+    url: ${CARLOS_CODEGEN_DB_URL:jdbc:postgresql://localhost:5432/carlos_dev}
+    # 数据库用户名
+    username: ${CARLOS_CODEGEN_DB_USERNAME:root}
+    # 数据库密码
+    password: ${CARLOS_CODEGEN_DB_PASSWORD:}
+    # 数据库驱动类名
+    driver-class-name: ${CARLOS_CODEGEN_DB_DRIVER:org.postgresql.Driver}
+
+# ======================== 日志配置 ========================
+logging:
+  level:
+    # Carlos 包日志级别
+    com.carlos: DEBUG
+    # Spring 框架日志级别
+    org.springframework: WARN
+  file:
+    # 日志文件路径
+    name: ${user.home}/.carlos-tools/logs/application.log
+  pattern:
+    # 日志输出格式
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

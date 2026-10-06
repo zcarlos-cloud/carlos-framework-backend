@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <parent>
+        <groupId>com.carlos</groupId>
+        <artifactId>carlos-integration</artifactId>
+        <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>carlos-agent</artifactId>
+    <name>carlos-agent</name>
+    <description>AI 助手服务：管理平台与 DeepSeek Harness 运行时之间的代理层</description>
+    <url>http://zcarlos.com/carlos/</url>
+
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>carlos-agent-bus</module>
+        <module>carlos-agent-boot</module>
+        <module>carlos-agent-cloud</module>
+    </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.carlos</groupId>
+                <artifactId>carlos-agent-bus</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.carlos.audit</groupId>
+                <artifactId>carlos-audit-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+</project>

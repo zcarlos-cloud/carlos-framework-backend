@@ -1,0 +1,22 @@
+blank_issues_enabled: false
+contact_links:
+  -
+    name: 📋 Create Task (创建任务)
+    url: https://github.com/yourusername/carlos-framework/issues/new?template=task.yml
+    about: Create a project task or todo item (创建项目待办任务)
+  -
+    name: 💬 GitHub Discussions
+    url: https://github.com/yourusername/carlos-framework/discussions
+    about: Please ask and answer questions here
+  -
+    name: 🔒 Security Vulnerability
+    url: https://github.com/yourusername/carlos-framework/security/policy
+    about: Please report security vulnerabilities here (DO NOT create public issues)
+  -
+    name: 📚 Documentation
+    url: https://github.com/yourusername/carlos-framework/tree/main/docs
+    about: Check the documentation for answers
+  -
+    name: 📖 Task Management Guide
+    url: https://github.com/yourusername/carlos-framework/blob/main/docs/github-issues-guide.md
+    about: Learn how to manage tasks using GitHub Issues

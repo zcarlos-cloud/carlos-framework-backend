@@ -1,0 +1,36 @@
+server:
+  port: 9813
+
+spring:
+  application:
+    name: carlos-sample-encrypt
+
+carlos:
+  encrypt:
+    # SM4 对称加密配置
+    sm4:
+      enabled: true
+      # 加密密钥（16字节长度）
+      key: asdfghjklmnbvcxz
+      # IV 向量（CBC模式需要，16字节长度）
+      iv: mnbvcxzpoiuytre1
+      # 加密模式：cbc 或 ecb
+      encrypt-mode: cbc
+      # 密文存储形式：hex 或 base64
+      store-type: base64
+    
+    # SM2 非对称加密配置
+    sm2:
+      enabled: true
+      # 公钥（130位十六进制字符串，以04开头）
+      public-key: 0403c7a7250306531238d49c2e0146e48217f2d65b28ed1d61565bd40472c7516bc78574de0a89f9067328558d656ecdc2504f49bb2bd843a9cfa9b404463ed453
+      # 私钥（64位十六进制字符串）
+      private-key: 3134665e1e009bab370738fd5ff1dabc7f390b683885c321f1523f4f725e8aa1
+      # 密文存储形式：hex 或 base64
+      store-type: base64
+
+# 日志配置
+logging:
+  level:
+    root: info
+    com.carlos: debug

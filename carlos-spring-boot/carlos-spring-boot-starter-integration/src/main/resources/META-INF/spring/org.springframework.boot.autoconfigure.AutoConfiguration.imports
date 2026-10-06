@@ -1,0 +1,2 @@
+com.carlos.integration.core.config.DockingRestClientAutoConfiguration
+com.carlos.integration.module.dingtalk.config.DingtalkRestClientConfig

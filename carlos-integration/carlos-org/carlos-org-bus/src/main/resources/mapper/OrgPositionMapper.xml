@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.carlos.org.position.mapper.OrgPositionMapper">
+  <resultMap type="com.carlos.org.position.pojo.entity.OrgPosition" id="baseMap">
+    <id column="id" property="id"/>
+    <result column="position_code" property="positionCode"/>
+    <result column="position_name" property="positionName"/>
+    <result column="position_short" property="positionShort"/>
+    <result column="category_id" property="categoryId"/>
+    <result column="default_level_id" property="defaultLevelId"/>
+    <result column="level_range" property="levelRange"/>
+    <result column="position_type" property="positionType"/>
+    <result column="position_nature" property="positionNature"/>
+    <result column="department_id" property="departmentId"/>
+    <result column="parent_id" property="parentId"/>
+    <result column="headcount" property="headcount"/>
+    <result column="current_count" property="currentCount"/>
+    <result column="vacancy_count" property="vacancyCount"/>
+    <result column="duty" property="duty"/>
+    <result column="requirement" property="requirement"/>
+    <result column="qualification" property="qualification"/>
+    <result column="kpi_indicator" property="kpiIndicator"/>
+    <result column="cost_center" property="costCenter"/>
+    <result column="location" property="location"/>
+    <result column="salary_grade" property="salaryGrade"/>
+    <result column="position_status" property="positionStatus"/>
+    <result column="version" property="version"/>
+    <result column="tenant_id" property="tenantId"/>
+    <result column="create_by" property="createBy"/>
+    <result column="create_time" property="createTime"/>
+    <result column="update_by" property="updateBy"/>
+    <result column="update_time" property="updateTime"/>
+  </resultMap>
+</mapper>

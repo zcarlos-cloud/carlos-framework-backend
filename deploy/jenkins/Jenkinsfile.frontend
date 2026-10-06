@@ -1,0 +1,122 @@
+#!/usr/bin/env groovy
+
+/* ========== 服务专属配置（每个 Jenkinsfile 仅需修改此处）========== */
+env.APP_NAME = 'carlos-ui'
+env.MODULE_PATH = 'carlos-ui'
+env.HOST_PORT = '80'
+
+/* ========== 以下通用逻辑无需修改 ========== */
+
+def imageTag() {
+    def date = new Date().format('yyyyMMddHHmm', TimeZone.getTimeZone('Asia/Shanghai'))
+    return "dev-${date}"
+}
+
+pipeline {
+    agent any
+    tools {
+        nodejs 'node-24'
+    }
+    options {
+        timeout(time: 30, unit: 'MINUTES')
+        buildDiscarder(logRotator(daysToKeepStr: '7', numToKeepStr: '10'))
+        disableConcurrentBuilds()
+    }
+    environment {
+        HARBOR_URL = '192.168.3.30:8633'
+        HARBOR_PROJECT = 'carlos'
+        DEPLOY_HOST = '192.168.3.20'
+        DEPLOY_SSH_PORT = '2022'
+        DEPLOY_USER = 'carlos'
+        IMAGE_TAG = "${params.IMAGE_TAG?.trim() ?: imageTag()}"
+    }
+    parameters {
+        string(name: 'IMAGE_TAG', defaultValue: '', description: '镜像标签（空则自动生成 dev-时间戳）')
+        booleanParam(name: 'AUTO_DEPLOY', defaultValue: true, description: '构建后自动部署')
+    }
+    stages {
+        stage('构建前端') {
+            steps {
+                dir("${MODULE_PATH}") {
+                    sh """
+                        pnpm install --frozen-lockfile
+                        pnpm build
+                    """
+                }
+            }
+        }
+
+        stage('构建Docker镜像') {
+            steps {
+                script {
+                    dir("${MODULE_PATH}") {
+                        docker.withRegistry("http://${HARBOR_URL}", 'harbor-admin') {
+                            sh """
+                                docker build \
+                                    -t ${HARBOR_URL}/${HARBOR_PROJECT}/${APP_NAME}:${IMAGE_TAG} \
+                                    -t ${HARBOR_URL}/${HARBOR_PROJECT}/${APP_NAME}:latest \
+                                    .
+                                docker push ${HARBOR_URL}/${HARBOR_PROJECT}/${APP_NAME}:${IMAGE_TAG}
+                                docker push ${HARBOR_URL}/${HARBOR_PROJECT}/${APP_NAME}:latest
+                            """
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('部署') {
+            when {
+                expression { params.AUTO_DEPLOY == true }
+            }
+            steps {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'harbor-admin',
+                        usernameVariable: 'HARBOR_USERNAME',
+                        passwordVariable: 'HARBOR_PASSWORD'
+                    )
+                ]) {
+                    sshagent(['carlos-ai-ssh']) {
+                        sh """
+                            ssh -p ${DEPLOY_SSH_PORT} -o StrictHostKeyChecking=no ${DEPLOY_USER}@${DEPLOY_HOST} "
+                                echo '${HARBOR_PASSWORD}' | docker login ${HARBOR_URL} -u '${HARBOR_USERNAME}' --password-stdin
+                                docker pull ${HARBOR_URL}/${HARBOR_PROJECT}/${APP_NAME}:${IMAGE_TAG}
+
+                                cd /data/carlos
+                                sed -i 's|image: ${HARBOR_URL}/${HARBOR_PROJECT}/${APP_NAME}:.*|image: ${HARBOR_URL}/${HARBOR_PROJECT}/${APP_NAME}:${IMAGE_TAG}|' docker-compose.yml
+                                docker compose up -d ${APP_NAME}
+                                docker compose ps ${APP_NAME}
+                            "
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('健康检查') {
+            when {
+                expression { params.AUTO_DEPLOY == true }
+            }
+            steps {
+                sshagent(['carlos-ai-ssh']) {
+                    sh """
+                        sleep 5
+                        ssh -p ${DEPLOY_SSH_PORT} -o StrictHostKeyChecking=no ${DEPLOY_USER}@${DEPLOY_HOST} "
+                            curl -sf -o /dev/null http://localhost:${HOST_PORT} || echo 'WARN: 健康检查未通过'
+                        "
+                    """
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "${APP_NAME} 构建成功，镜像: ${HARBOR_URL}/${HARBOR_PROJECT}/${APP_NAME}:${IMAGE_TAG}"
+        }
+        failure {
+            error("${APP_NAME} 构建失败")
+        }
+    }
+}

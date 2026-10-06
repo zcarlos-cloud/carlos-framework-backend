@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<converter>
+    <!-- MYSQL 数值类型-->
+    <type key="INT" value="java.lang.Integer"/>
+    <type key="INT UNSIGNED" value="java.lang.Integer"/>
+    <type key="TINYINT" value="java.lang.Integer"/>
+    <type key="TINYINT UNSIGNED" value="java.lang.Integer"/>
+    <type key="SMALLINT" value="java.lang.Integer"/>
+    <type key="SMALLINT UNSIGNED" value="java.lang.Integer"/>
+    <type key="MEDIUMINT" value="java.lang.Integer"/>
+    <type key="MEDIUMINT UNSIGNED" value="java.lang.Integer"/>
+    <type key="INTEGER" value="java.lang.Long"/>
+    <type key="INTEGER UNSIGNED" value="java.lang.Long"/>
+    <type key="BIGINT" value="java.lang.Long"/>
+    <type key="BIGINT UNSIGNED" value="java.lang.Long"/>
+    <type key="FLOAT" value="java.math.BigDecimal"/>
+    <type key="DOUBLE" value="java.math.BigDecimal"/>
+    <type key="DECIMAL" value="java.math.BigDecimal"/>
+
+    <!-- MYSQL 日期和时间类型-->
+    <type key="DATE" value="java.time.LocalDate"/>
+    <type key="TIME" value="java.time.LocalTime"/>
+    <type key="YEAR" value="java.time.Year"/>
+    <type key="DATETIME" value="java.time.LocalDateTime"/>
+    <type key="TIMESTAMP" value="java.time.LocalDateTime"/>
+
+    <!-- MYSQL 字符串类型-->
+    <type key="CHAR" value="java.lang.String"/>
+    <type key="VARCHAR" value="java.lang.String"/>
+    <type key="TEXT" value="java.lang.String"/>
+    <type key="BLOB" value="java.lang.Byte[]"/>
+    <type key="BOOLEAN" value="java.lang.Integer"/>
+    <type key="BIT" value="java.lang.Boolean"/>
+
+    <!-- ORACLE -->
+    <type key="VARCHAR2" value="java.lang.String"/>
+    <type key="NVARCHAR2" value="java.lang.String"/>
+    <type key="NUMBER" value="Long"/>
+    <type key="CHAR" value="java.lang.String"/>
+</converter>

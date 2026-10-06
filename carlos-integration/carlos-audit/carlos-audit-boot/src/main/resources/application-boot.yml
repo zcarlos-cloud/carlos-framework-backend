@@ -1,0 +1,70 @@
+# ==========================================
+# carlos-audit-boot 本地数据源/缓存补充配置
+# 说明：补充 boot profile 下使用的 Redis 缓存、ClickHouse 连接等配置
+# ==========================================
+
+# ======================== 缓存数据库配置（Redis） ========================
+spring:
+  data:
+    redis:
+      # Redis 数据库索引
+      database: ${REDIS_DB:0}
+      # Redis 服务器地址
+      host: ${REDIS_IP:localhost}
+      # Redis 服务器端口
+      port: ${REDIS_PORT:6379}
+      # Redis 密码
+      password: ${REDIS_PWD:}
+      # 连接超时时间
+      timeout: 10s
+      lettuce:
+        pool:
+          # 最大活跃连接数
+          max-active: 100
+          # 最大空闲连接数
+          max-idle: 50
+          # 最小空闲连接数
+          min-idle: 10
+          # 最大等待时间
+          max-wait: 2000ms
+
+# ======================== 审计归档存储配置 ========================
+carlos:
+  audit:
+    archive:
+      enabled: true
+      # 冷数据天数
+      cold-days: 7
+      # 归档执行 cron
+      cron: "0 0 2 * * ?"
+      # 归档文件格式：CSV, PARQUET, JSON
+      format: CSV
+      # 存储类型：OSS, S3, MINIO, LOCAL
+      storage-type: MINIO
+      # MinIO/OSS 配置（优先从环境变量读取）
+      oss:
+        endpoint: ${MINIO_HOST:}
+        access-key-id: ${MINIO_USERNAME:}
+        access-key-secret: ${MINIO_PWD:}
+        bucket-name: ${CARLOS_AUDIT_BUCKET:carlos-audit}
+        prefix: audit-logs/
+
+  # ======================== 定时任务（carlos-job 调度中心派发） ========================
+  # 审计模块的周期任务（ClickHouse 批量刷新、冷数据归档）已统一为 @ScheduleJob 注解任务，
+  # 由 carlos-job 调度中心派发，不再使用本地 @Scheduled。
+  # 注意：job_info 库表是调度配置的唯一真相源，注解只在任务不存在时播种一次；
+  #       上方 carlos.audit.archive.cron 已不再生效，调整调度请到任务管理后台改任务记录。
+  job:
+    client:
+      # 调度中心地址（carlos-job-boot 默认 9516 端口），配置后启动时自动注册注解任务
+      admin-url: ${CARLOS_JOB_ADMIN_URL:}
+      # 注册令牌，需与调度中心 carlos.job.access-token 配对（两者都空则不校验）
+      access-token: ${CARLOS_JOB_ACCESS_TOKEN:}
+
+---
+# ======================== MyBatis 实体 fill 注解启动期校验 ========================
+carlos:
+  mybatis:
+    # 实体包扫描路径：启动时校验实体上 fill 注解的字段是否可自动填充（error 告警不阻断）
+    entity-packages:
+      - com.carlos.audit

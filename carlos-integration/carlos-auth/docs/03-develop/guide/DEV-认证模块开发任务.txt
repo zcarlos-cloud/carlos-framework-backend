@@ -1,0 +1,1 @@
+1.前端密码采用sm2对称加密方式传输；  -> 已完成（支持 SM2 非对称加密解密，LoginRequest 新增 encrypted 字段标识）

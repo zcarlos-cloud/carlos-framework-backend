@@ -1,0 +1,155 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: #APP_NAME
+  namespace: #NAMESPACE
+  labels:
+    app: #APP_NAME
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: #APP_NAME
+  template:
+    metadata:
+      labels:
+        app: #APP_NAME
+    spec:
+      containers:
+        -
+          name: #APP_NAME
+          image: #APP_IMAGE_NAME
+      imagePullPolicy: IfNotPresent
+        ports:
+          -
+          containerPort: #SERVER_PORT
+          protocol: TCP
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "500Mi"
+          limits:
+            cpu: "1000m"
+            memory: "5Gi"
+        env:
+          -
+            name: TZ
+            value: Asia/Shanghai
+          -
+            name: NACOS_ADDR
+            value: '192.168.1.169:18848'
+          -
+            name: SERVER_PORT
+            value: '#SERVER_PORT'
+          -
+            name: NACOS_NAMESPACE
+            value: 'carlos-spring-boot-starterbbt-master'
+          -
+            name: NACOS_USERNAME
+            value: 'carlos'
+          -
+            name: NACOS_PASSWORD
+            value: 'carlos@123456'
+          -
+            name: NACOS_GROUP
+            value: MASTER
+          -
+            name: DEFAULT_PASSWORD
+            value: '@bbt2023'
+          -
+            name: "update_uuid"
+            value: "#APP_UUID"    #生成的随机值，放置执行kubectl apply时能够执行
+          # mysql配置
+          -
+            name: MYSQL_URL
+            value: '192.168.1.169:13306/carlos_bbt'
+          -
+            name: MYSQL_USERNAME
+            value: bbt
+          -
+            name: MYSQL_PWD
+            value: 'bbt@123456'
+
+
+          # redis配置
+          -
+            name: REDIS_IP
+            value: 192.168.1.169
+          -
+            name: REDIS_PORT
+            value: "16379"
+          -
+            name: REDIS_DB
+            value: "1"
+          -
+            name: REDIS_PWD
+            value: 'carlos@123456'
+
+          # 蓉政通接入配置
+          -
+            name: RZT_ENABLE
+            value: "false"
+          -
+            name: RZT_DEBUG
+            value: "true"
+          -
+            name: RZT_API_HOST
+            value: 'http://221.237.109.213:30080'
+          -
+            name: RZT_API_PATH
+            value: cgi-bin
+          -
+            name: RZT_CORPID
+            value: wwa1a67ed0008261d9
+          -
+            name: RZT_SECRET
+            value: 'WYyv-4MtnMPKP0GsjPqXMjFwTaZTM1pP5GMAO9cra7c'
+          -
+            name: RZT_AGENTID
+            value: "1000090"
+
+          # 事件中枢接入配置
+          -
+            name: EVENT_ENABLE
+            value: 'false'
+          -
+            name: EVENT_API_HOST
+            value: 'http://192.168.0.104:14001'
+          -
+            name: EVENT_API_PATH
+            value: '/api/user'
+          # 钉钉接入配置
+          -
+            name: DINGTALK_ENABLE
+            value: 'false'
+          -
+            name: DINGTALK_API_HOST
+            value: 'https://oapi.dingtalk.com'
+          -
+            name: DINGTALK_APPKEY
+            value: 'dingxqwggchkeyfnvbts'
+          -
+            name: DINGTALK_APPSECRET
+            value: 'MM5wAUZJtM3s0FCfQH5bkCuVITzJi7W0qIKXe9MVMON7WT4QXogEDK5xIV57S3tG'
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: #APP_NAME
+  namespace: #NAMESPACE
+spec:
+  selector:
+    app: #APP_NAME
+  type: NodePort
+  ports:
+    -
+      name: #APP_NAME
+      port: #SERVER_PORT
+      nodePort: #NODE_PORT
+
+
+
+
+
+

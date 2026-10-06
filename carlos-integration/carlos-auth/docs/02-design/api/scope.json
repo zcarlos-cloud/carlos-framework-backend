@@ -1,0 +1,497 @@
+{
+  "data": [
+    {
+      "scopeList": [
+        {
+          "authed": true,
+          "authedStatusDesc": "已开通",
+          "business": false,
+          "canEdit": true,
+          "openApiScopeVO": {
+            "apiList": [
+              {
+                "docUrl": "https://developers.dingtalk.com/document/app/dingtalk-retrieve-user-information",
+                "name": "获取用户个人信息",
+                "uuid": "contact_1.0#GetUser"
+              }
+            ],
+            "category": {
+              "id": 1,
+              "name": "个人权限"
+            },
+            "desc": "个人手机号信息",
+            "status": "FULLY_OPEN",
+            "value": "Contact.User.mobile"
+          },
+          "requiredApproval": false,
+          "status": 0
+        }
+      ],
+      "title": "个人权限"
+    },
+    {
+      "scopeList": [
+        {
+          "authed": false,
+          "authedStatusDesc": "未开通",
+          "business": false,
+          "canEdit": true,
+          "openApiScopeVO": {
+            "apiList": [
+              {
+                "docUrl": "https://open.dingtalk.com/document/orgapp-server/query-user-details",
+                "name": "查询用户详情",
+                "uuid": "dingtalk.oapi.v2.user.get"
+              }
+            ],
+            "category": {
+              "id": 200,
+              "name": "通讯录管理"
+            },
+            "desc": "邮箱等个人信息",
+            "status": "FULLY_OPEN",
+            "value": "fieldEmail"
+          },
+          "requiredApproval": false,
+          "status": 0
+        }
+      ],
+      "title": "通讯录管理"
+    },
+    {
+      "scopeList": [
+        {
+          "authed": false,
+          "authedStatusDesc": "未开通",
+          "business": false,
+          "canEdit": true,
+          "openApiScopeVO": {
+            "apiList": [
+              {
+                "docUrl": "https://developers.dingtalk.com/document/app/api-getemployeerosterbyfield",
+                "name": "获取员工花名册指定字段的信息，支持明细分组字段",
+                "uuid": "hrm_1.0#GetEmployeeRosterByField"
+              },
+              {
+                "docUrl": "https://developers.dingtalk.com/document/isvapp/obtain-the-list-of-employees-who-have-left",
+                "name": "获取离职员工列表",
+                "uuid": "hrm_1.0#QueryDismissionStaffIdList"
+              },
+              {
+                "docUrl": "https://developers.dingtalk.com/document/isvapp/obtain-multiple-employee-demission-information-1",
+                "name": "根据传入的staffId列表，批量查询员工的离职信息",
+                "uuid": "hrm_1.0#QueryHrmEmployeeDismissionInfo"
+              },
+              {
+                "docUrl": "https://developers.dingtalk.com/document/isvapp/obtains-a-list-of-enterprise-jobs",
+                "name": "获取企业职务列表",
+                "uuid": "hrm_1.0#QueryJobs"
+              },
+              {
+                "docUrl": "https://developers.dingtalk.com/document/isvapp/obtain-a-list-of-enterprise-ranks",
+                "name": "获取企业职级列表",
+                "uuid": "hrm_1.0#QueryJobRanks"
+              },
+              {
+                "docUrl": "https://developers.dingtalk.com/document/isvapp/obtain-a-list-of-enterprise-positions",
+                "name": "获取企业职位列表",
+                "uuid": "hrm_1.0#QueryPositions"
+              },
+              {
+                "docUrl": "https://developers.dingtalk.com/document/isvapp/intelligent-personnel-roster-metadata-query",
+                "name": "智能人事花名册元数据查询",
+                "uuid": "dingtalk.oapi.smartwork.hrm.roster.meta.get"
+              },
+              {
+                "docUrl": "https://developers.dingtalk.com/document/orgapp/intelligent-personnel-obtain-employee-roster-information",
+                "name": "智能人事获取员工花名册信息",
+                "uuid": "dingtalk.oapi.smartwork.hrm.employee.v2.list"
+              },
+              {
+                "docUrl": "https://developers.dingtalk.com/document/orgapp/get-roster-field-group-details",
+                "name": "获取花名册字段组详情",
+                "uuid": "dingtalk.oapi.smartwork.hrm.employee.field.grouplist"
+              },
+              {
+                "docUrl": "https://developers.dingtalk.com/document/isvapp/intelligent-personnel-query-the-list-of-on-the-job-employees-of-the",
+                "name": "获取在职员工列表",
+                "uuid": "dingtalk.oapi.smartwork.hrm.employee.queryonjob"
+              },
+              {
+                "docUrl": "https://developers.dingtalk.com/document/isvapp/intelligent-personnel-query-the-list-of-employees-to-be-hired",
+                "name": "获取待入职员工列表",
+                "uuid": "dingtalk.oapi.smartwork.hrm.employee.querypreentry"
+              },
+              {
+                "docUrl": "https://developers.dingtalk.com/document/isvapp/obtaining-employee-roster-field-information",
+                "name": "获取员工花名册字段信息",
+                "uuid": "dingtalk.oapi.smartwork.hrm.employee.list"
+              }
+            ],
+            "category": {
+              "id": 1100,
+              "name": "智能人事"
+            },
+            "desc": "智能人事个人信息读权限",
+            "status": "FULLY_OPEN",
+            "value": "qyapi_hrm_read_user"
+          },
+          "requiredApproval": false,
+          "status": 0
+        }
+      ],
+      "title": "智能人事"
+    },
+    {
+      "scopeList": [
+        {
+          "authed": false,
+          "authedStatusDesc": "未开通",
+          "business": false,
+          "canEdit": true,
+          "openApiScopeVO": {
+            "apiList": [
+              {
+                "docUrl": "https://developers.dingtalk.com/document/orgapp/api-addcollegecontactuser",
+                "name": "创建个人账号用户",
+                "uuid": "edu_1.0#AddCollegeContactUser"
+              },
+              {
+                "docUrl": "https://developers.dingtalk.com/document/orgapp/api-updatecollegecontactuser",
+                "name": "更新个人账号用户",
+                "uuid": "edu_1.0#UpdateCollegeContactUser"
+              },
+              {
+                "docUrl": "https://developers.dingtalk.com/document/orgapp/api-updatecollegecontactdept",
+                "name": "更新高校通讯录组织单元",
+                "uuid": "edu_1.0#UpdateCollegeContactDept"
+              },
+              {
+                "docUrl": "https://developers.dingtalk.com/document/orgapp/api-createcollegecontactdept",
+                "name": "创建高校通讯录组织单元",
+                "uuid": "edu_1.0#CreateCollegeContactDept"
+              },
+              {
+                "docUrl": "https://developers.dingtalk.com/document/orgapp/api-updatecollegeuseremptype",
+                "name": "修改用户成员类型",
+                "uuid": "edu_1.0#UpdateCollegeUserEmpType"
+              },
+              {
+                "docUrl": "https://developers.dingtalk.com/document/orgapp/api-updatecollegecontactexclusive",
+                "name": "更新高校账号用户",
+                "uuid": "edu_1.0#UpdateCollegeContactExclusive"
+              },
+              {
+                "docUrl": "https://developers.dingtalk.com/document/orgapp/api-addcollegecontactexclusive",
+                "name": "创建高校账号用户",
+                "uuid": "edu_1.0#AddCollegeContactExclusive"
+              }
+            ],
+            "category": {
+              "id": 3000,
+              "name": "新教育"
+            },
+            "desc": "钉钉教育高校通讯录写权限",
+            "status": "FULLY_OPEN",
+            "value": "Edu.College.Contact.Write"
+          },
+          "requiredApproval": false,
+          "status": 0
+        }
+      ],
+      "title": "新教育"
+    },
+    {
+      "scopeList": [
+        {
+          "authed": false,
+          "authedStatusDesc": "未开通",
+          "business": false,
+          "canEdit": true,
+          "openApiScopeVO": {
+            "apiList": [
+              {
+                "docUrl": "https://developers.dingtalk.com/document/orgapp/delete-crm-personal-customer",
+                "name": "删除crm个人客户（或企业客户）",
+                "uuid": "crm_1.0#DeleteCrmPersonalCustomer"
+              },
+              {
+                "docUrl": "https://developers.dingtalk.com/document/orgapp/add-crm-personal-customers",
+                "name": "添加crm个人客户（或企业客户）",
+                "uuid": "crm_1.0#AddCrmPersonalCustomer"
+              },
+              {
+                "docUrl": "https://developers.dingtalk.com/document/orgapp/batch-update-follow-up-record-data",
+                "name": "批量修改跟进记录",
+                "uuid": "crm_1.0#BatchUpdateFollowRecords"
+              },
+              {
+                "docUrl": "https://developers.dingtalk.com/document/orgapp/batch-add-follow-up-record-data",
+                "name": "批量新增跟进记录",
+                "uuid": "crm_1.0#BatchAddFollowRecords"
+              },
+              {
+                "docUrl": "https://developers.dingtalk.com/document/orgapp/batch-delete-follow-up-record-data",
+                "name": "批量删除跟进记录",
+                "uuid": "crm_1.0#BatchRemoveFollowRecords"
+              },
+              {
+                "docUrl": "https://developers.dingtalk.com/document/orgapp/delete-crm-custom-object-data",
+                "name": "删除CRM自定义对象数据",
+                "uuid": "crm_1.0#DeleteCrmCustomObjectData"
+              },
+              {
+                "docUrl": "https://developers.dingtalk.com/document/orgapp/modify-contact-data-in-batches",
+                "name": "批量修改联系人",
+                "uuid": "crm_1.0#BatchUpdateContacts"
+              },
+              {
+                "docUrl": "https://developers.dingtalk.com/document/orgapp/add-contact-data-in-batches",
+                "name": "批量新增联系人",
+                "uuid": "crm_1.0#BatchAddContacts"
+              },
+              {
+                "docUrl": "https://developers.dingtalk.com/document/orgapp/add-multiple-relationship-data-in-batches",
+                "name": "批量新增关系数据",
+                "uuid": "crm_1.0#BatchAddRelationDatas"
+              },
+              {
+                "docUrl": "https://developers.dingtalk.com/document/orgapp/update-multiple-relational-data-tables-at-a-time",
+                "name": "批量修改关系数据",
+                "uuid": "crm_1.0#BatchUpdateRelationDatas"
+              },
+              {
+                "docUrl": "https://developers.dingtalk.com/document/orgapp/delete-crm-contact",
+                "name": "删除联系人数据",
+                "uuid": "dingtalk.oapi.crm.objectdata.contact.delete"
+              }
+            ],
+            "category": {
+              "id": 4100,
+              "name": "客户管理"
+            },
+            "desc": "维护CRM主数据的接口写入权限",
+            "status": "FULLY_OPEN",
+            "value": "qyapi_crm_maindata_write"
+          },
+          "requiredApproval": false,
+          "status": 0
+        },
+        {
+          "authed": false,
+          "authedStatusDesc": "未开通",
+          "business": false,
+          "canEdit": true,
+          "openApiScopeVO": {
+            "apiList": [
+              {
+                "docUrl": "https://developers.dingtalk.com/document/orgapp/crm-obtains-all-private-sea-customer-data",
+                "name": "获取全量个人或企业客户数据",
+                "uuid": "crm_1.0#QueryAllCustomer"
+              },
+              {
+                "docUrl": "https://developers.dingtalk.com/document/isvapp/acquire-crm-individual-customers-in-batches",
+                "name": "批量获取crm个人客户",
+                "uuid": "crm_1.0#ListCrmPersonalCustomers"
+              },
+              {
+                "docUrl": "https://developers.dingtalk.com/document/isvapp/get-metadata-description-of-crm-customer-object-1",
+                "name": "获取个人或企业客户的元数据",
+                "uuid": "crm_1.0#DescribeCrmPersonalCustomerObjectMeta"
+              },
+              {
+                "docUrl": "https://developers.dingtalk.com/document/isvapp/obtain-duplicate-check-fields",
+                "name": "获取个人或企业客户查重字段",
+                "uuid": "crm_1.0#GetRelationUkSetting"
+              },
+              {
+                "docUrl": "https://developers.dingtalk.com/document/isvapp/api-getcontacts",
+                "name": "根据指定条件查询联系人数据",
+                "uuid": "crm_1.0#GetContacts"
+              },
+              {
+                "docUrl": "https://developers.dingtalk.com/document/isvapp/get-customer-management-global-information",
+                "name": "营销服融合三方全局信息",
+                "uuid": "crm_1.0#QueryGlobalInfo"
+              },
+              {
+                "docUrl": "https://developers.dingtalk.com/document/isvapp/querying-customer-data",
+                "name": "查询客户数据",
+                "uuid": "crm_1.0#QueryRelationDatasByTargetId"
+              },
+              {
+                "docUrl": "https://developers.dingtalk.com/document/isvapp/obtains-crm-individual-customers-in-batches-based-on-specified-query",
+                "name": "根据指定查询条件批量获取客户数据",
+                "uuid": "crm_1.0#QueryCrmPersonalCustomer"
+              },
+              {
+                "docUrl": "https://developers.dingtalk.com/document/orgapp/dingtalk-the-primary-data-of-apsara-stack-agility-paas-allows-you",
+                "name": "根据ID列表批量获取跟进记录数据",
+                "uuid": "dingtalk.oapi.crm.objectdata.followrecord.list"
+              },
+              {
+                "docUrl": "https://developers.dingtalk.com/document/orgapp/query-and-dingtalk-data-of-track-records-in-apsara-stack",
+                "name": "根据指定条件查询跟进记录数据",
+                "uuid": "dingtalk.oapi.crm.objectdata.followrecord.query"
+              },
+              {
+                "docUrl": "https://developers.dingtalk.com/document/orgapp/retrieves-contact-data-in-batches-based-on-the-id-list",
+                "name": "按照ID列表批量获取联系人数据",
+                "uuid": "dingtalk.oapi.crm.objectdata.contact.list"
+              },
+              {
+                "docUrl": "https://developers.dingtalk.com/document/isvapp/get-metadata-for-a-contact",
+                "name": "获取联系人的元数据",
+                "uuid": "dingtalk.oapi.crm.objectmeta.contact.describe"
+              },
+              {
+                "docUrl": "https://developers.dingtalk.com/document/isvapp/get-the-metadata-of-the-follow-up-record-object",
+                "name": "获取跟进记录对象的元数据",
+                "uuid": "dingtalk.oapi.crm.objectmeta.followrecord.describe"
+              }
+            ],
+            "category": {
+              "id": 4100,
+              "name": "客户管理"
+            },
+            "desc": "获取CRM主数据的接口访问权限",
+            "status": "FULLY_OPEN",
+            "value": "qyapi_crm_maindata_read"
+          },
+          "requiredApproval": false,
+          "status": 0
+        }
+      ],
+      "title": "客户管理"
+    },
+    {
+      "scopeList": [
+        {
+          "authed": false,
+          "authedStatusDesc": "未开通",
+          "business": false,
+          "canEdit": true,
+          "openApiScopeVO": {
+            "apiList": [
+              {
+                "docUrl": "https://developers.dingtalk.com/document/isvapp/obtains-the-information-about-how-to-join-or-apply-to",
+                "name": "获取加入或申请加入上下游组织的组织和个人信息",
+                "uuid": "dingtalk.oapi.union.cooperate.info.list"
+              },
+              {
+                "docUrl": "https://developers.dingtalk.com/document/isvapp/obtains-information-about-the-workspaces-that-the-enterprise-has-joined",
+                "name": "获取企业已经加入或申请加入的上下游组织的信息",
+                "uuid": "dingtalk.oapi.union.cooperate.joined.list"
+              },
+              {
+                "docUrl": "https://developers.dingtalk.com/document/isvapp/obtains-the-branch-organization-list",
+                "name": "获取分支组织列表",
+                "uuid": "dingtalk.oapi.org.union.branch.get"
+              },
+              {
+                "docUrl": "https://developers.dingtalk.com/document/isvapp/obtain-backbone-organization-list",
+                "name": "获取主干组织列表",
+                "uuid": "dingtalk.oapi.org.union.trunk.get"
+              }
+            ],
+            "category": {
+              "id": 4300,
+              "name": "互联平台"
+            },
+            "desc": "钉钉通讯录关联组织读权限",
+            "status": "FULLY_OPEN",
+            "value": "qyapi_related_org_read"
+          },
+          "requiredApproval": false,
+          "status": 0
+        }
+      ],
+      "title": "互联平台"
+    },
+    {
+      "scopeList": [
+        {
+          "authed": false,
+          "authedStatusDesc": "未开通",
+          "business": false,
+          "canEdit": true,
+          "openApiScopeVO": {
+            "apiList": [
+              {
+                "docUrl": "https://developers.dingtalk.com/document/isvapp/update-robot-send-interactive-card-normal-version",
+                "name": "机器人更新可交互式卡片(个人、企业)",
+                "uuid": "im_1.0#UpdateRobotInteractiveCard"
+              },
+              {
+                "docUrl": "https://developers.dingtalk.com/document/isvapp/the-robot-sends-ordinary-messages-in-a-person-to-person-conversation",
+                "name": "人与人会话中机器人发送普通消息",
+                "uuid": "robot_1.0#PrivateChatSend"
+              },
+              {
+                "docUrl": "https://developers.dingtalk.com/document/orgapp/query-the-read-list-of-robot-messages-in-person-to-person-conversations",
+                "name": "查询人与人会话中机器人已读消息",
+                "uuid": "robot_1.0#PrivateChatQuery"
+              },
+              {
+                "docUrl": "https://developers.dingtalk.com/document/orgapp/batch-withdrawal-of-single-chat-robot-messages-in-person-to-person-conversations",
+                "name": "批量撤回人与人会话中机器人消息",
+                "uuid": "robot_1.0#BatchRecallPrivateChat"
+              },
+              {
+                "docUrl": "https://developers.dingtalk.com/document/orgapp/download-the-file-content-of-the-robot-receiving-message",
+                "name": "获取机器人消息中文件下载链接",
+                "uuid": "robot_1.0#RobotMessageFileDownload"
+              },
+              {
+                "docUrl": "https://developers.dingtalk.com/document/orgapp/enterprise-chatbot-withdraws-internal-group-messages",
+                "name": "企业机器人撤回内部群消息",
+                "uuid": "robot_1.0#OrgGroupRecall"
+              },
+              {
+                "docUrl": "https://developers.dingtalk.com/document/orgapp/chatbot-queries-the-read-status-of-a-message",
+                "name": "查询企业机器人群聊消息用户已读状态",
+                "uuid": "robot_1.0#OrgGroupQuery"
+              },
+              {
+                "docUrl": "https://developers.dingtalk.com/document/isvapp/robot-sends-interactive-cards-normal-version",
+                "name": "机器人发送互动卡片（普通版）",
+                "uuid": "im_1.0#SendRobotInteractiveCard"
+              },
+              {
+                "docUrl": "https://developers.dingtalk.com/document/isvapp/bots-send-group-chat-messages",
+                "name": "机器人发送群聊消息",
+                "uuid": "robot_1.0#OrgGroupSend"
+              },
+              {
+                "docUrl": "https://developers.dingtalk.com/document/orgapp/batch-message-recall-chat",
+                "name": "批量撤回人与机器人会话中机器人消息",
+                "uuid": "robot_1.0#BatchRecallOTO"
+              },
+              {
+                "docUrl": "https://developers.dingtalk.com/document/isvapp/batch-query-whether-a-robot-chat-message-has-been-read",
+                "name": "批量查询人与机器人会话机器人消息是否已读",
+                "uuid": "robot_1.0#BatchOTOQuery"
+              },
+              {
+                "docUrl": "https://developers.dingtalk.com/document/orgapp/chatbots-send-one-on-one-chat-messages-in-batches",
+                "name": "批量发送人与机器人会话中机器人消息",
+                "uuid": "robot_1.0#BatchSendOTO"
+              }
+            ],
+            "category": {
+              "id": 5900,
+              "name": "机器人"
+            },
+            "desc": "企业内机器人发送消息权限",
+            "status": "FULLY_OPEN",
+            "value": "qyapi_robot_sendmsg"
+          },
+          "requiredApproval": false,
+          "status": 0
+        }
+      ],
+      "title": "机器人"
+    }
+  ],
+  "success": true
+}

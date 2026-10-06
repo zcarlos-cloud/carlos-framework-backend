@@ -1,0 +1,116 @@
+package com.carlos.org.pojo.entity;
+
+
+import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.extension.activerecord.Model;
+import com.carlos.org.pojo.enums.OrgDepartmentStateEnum;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.Data;
+import lombok.experimental.Accessors;
+
+import java.io.Serializable;
+import java.time.LocalDateTime;
+
+/**
+ * <p>
+ * 部门 数据源对象
+ * </p>
+ *
+ * @author Carlos
+ * @date 2026年2月28日 下午1:25:36
+ */
+@Data
+@Accessors(chain = true)
+@TableName("org_department")
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class OrgDepartment extends Model<OrgDepartment> implements Serializable {
+    private static final long serialVersionUID = 1L;
+    /**
+     * 主键
+     */
+    @TableId(type = IdType.ASSIGN_ID, value = "id")
+    private Long id;
+    /**
+     * 父id
+     */
+    @TableField(value = "parent_id")
+    private Long parentId;
+    /**
+     * 部门名称
+     */
+    @TableField(value = "dept_name")
+    private String deptName;
+    /**
+     * 部门编号
+     */
+    @TableField(value = "dept_code")
+    private String deptCode;
+    /**
+     * 部门路径
+     */
+    @TableField(value = "path")
+    private String path;
+    /**
+     * 负责人id
+     */
+    @TableField(value = "leader_id")
+    private Long leaderId;
+    /**
+     * 状态，0：禁用，1：启用
+     */
+    @TableField(value = "dept_status")
+    private OrgDepartmentStateEnum deptStatus;
+    /**
+     * 排序
+     */
+    @TableField(value = "order_num")
+    private Integer orderNum;
+    /**
+     * 层级
+     */
+    @TableField(value = "level")
+    private Integer level;
+    /**
+     * 备注
+     */
+    @TableField(value = "description")
+    private String description;
+    /**
+     * 版本
+     */
+    @Version
+    @TableField(value = "version")
+    private Integer version;
+    /**
+     * 逻辑删除，0：未删除，1：已删除
+     */
+    @TableLogic
+    @TableField(value = "is_deleted")
+    private Boolean deleted;
+    /**
+     * 创建者
+     */
+    @TableField(value = "create_by", fill = FieldFill.INSERT)
+    private Long createBy;
+    /**
+     * 创建时间
+     */
+    @TableField(value = "create_time", fill = FieldFill.INSERT)
+    private LocalDateTime createTime;
+    /**
+     * 修改者
+     */
+    @TableField(value = "update_by", fill = FieldFill.UPDATE)
+    private Long updateBy;
+    /**
+     * 修改时间
+     */
+    @TableField(value = "update_time", fill = FieldFill.UPDATE)
+    private LocalDateTime updateTime;
+    /**
+     * 租户id
+     */
+    @TableField(value = "tenant_id")
+    private Long tenantId;
+
+}

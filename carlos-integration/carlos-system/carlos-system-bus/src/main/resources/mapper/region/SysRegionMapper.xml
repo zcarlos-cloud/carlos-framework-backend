@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.carlos.system.region.mapper.SysRegionMapper">
+  <resultMap type="com.carlos.system.region.pojo.entity.SysRegion" id="baseMap">
+    <id column="id" property="id"/>
+    <result column="region_code" property="regionCode"/>
+    <result column="region_name" property="regionName"/>
+    <result column="parent_code" property="parentCode"/>
+    <result column="parents" property="parents"/>
+    <result column="remark" property="remark"/>
+    <result column="region_type" property="regionType"/>
+    <result column="region_area" property="regionArea"/>
+    <result column="region_people_number" property="regionPeopleNumber"/>
+    <result column="region_level" property="regionLevel"/>
+    <result column="region_leader" property="regionLeader"/>
+    <result column="extend" property="extend"/>
+    <result column="longitude" property="longitude"/>
+    <result column="latitude" property="latitude"/>
+    <result column="bound_left" property="boundLeft"/>
+    <result column="bound_right" property="boundRight"/>
+    <result column="bound_bottom" property="boundBottom"/>
+    <result column="bound_top" property="boundTop"/>
+    <result column="gis_oid" property="gisOid"/>
+    <result column="create_by" property="createBy"/>
+    <result column="create_time" property="createTime"/>
+    <result column="update_by" property="updateBy"/>
+    <result column="update_time" property="updateTime"/>
+  </resultMap>
+</mapper>

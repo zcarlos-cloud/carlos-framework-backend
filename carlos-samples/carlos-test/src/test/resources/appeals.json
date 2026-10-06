@@ -1,0 +1,362 @@
+[
+  {
+    "value": "10",
+    "label": "无诉求"
+  },
+  {
+    "value": "1",
+    "label": "退役安置类",
+    "children": [
+      {
+        "value": "11",
+        "label": "安排工作"
+      },
+      {
+        "value": "12",
+        "label": "落实编制"
+      },
+      {
+        "value": "13",
+        "label": "落实待遇",
+        "children": [
+          {
+            "value": "131",
+            "label": "同工同酬"
+          },
+          {
+            "value": "132",
+            "label": "政治和生活待遇"
+          }
+        ]
+      },
+      {
+        "value": "14",
+        "label": "户口办理"
+      },
+      {
+        "value": "15",
+        "label": "随迁随调",
+        "children": [
+          {
+            "value": "151",
+            "label": "家属就业"
+          },
+          {
+            "value": "152",
+            "label": "子女就学"
+          }
+        ]
+      },
+      {
+        "value": "17",
+        "label": "职级并行"
+      },
+      {
+        "value": "16",
+        "label": "其他"
+      }
+    ]
+  },
+  {
+    "value": "2",
+    "label": "优待抚恤类",
+    "children": [
+      {
+        "value": "21",
+        "label": "身份认定",
+        "children": [
+          {
+            "value": "211",
+            "label": "参战"
+          },
+          {
+            "value": "212",
+            "label": "参试"
+          },
+          {
+            "value": "213",
+            "label": "烈士遗属"
+          },
+          {
+            "value": "214",
+            "label": "因公牺牲军人遗属"
+          },
+          {
+            "value": "215",
+            "label": "病故军人遗属"
+          },
+          {
+            "value": "216",
+            "label": "带病回乡"
+          },
+          {
+            "value": "217",
+            "label": "伤残人员"
+          },
+          {
+            "value": "218",
+            "label": "年满60周岁农村籍退役士兵"
+          },
+          {
+            "value": "219",
+            "label": "烈士老年子女"
+          },
+          {
+            "value": "2110",
+            "label": "老复员军人"
+          }
+        ]
+      },
+      {
+        "value": "22",
+        "label": "提高伤残等级"
+      },
+      {
+        "value": "23",
+        "label": "提高抚恤补助待遇"
+      },
+      {
+        "value": "24",
+        "label": "落实优待政策",
+        "children": [
+          {
+            "value": "241",
+            "label": "优待金发放"
+          },
+          {
+            "value": "242",
+            "label": "医疗"
+          },
+          {
+            "value": "243",
+            "label": "住房"
+          },
+          {
+            "value": "244",
+            "label": "教育"
+          },
+          {
+            "value": "245",
+            "label": "文化交通"
+          },
+          {
+            "value": "246",
+            "label": "其他"
+          }
+        ]
+      },
+      {
+        "value": "25",
+        "label": "其他"
+      }
+    ]
+  },
+  {
+    "value": "3",
+    "label": "就业创业类",
+    "children": [
+      {
+        "value": "31",
+        "label": "就业推荐"
+      },
+      {
+        "value": "32",
+        "label": "创业帮扶"
+      },
+      {
+        "value": "33",
+        "label": "税收减免"
+      },
+      {
+        "value": "34",
+        "label": "技能培训"
+      },
+      {
+        "value": "35",
+        "label": "其他"
+      }
+    ]
+  },
+  {
+    "value": "4",
+    "label": "褒扬纪念类",
+    "children": [
+      {
+        "value": "41",
+        "label": "烈士评定"
+      },
+      {
+        "value": "42",
+        "label": "烈士遗骸寻找"
+      },
+      {
+        "value": "43",
+        "label": "烈士墓维护"
+      },
+      {
+        "value": "44",
+        "label": "英烈名誉保护"
+      },
+      {
+        "value": "45",
+        "label": "荣誉褒扬"
+      },
+      {
+        "value": "46",
+        "label": "其他"
+      }
+    ]
+  },
+  {
+    "value": "5",
+    "label": "军休服务类",
+    "children": [
+      {
+        "value": "51",
+        "label": "住房保障"
+      },
+      {
+        "value": "52",
+        "label": "异地就医"
+      },
+      {
+        "value": "53",
+        "label": "易地安置"
+      },
+      {
+        "value": "54",
+        "label": "生活待遇落实"
+      },
+      {
+        "value": "55",
+        "label": "服务管理机构"
+      },
+      {
+        "value": "56",
+        "label": "其他"
+      }
+    ]
+  },
+  {
+    "value": "6",
+    "label": "帮扶援助类",
+    "children": [
+      {
+        "value": "61",
+        "label": "生活困难"
+      },
+      {
+        "value": "62",
+        "label": "医疗困难"
+      },
+      {
+        "value": "63",
+        "label": "住房困难"
+      },
+      {
+        "value": "64",
+        "label": "公益性岗位"
+      },
+      {
+        "value": "65",
+        "label": "保险接续",
+        "children": [
+          {
+            "value": "651",
+            "label": "政策未落实"
+          },
+          {
+            "value": "652",
+            "label": "返还个人补缴费用"
+          },
+          {
+            "value": "653",
+            "label": "不符合政策要求享受政策"
+          },
+          {
+            "value": "654",
+            "label": "缴纳基数低（补缴年限短）"
+          }
+        ]
+      },
+      {
+        "value": "66",
+        "label": "其他"
+      }
+    ]
+  },
+  {
+    "value": "7",
+    "label": "党员管理类",
+    "children": [
+      {
+        "value": "71",
+        "label": "落实组织关系"
+      },
+      {
+        "value": "72",
+        "label": "缴纳党费"
+      },
+      {
+        "value": "73",
+        "label": "党组织生活"
+      },
+      {
+        "value": "74",
+        "label": "其他"
+      }
+    ]
+  },
+  {
+    "value": "8",
+    "label": "咨询解答类"
+  },
+  {
+    "value": "9",
+    "label": "其他",
+    "children": [
+      {
+        "value": "91",
+        "label": "涉法涉诉"
+      },
+      {
+        "value": "92",
+        "label": "部队遗留"
+      },
+      {
+        "value": "93",
+        "label": "征地拆迁"
+      },
+      {
+        "value": "94",
+        "label": "检举控告"
+      },
+      {
+        "value": "95",
+        "label": "集资诈骗"
+      },
+      {
+        "value": "96",
+        "label": "劳动保障",
+        "children": [
+          {
+            "value": "961",
+            "label": "拖欠工资"
+          },
+          {
+            "value": "962",
+            "label": "买断工龄"
+          }
+        ]
+      },
+      {
+        "value": "97",
+        "label": "企业改制"
+      },
+      {
+        "value": "98",
+        "label": "其他"
+      }
+    ]
+  }
+]

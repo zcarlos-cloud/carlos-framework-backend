@@ -1,0 +1,71 @@
+# ==============================================================================
+# 测试作用域的配置补充。本文件只做两件事：
+#
+# 一、把 Warm-Flow 的控制器排除在统一响应包装之外。
+#
+# 这段内容与下面两处生产配置里的 carlos.web.response-wrap 必须逐字一致：
+#   - carlos-workflow-boot/src/main/resources/application.yml
+#   - carlos-workflow-cloud/src/main/resources/application.yml
+# ResponseWrapExclusionTest#productionApplicationYmlsCarryTheSameExclusionStanza
+# 会解析三个文件并逐字比对，任何一处漂移都会让该用例失败。
+#
+# 二、让共享测试上下文在没有 Redis / 没有 Docker 的机器上也能装配（2026-09-26 新增）。
+#
+# 背景：本模块自接入操作日志后，pom 里新增了 carlos-spring-boot-starter-mq 与
+# carlos-spring-boot-starter-security，两者都硬依赖 carlos-spring-boot-starter-redis，
+# 于是 Redis / Redisson 第一次进入本模块的类路径。这是**有意为之的生产取舍**
+# （见 pom.xml 中那段注释），但测试必须与「外部环境」解耦（AIR 原则），
+# 因此测试 profile 显式关掉「启动期就要连上 Redis」的那几项自动配置，详见文件末尾。
+#
+# 为什么不把这两件事写进 @SpringBootTest(properties = ...)：
+# warm-flow 的 SpringUtil 用静态字段缓存第一个 ApplicationContext，同一个 JVM 里出现
+# 第二个带 FlowAutoConfig 的上下文会让后者的 initFlow 解析 WarmFlowProperties 时撞上
+# 「找到 2 个候选」而启动失败（详见 WorkflowDefinitionManagerTest 的类注释）。
+# 而上下文缓存键包含 properties 数组：只要有一个测试类的 properties 与别人不同，
+# 就会触发第二个上下文。配置文件不在缓存键里，所以这是唯一能「给共享上下文补配置、
+# 又不新建上下文」的入口。
+# ==============================================================================
+carlos:
+  web:
+    response-wrap:
+      exclude-packages:
+        - org.dromara.warm.flow.ui
+      exclude-paths:
+        - /warm-flow/**
+        - /warm-flow-ui/**
+  mq:
+    # 测试不接任何 MQ 传输。type=none 时 MqTransportRegistry 不选定任何传输
+    # （currentOrEmpty() 为空），于是 ApplicationReadyEvent 上 MqTransportLifecycle
+    # 不会去 start() 任何一个（Redis）传输，MqConsumerCoordinator 也无订阅可建；
+    # MqTemplate 退化为 NoOpMqTemplate，@Log 的装配链路仍然完整，只是不会真的写 Redis。
+    type: none
+
+spring:
+  autoconfigure:
+    exclude:
+      # 1) Redisson 官方自动配置。它声明的 redisson(RedissonClient) 是「工厂方法内即建连」的，
+      #    机器上没有 Redis 时抛 RedisConnectionException，整个上下文直接起不来
+      #    （V4 是当前生效的那个，V2 一并写上以免换版本时又踩一次）。
+      - org.redisson.spring.starter.RedissonAutoConfigurationV4
+      - org.redisson.spring.starter.RedissonAutoConfigurationV2
+      # 2) carlos 自己的 Redisson 装配（@Primary RedissonConnectionFactory、本地缓存管理器、
+      #    分布式锁/限流工具）。它的每个 @Bean 都以 RedissonClient 为入参，
+      #    排除上面两项后必然 NoSuchBeanDefinition —— 必须一起排除。
+      - com.carlos.redis.config.RedissonConfig
+      # 3) 延时队列桶管理器：同样以 RedissonClient 为入参，且它是唯一在 start() 时
+      #    会碰 Redis 的原语层组件。
+      - com.carlos.redis.delay.RedisDelayAutoConfiguration
+      # 4) 雪花 ID 的 Redis 版 workerId 分配器。它的生效条件是
+      #    @ConditionalOnClass("com.carlos.redis.util.RedisUtil") —— 在 Redis 进入本模块类路径
+      #    之前恒不成立，因此一直走 SnowflakeLocalCacheAutoConfiguration 的本地实现；
+      #    现在它生效了，而 Redis 不可达时 putCache 恒返回 false，SnowflakeInitiator 会把
+      #    1024 个槽位全试一遍后抛「datacenterId and workerId has been used full」。
+      #    排除后没有任何 SnowflakeCacheManager，SnowflakeConfig 的 @Nullable 入参拿到 null，
+      #    走框架自带的 IP 哈希兜底（SnowflakeInitiator#fillIpHashSlot）——这正是
+      #    「无 Redis 环境」下框架设计的路径。
+      - com.carlos.snowflake.cache.SnowflakeRedisCacheAutoConfiguration
+
+# 被排除的只是「启动期必须连上 Redis」的那几项。其余 Redis 装配（连接工厂 / 缓存 /
+# Stream 原语）保留在上下文里，它们用 Boot 提供的 LettuceConnectionFactory 构造，
+# **不建立连接**；这也是「本模块自身的 Redis 相关 Bean 不依赖活的 Redis 就能构造」
+# 这条新不变式由 WorkflowContextStartupTest#redisIsStillNotRequired 守着的原因。

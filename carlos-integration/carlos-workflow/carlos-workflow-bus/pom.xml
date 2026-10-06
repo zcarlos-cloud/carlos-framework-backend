@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.carlos.workflow</groupId>
+        <artifactId>carlos-workflow</artifactId>
+        <version>${revision}</version>
+    </parent>
+
+    <packaging>jar</packaging>
+    <artifactId>carlos-workflow-bus</artifactId>
+    <description>工作流审批中心服务端（Warm-Flow 引擎 + 审批 API 实现）</description>
+
+    <dependencies>
+        <!-- API 模块 -->
+        <dependency>
+            <groupId>com.carlos.workflow</groupId>
+            <artifactId>carlos-workflow-api</artifactId>
+        </dependency>
+
+        <!-- carlos Web（Servlet API、统一响应包装、CORS、异常处理、logback 配置） -->
+        <dependency>
+            <groupId>com.carlos</groupId>
+            <artifactId>carlos-spring-boot-starter-web</artifactId>
+            <exclusions>
+                <!--
+                  排除字段翻译：工作流没有任何需要字段翻译的响应对象，留着只会多一份
+                  无用的自动配置（它经 carlos-spring-boot-starter-redis 引入 Redisson）。
+
+                  注意：本模块原本以「排除 translation 即可不带 Redis」为设计前提，
+                  但自操作日志接入后该前提不再成立 —— carlos-spring-boot-starter-security
+                  与 carlos-spring-boot-starter-mq 都硬依赖 Redis（见下方注释）。
+                  此处仍保留排除，只是因为它对工作流确实无用，不再是为了规避 Redis。
+                -->
+                <exclusion>
+                    <groupId>com.carlos</groupId>
+                    <artifactId>carlos-spring-boot-starter-translation</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!--
+          操作日志落库链路：@Log → LogStorage → MQ(audit:log) → carlos-audit → ClickHouse。
+          仅依赖 carlos-audit-api（契约 + 桥接实现），不依赖 carlos-audit-bus（服务本体）。
+
+          ⚠️ 这三项共同把 Redis / Redisson 变成工作流的硬依赖，与本模块此前的
+          「不带 Redis」设计取向相反，是一项明确的取舍（2026-09-26 决定）：
+            - carlos-spring-boot-starter-mq  非可选依赖 carlos-spring-boot-starter-redis；
+            - carlos-spring-boot-starter-security 同样硬依赖它，且是拿到「当前登录人」的前提
+              （否则审计行只能记成 ANONYMOUS，日志等于没有价值）；
+            - 缺少 Redis 类路径时 MQ 侧不是静默降级而是「启动失败」（MQ_TRANSPORT_NOT_FOUND）。
+          因此部署 carlos-workflow 时必须提供 Redis 与对应配置。
+        -->
+        <dependency>
+            <groupId>com.carlos.audit</groupId>
+            <artifactId>carlos-audit-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.carlos</groupId>
+            <artifactId>carlos-spring-boot-starter-log</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.carlos</groupId>
+            <artifactId>carlos-spring-boot-starter-mq</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.carlos</groupId>
+            <artifactId>carlos-spring-boot-starter-security</artifactId>
+        </dependency>
+
+        <!--
+          carlos MyBatis：分页方言（PaginationInnerInterceptor，方言由 carlos.mybatis.db-type 决定）、
+          动态数据源（Druid + dynamic-datasource）、mybatis-plus-join、雪花 ID、PostgreSQL 与达梦（DM）驱动。
+          没有它，Warm-Flow 自带的分页接口（UserService#page / FormService#publishedPage）拿不到分页拦截器。
+          注意：它经 carlos-spring-boot-starter-snowflake -> carlos-spring-boot-starter-redis（provided 作用域，
+          不传递），且 Redis 侧自动配置为 @ConditionalOnClass 条件装配，故不会给本模块引入 Redis 硬依赖。
+        -->
+        <dependency>
+            <groupId>com.carlos</groupId>
+            <artifactId>carlos-spring-boot-starter-mybatis</artifactId>
+        </dependency>
+
+        <!-- Warm-Flow 引擎（MyBatis-Plus + Spring Boot 4） -->
+        <dependency>
+            <groupId>org.dromara.warm</groupId>
+            <artifactId>warm-flow-mybatis-plus-sb4-starter</artifactId>
+            <exclusions>
+                <!--
+                  必须排除：warm-flow-plugin-json-v1 声明了 5 个 JsonConvert SPI 提供者
+                  （Snack/Snack4/Jackson2/FastJson/Gson），与 warm-flow-plugin-json-jackson3
+                  竞争同一个 ServiceLoader 位置。谁生效取决于 classpath 顺序，即 JSON
+                  实现不确定。排除后仅剩 Jackson 3。
+                -->
+                <exclusion>
+                    <groupId>org.dromara.warm</groupId>
+                    <artifactId>warm-flow-plugin-json-v1</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- 流程设计器（含仿钉钉版），静态资源随 jar 提供 -->
+        <dependency>
+            <groupId>org.dromara.warm</groupId>
+            <artifactId>warm-flow-plugin-ui-sb-web</artifactId>
+            <exclusions>
+                <!-- 同上的第二条路径：ui-sb-web -> plugin-modes-sb -> plugin-json-v1 -->
+                <exclusion>
+                    <groupId>org.dromara.warm</groupId>
+                    <artifactId>warm-flow-plugin-json-v1</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+
+        <!--
+          组织机构 Feign 契约：办理人表达式（role:/dept:/deptLeader:/roleInDept:）解析所需。
+          只依赖 api 模块，不依赖 carlos-org-bus，保持 api/bus 隔离（与 carlos-auth-service 同一做法）。
+          Feign 客户端 Bean 由宿主注册：carlos-spring-cloud-starter 的 FeignConfig 已声明
+          @EnableFeignClients(basePackages = "com.carlos")；缺该配置时 OrgPermissionHandler 不注册
+          （见 WorkflowAutoConfiguration 的 @ConditionalOnBean）。
+        -->
+        <dependency>
+            <groupId>com.carlos.org</groupId>
+            <artifactId>carlos-org-api</artifactId>
+        </dependency>
+
+        <!-- ==================== Test ==================== -->
+        <!--
+          补齐 Spring Cloud 基础件：carlos-workflow-api 会把 spring-cloud-openfeign-core 带进编译期
+          （Feign 契约需要），而 openfeign-core 把 spring-cloud-context / spring-cloud-commons 声明为
+          <b>可选依赖</b>，生产侧由宿主模块的 carlos-spring-cloud-starter 提供，本模块的测试类路径上却
+          没人提供 —— 结果 FeignAutoConfiguration 在装配条件时抛
+          NoClassDefFoundError(NamedContextFactory)，导致 62 个起 Spring 上下文的用例全数报错。
+          仅测试作用域，不影响产物依赖树；版本由 carlos-dependencies 引入的 spring-cloud-dependencies 管理。
+        -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-context</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-commons</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- 仅测试用：上下文装配校验不依赖外部数据库，版本由 spring-boot-dependencies 管理 -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!--
+                父 POM 的 pluginManagement 把 surefire 的 skipTests 写死为 true
+                （字面量，不是 ${} 占位），命令行 -DskipTests / -Dmaven.test.skip 都覆盖不了。
+                模块要执行 src/test 下的用例，只能像 carlos-auth-service 一样在本模块显式打开。
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <skipTests>false</skipTests>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

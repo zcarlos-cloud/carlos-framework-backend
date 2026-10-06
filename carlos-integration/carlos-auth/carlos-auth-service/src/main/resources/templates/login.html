@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>统一登录 - Carlos Framework</title>
+  <script src="https://cdn.jsdelivr.net/npm/sm-crypto@0.3.13/dist/sm2.js" crossorigin="anonymous"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .login-card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      width: 100%;
+      max-width: 420px;
+      overflow: hidden;
+    }
+    .login-header {
+      padding: 32px 40px 16px;
+      text-align: center;
+    }
+    .login-header h1 {
+      font-size: 22px;
+      color: #1a1a2e;
+      font-weight: 600;
+    }
+    .login-header p {
+      font-size: 13px;
+      color: #888;
+      margin-top: 6px;
+    }
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid #eee;
+      padding: 0 20px;
+    }
+    .tab {
+      flex: 1;
+      padding: 14px 4px;
+      text-align: center;
+      font-size: 14px;
+      color: #888;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.25s;
+      user-select: none;
+    }
+    .tab:hover { color: #667eea; }
+    .tab.active {
+      color: #667eea;
+      border-bottom-color: #667eea;
+      font-weight: 500;
+    }
+    .tab-content { display: none; padding: 28px 40px 8px; }
+    .tab-content.active { display: block; }
+    .form-group { margin-bottom: 18px; }
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      color: #444;
+      font-size: 13px;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: all 0.2s;
+      background: #fafafa;
+    }
+    .form-group input:focus {
+      outline: none;
+      border-color: #667eea;
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    .input-with-btn { display: flex; gap: 10px; }
+    .input-with-btn input { flex: 1; }
+    .send-code-btn {
+      padding: 12px 16px;
+      background: #f0f0f5;
+      color: #667eea;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .send-code-btn:hover:not(:disabled) { background: #e6e6f0; }
+    .send-code-btn:disabled { color: #aaa; cursor: not-allowed; }
+    .error-msg {
+      background: #fff0f0;
+      color: #d93025;
+      padding: 10px 14px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      font-size: 13px;
+      display: none;
+    }
+    .error-msg.show { display: block; }
+    .submit-btn {
+      width: 100%;
+      padding: 13px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 6px;
+    }
+    .submit-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3); }
+    .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .qr-area {
+      text-align: center;
+      padding: 16px 0;
+    }
+    .qr-box {
+      width: 200px;
+      height: 200px;
+      margin: 0 auto 16px;
+      border: 1px solid #eee;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fafafa;
+      position: relative;
+    }
+    .qr-box img { max-width: 180px; max-height: 180px; }
+    .qr-status { font-size: 13px; color: #666; min-height: 20px; }
+    .qr-status.scanned { color: #667eea; }
+    .qr-status.confirmed { color: #34a853; }
+    .qr-status.expired { color: #d93025; }
+    .qr-refresh {
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0.92);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      cursor: pointer;
+      border-radius: 8px;
+    }
+    .qr-refresh.show { display: flex; }
+    .divider {
+      display: flex;
+      align-items: center;
+      margin: 24px 0 16px;
+      color: #bbb;
+      font-size: 12px;
+    }
+    .divider::before, .divider::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: #eee;
+    }
+    .divider span { padding: 0 16px; }
+    .social-buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+    .social-btn {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #eee;
+      border-radius: 8px;
+      background: #fff;
+      cursor: pointer;
+      font-size: 13px;
+      color: #555;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .social-btn:hover { border-color: #667eea; color: #667eea; }
+    .social-icon { width: 18px; height: 18px; border-radius: 4px; }
+    .login-footer {
+      text-align: center;
+      padding: 18px 40px 28px;
+      font-size: 12px;
+      color: #aaa;
+    }
+    .login-footer a { color: #667eea; text-decoration: none; }
+    .passkey-btn {
+      width: 100%;
+      padding: 13px;
+      background: #1a1a2e;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .passkey-btn:hover { background: #2a2a4e; }
+    .passkey-hint {
+      text-align: center;
+      font-size: 12px;
+      color: #999;
+      margin-top: 12px;
+      line-height: 1.6;
+    }
+    .mfa-section {
+      display: none;
+      padding: 28px 40px 8px;
+    }
+    .mfa-section.show { display: block; }
+  </style>
+</head>
+<body>
+<div class="login-card">
+  <div class="login-header">
+    <h1>Carlos 统一身份认证</h1>
+    <p>选择登录方式</p>
+  </div>
+
+  <!-- 错误提示 -->
+  <div class="error-msg" id="errorMsg" th:classappend="${error != null} ? 'show' : ''" th:text="${error}">错误信息</div>
+
+  <!-- 主登录区（Tab 切换） -->
+  <div id="mainSection">
+    <!-- Tab 栏：多于一种方式时显示 -->
+    <div class="tabs" th:if="${showTabs}">
+      <div class="tab" data-tab="password" th:if="${passwordEnabled}">账号密码</div>
+      <div class="tab" data-tab="sms" th:if="${smsEnabled}">短信验证码</div>
+      <div class="tab" data-tab="qrcode" th:if="${qrcodeEnabled}">扫码登录</div>
+      <div class="tab" data-tab="passkey" th:if="${passkeyEnabled}">Passkey</div>
+    </div>
+
+    <!-- 账号密码登录 -->
+    <div class="tab-content" id="tab-password" th:if="${passwordEnabled}">
+      <form id="passwordForm" method="post" action="/login" onsubmit="return doPasswordLogin(event)">
+        <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+        <input type="hidden" id="pwdKeyId" name="keyId" value="">
+        <input type="hidden" id="pwdEncrypted" name="encrypted" value="false">
+        <div class="form-group">
+          <label>用户名 / 手机号 / 邮箱</label>
+          <input type="text" id="pwdUsername" name="username" placeholder="请输入账号" required autofocus>
+        </div>
+        <div class="form-group">
+          <label>密码</label>
+          <input type="password" id="pwdPassword" name="password" placeholder="请输入密码" required>
+        </div>
+        <button type="submit" class="submit-btn">登 录</button>
+      </form>
+    </div>
+
+    <!-- 短信验证码登录 -->
+    <div class="tab-content" id="tab-sms" th:if="${smsEnabled}">
+      <form id="smsForm" onsubmit="return doSmsLogin(event)">
+        <div class="form-group">
+          <label>手机号</label>
+          <input type="tel" id="smsPhone" name="phone" placeholder="请输入手机号" required>
+        </div>
+        <div class="form-group">
+          <label>验证码</label>
+          <div class="input-with-btn">
+            <input type="text" id="smsCode" name="code" placeholder="6位验证码" maxlength="6" required>
+            <button type="button" class="send-code-btn" id="sendSmsBtn" onclick="sendSmsCode()">获取验证码</button>
+          </div>
+        </div>
+        <button type="submit" class="submit-btn">登 录</button>
+      </form>
+    </div>
+
+    <!-- 扫码登录 -->
+    <div class="tab-content" id="tab-qrcode" th:if="${qrcodeEnabled}">
+      <div class="qr-area">
+        <div class="qr-box">
+          <img id="qrImage" alt="登录二维码" style="display:none">
+          <div class="qr-refresh" id="qrRefresh">
+            <span style="color:#d93025;margin-bottom:8px">二维码已失效</span>
+            <span style="color:#667eea;font-size:13px">点击刷新</span>
+          </div>
+        </div>
+        <div class="qr-status" id="qrStatus">请使用 Carlos APP 扫码登录</div>
+      </div>
+      <button type="button" class="submit-btn" onclick="generateQrCode()">刷新二维码</button>
+    </div>
+
+    <!-- Passkey 登录 -->
+    <div class="tab-content" id="tab-passkey" th:if="${passkeyEnabled}">
+      <button type="button" class="passkey-btn" onclick="doPasskeyLogin()">🔑 使用 Passkey 登录</button>
+      <div class="passkey-hint">
+        Passkey 使用设备内置的生物识别（指纹/Face ID/Windows Hello）<br>
+        无需输入密码，抗钓鱼抗重放
+      </div>
+    </div>
+  </div>
+
+  <!-- MFA 二次验证区（登录成功但需要 MFA 时显示） -->
+  <div class="mfa-section" id="mfaSection">
+    <h3 style="text-align:center;font-size:18px;color:#1a1a2e;margin-bottom:8px">MFA 二次验证</h3>
+    <p style="text-align:center;font-size:13px;color:#888;margin-bottom:20px">请输入验证器中的 6 位验证码</p>
+    <form id="mfaForm" onsubmit="return doMfaVerify(event)">
+      <div class="form-group">
+        <label>MFA 验证码</label>
+        <input type="text" id="mfaCode" placeholder="6位验证码" maxlength="6" required>
+      </div>
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#666;margin-bottom:16px">
+        <input type="checkbox" id="trustDevice"> 7天内此设备免 MFA
+      </label>
+      <button type="submit" class="submit-btn">验 证</button>
+    </form>
+  </div>
+
+  <!-- 第三方登录（至少一个社交登录启用时显示） -->
+  <div th:if="${socialEnabled}">
+    <div class="divider"><span>其他登录方式</span></div>
+    <div class="social-buttons">
+      <button class="social-btn" onclick="socialLogin('dingtalk')" th:if="${dingtalkEnabled}">
+        <span style="color:#0089FF;font-weight:bold">钉钉</span>
+      </button>
+      <button class="social-btn" onclick="socialLogin('wechat')" th:if="${wechatEnabled}">
+        <span style="color:#07C160;font-weight:bold">微信</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="login-footer">
+    <a href="#">忘记密码？</a> · <a href="#">注册账号</a><br>
+    Carlos Framework OAuth2 Authorization Server
+  </div>
+</div>
+
+<script>
+// ===== 全局状态 =====
+let mfaToken = null;
+let qrEventSource = null;
+let passwordKey = { keyId: null, publicKey: null, loading: false };
+
+// ===== 公钥加载（密码加密用） =====
+async function loadPublicKey(force = false) {
+  // 已有有效公钥且未强制刷新，直接返回
+  if (!force && passwordKey.keyId && passwordKey.publicKey) {
+    return passwordKey;
+  }
+  if (passwordKey.loading) {
+    // 等待加载完成
+    while (passwordKey.loading) {
+      await new Promise(r => setTimeout(r, 50));
+    }
+    return passwordKey;
+  }
+
+  passwordKey.loading = true;
+  try {
+    const resp = await fetch('/auth/public-key', { method: 'GET' });
+    const result = await resp.json();
+    const data = result.data || result;
+    if (data && data.keyId && data.publicKey) {
+      passwordKey = { keyId: data.keyId, publicKey: data.publicKey, loading: false };
+      document.getElementById('pwdKeyId').value = data.keyId;
+      return passwordKey;
+    }
+    throw new Error('公钥响应异常');
+  } catch (e) {
+    passwordKey.loading = false;
+    throw e;
+  }
+}
+
+// 页面加载后预取公钥（如果密码登录启用）
+(function prefetchPublicKey() {
+  const passwordTab = document.getElementById('tab-password');
+  if (passwordTab && typeof window.sm2 !== 'undefined') {
+    loadPublicKey().catch(() => { /* 静默失败，提交时再重试 */ });
+  }
+})();
+
+// ===== Tab 切换（动态激活第一个可用 Tab） =====
+(function initTabs() {
+  const tabs = document.querySelectorAll('.tab');
+  const contents = document.querySelectorAll('.tab-content');
+  if (tabs.length > 0) {
+    // 激活第一个 Tab
+    tabs[0].classList.add('active');
+    const firstTarget = tabs[0].dataset.tab;
+    const firstContent = document.getElementById('tab-' + firstTarget);
+    if (firstContent) firstContent.classList.add('active');
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        const target = tab.dataset.tab;
+        tabs.forEach(t => t.classList.remove('active'));
+        contents.forEach(c => c.classList.remove('active'));
+        tab.classList.add('active');
+        const content = document.getElementById('tab-' + target);
+        if (content) content.classList.add('active');
+        // 切换到密码 Tab 时预取公钥
+        if (target === 'password') loadPublicKey().catch(() => {});
+        // 切换到扫码 Tab 时自动生成二维码
+        if (target === 'qrcode') generateQrCode();
+        // 离开扫码 Tab 时关闭 SSE
+        if (target !== 'qrcode' && qrEventSource) { qrEventSource.close(); qrEventSource = null; }
+      });
+    });
+  } else {
+    // 无 Tab 栏（仅一种登录方式），直接激活唯一内容
+    if (contents.length > 0) contents[0].classList.add('active');
+  }
+})();
+
+// ===== 工具函数 =====
+function showError(msg) {
+  const el = document.getElementById('errorMsg');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 5000);
+}
+
+async function postJson(url, body) {
+  const resp = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  return resp.json();
+}
+
+// 登录成功后处理响应（处理 MFA 跳转）
+async function handleLoginResponse(result) {
+  if (!result) { showError('登录失败，请重试'); return false; }
+  if (result.code !== 200 && result.code !== undefined && result.code !== 0) {
+    showError(result.message || '登录失败');
+    return false;
+  }
+  const data = result.data || result;
+  // 需要 MFA：切换到 MFA 验证区
+  if (data.mfaRequired === true || data.mfaRequired === 'true') {
+    mfaToken = data.mfaToken;
+    document.getElementById('mainSection').style.display = 'none';
+    document.getElementById('mfaSection').classList.add('show');
+    document.getElementById('mfaCode').focus();
+    return true;
+  }
+  // 登录成功：存储 Token 并跳转
+  if (data.accessToken) {
+    localStorage.setItem('accessToken', data.accessToken);
+    if (data.refreshToken) localStorage.setItem('refreshToken', data.refreshToken);
+    const redirect = new URLSearchParams(location.search).get('redirect_uri') || '/';
+    window.location.href = redirect;
+    return true;
+  }
+  showError('登录响应异常');
+  return false;
+}
+
+// ===== 账号密码登录 =====
+async function doPasswordLogin(event) {
+  event.preventDefault();
+
+  const username = document.getElementById('pwdUsername').value;
+  const passwordInput = document.getElementById('pwdPassword');
+  const password = passwordInput.value;
+  const keyIdInput = document.getElementById('pwdKeyId');
+  const encryptedInput = document.getElementById('pwdEncrypted');
+
+  // 检查 SM2 库是否可用
+  if (typeof window.sm2 === 'undefined' || !window.sm2.doEncrypt) {
+    showError('安全组件加载失败，请刷新页面后重试');
+    return false;
+  }
+
+  // 先调用预校验接口获取风控决策
+  try {
+    const preCheck = await postJson('/auth/user/pre-check', {
+      username: username,
+      loginType: 'password',
+      deviceFingerprint: getDeviceFingerprint()
+    });
+    const pcData = preCheck.data || preCheck;
+    if (pcData.blocked) { showError(pcData.blockReason || '登录被拒绝'); return false; }
+    // 注意：人机验证尚未实现（后端无滑块下发/校验端点），此处不能按 pcData.needCaptcha 阻断登录，
+    // 否则只弹出一个无法完成的占位提示，用户会被永久卡在登录页。
+    // 真实验证码接入后，在此按 pcData.needCaptcha / pcData.captchaType 发起挑战并校验通过再提交。
+    // 当前 MEDIUM 风险的兜底由服务端承担：账号 5 次失败锁定 30 分钟 + IP 20 次失败封禁 1 小时。
+  } catch (e) { /* 预校验失败不阻断登录 */ }
+
+  // 获取公钥并加密密码
+  try {
+    await loadPublicKey();
+    if (!passwordKey.publicKey || !passwordKey.keyId) {
+      showError('加密密钥获取失败，请刷新页面后重试');
+      return false;
+    }
+
+    // sm2.doEncrypt(明文, 公钥, cipherMode) cipherMode: 1=C1C3C2（国标）
+    const encryptedPassword = window.sm2.doEncrypt(password, passwordKey.publicKey, 1);
+    if (!encryptedPassword) {
+      showError('密码加密失败，请刷新页面后重试');
+      return false;
+    }
+
+    // 回填表单：密文密码、keyId、加密标识
+    passwordInput.value = encryptedPassword;
+    keyIdInput.value = passwordKey.keyId;
+    encryptedInput.value = 'true';
+
+    // 提交表单
+    document.getElementById('passwordForm').submit();
+    return true;
+  } catch (e) {
+    showError('密码加密失败：' + (e.message || '未知错误'));
+    return false;
+  }
+}
+
+// ===== 短信验证码登录 =====
+async function sendSmsCode() {
+  const phone = document.getElementById('smsPhone').value;
+  if (!/^1[3-9]\d{9}$/.test(phone)) { showError('手机号格式不正确'); return; }
+  const btn = document.getElementById('sendSmsBtn');
+  btn.disabled = true;
+  try {
+    await fetch('/auth/captcha/sms/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone })
+    });
+    let count = 60;
+    const timer = setInterval(() => {
+      btn.textContent = count + 's 后重试';
+      count--;
+      if (count < 0) { clearInterval(timer); btn.disabled = false; btn.textContent = '获取验证码'; }
+    }, 1000);
+  } catch (e) {
+    btn.disabled = false;
+    showError('验证码发送失败');
+  }
+}
+
+async function doSmsLogin(event) {
+  event.preventDefault();
+  const phone = document.getElementById('smsPhone').value;
+  const code = document.getElementById('smsCode').value;
+  // 短信登录走 /oauth2/token grant_type=sms_code
+  // 简化实现：调用标准 token 端点
+  const params = new URLSearchParams();
+  params.append('grant_type', 'sms_code');
+  params.append('phone', phone);
+  params.append('sms_code', code);
+  params.append('client_id', 'carlos-client');
+  params.append('client_secret', 'carlos-secret');
+  try {
+    const resp = await fetch('/oauth2/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: params.toString()
+    });
+    const result = await resp.json();
+    if (result.access_token) {
+      localStorage.setItem('accessToken', result.access_token);
+      if (result.refresh_token) localStorage.setItem('refreshToken', result.refresh_token);
+      window.location.href = '/';
+    } else {
+      showError(result.error_description || '登录失败');
+    }
+  } catch (e) { showError('登录请求失败'); }
+  return false;
+}
+
+// ===== 扫码登录 =====
+async function generateQrCode() {
+  const qrRefresh = document.getElementById('qrRefresh');
+  const qrStatus = document.getElementById('qrStatus');
+  if (!qrRefresh || !qrStatus) return;
+  qrRefresh.classList.remove('show');
+  qrStatus.textContent = '正在生成二维码...';
+  qrStatus.className = 'qr-status';
+  try {
+    const resp = await fetch('/auth/qrcode/generate?clientId=carlos-client', { method: 'POST' });
+    const result = await resp.json();
+    const data = result.data || result;
+    if (!data.qrcodeUrl) { showError('二维码生成失败'); return; }
+    // 用在线 API 生成二维码图片（生产环境应改为后端生成）
+    document.getElementById('qrImage').src =
+      'https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=' + encodeURIComponent(data.qrcodeUrl);
+    document.getElementById('qrImage').style.display = 'block';
+    qrStatus.textContent = '请使用 Carlos APP 扫码登录';
+    startQrStatusSSE(data.qrcodeId);
+  } catch (e) { showError('二维码生成失败'); }
+}
+
+function startQrStatusSSE(qrcodeId) {
+  if (qrEventSource) qrEventSource.close();
+  qrEventSource = new EventSource('/auth/qrcode/status/' + qrcodeId);
+  const statusEl = document.getElementById('qrStatus');
+  qrEventSource.addEventListener('status', (event) => {
+    const data = JSON.parse(event.data);
+    statusEl.className = 'qr-status';
+    switch (data.state) {
+      case 'PENDING':
+        statusEl.textContent = '请使用 Carlos APP 扫码登录';
+        break;
+      case 'SCANNED':
+        statusEl.textContent = '已扫码，请在 APP 中确认登录';
+        statusEl.classList.add('scanned');
+        break;
+      case 'CONFIRMED':
+        statusEl.textContent = '登录成功，正在跳转...';
+        statusEl.classList.add('confirmed');
+        if (data.accessToken) {
+          localStorage.setItem('accessToken', data.accessToken);
+          if (data.refreshToken) localStorage.setItem('refreshToken', data.refreshToken);
+          setTimeout(() => window.location.href = '/', 800);
+        }
+        qrEventSource.close();
+        break;
+      case 'CANCELED':
+        statusEl.textContent = '已取消登录';
+        statusEl.classList.add('expired');
+        qrEventSource.close();
+        break;
+      case 'EXPIRED':
+        statusEl.textContent = '二维码已过期';
+        statusEl.classList.add('expired');
+        document.getElementById('qrRefresh').classList.add('show');
+        qrEventSource.close();
+        break;
+    }
+  });
+  qrEventSource.onerror = () => { if (qrEventSource) qrEventSource.close(); };
+}
+
+(function() {
+  const qrRefresh = document.getElementById('qrRefresh');
+  if (qrRefresh) qrRefresh.addEventListener('click', generateQrCode);
+})();
+
+// ===== MFA Step-Up 验证 =====
+async function doMfaVerify(event) {
+  event.preventDefault();
+  const code = document.getElementById('mfaCode').value;
+  if (!mfaToken) { showError('MFA 令牌已失效，请重新登录'); return false; }
+  const result = await postJson('/auth/mfa/step-up-verify', {
+    mfaToken: mfaToken,
+    code: code,
+    trustDevice: document.getElementById('trustDevice').checked,
+    deviceFingerprint: getDeviceFingerprint(),
+    deviceName: navigator.userAgent.substring(0, 50)
+  });
+  await handleLoginResponse(result);
+  return false;
+}
+
+// ===== Passkey 登录 =====
+async function doPasskeyLogin() {
+  try {
+    // 1. 获取认证 challenge
+    const resp = await fetch('/auth/passkey/authenticate/begin', { method: 'POST' });
+    const beginResult = await resp.json();
+    const options = beginResult.data || beginResult;
+    if (!options) { showError('Passkey 初始化失败'); return; }
+
+    // 2. 调用浏览器 WebAuthn API
+    const credential = await navigator.credentials.get({
+      publicKey: {
+        challenge: base64urlToBuffer(options.challenge),
+        rpId: options.rpId,
+        timeout: options.timeout || 60000,
+        userVerification: options.userVerification || 'preferred',
+        allowCredentials: (options.allowCredentials || []).map(c => ({
+          type: 'public-key',
+          id: base64urlToBuffer(c.id)
+        }))
+      }
+    });
+
+    // 3. 提交签名结果
+    const finishResp = await postJson('/auth/passkey/authenticate/finish', {
+      id: credential.id,
+      rawId: credential.id,
+      response: {
+        authenticatorData: bufferToBase64url(credential.response.authenticatorData),
+        clientDataJSON: bufferToBase64url(credential.response.clientDataJSON),
+        signature: bufferToBase64url(credential.response.signature),
+        userHandle: credential.response.userHandle ? bufferToBase64url(credential.response.userHandle) : null
+      },
+      type: credential.type
+    });
+    await handleLoginResponse(finishResp);
+  } catch (e) {
+    if (e.name === 'NotAllowedError') showError('Passkey 验证已取消');
+    else showError('Passkey 验证失败：' + e.message);
+  }
+}
+
+// ===== 第三方 SSO 跳转 =====
+async function socialLogin(provider) {
+  try {
+    const resp = await fetch('/auth/oauth2/authorize?provider=' + provider + '&redirect_uri=' + encodeURIComponent(location.origin + '/social-callback'));
+    const result = await resp.json();
+    const url = result.data || result;
+    if (url && typeof url === 'string') window.location.href = url;
+    else showError('获取' + provider + '授权链接失败');
+  } catch (e) { showError('第三方登录失败'); }
+}
+
+// ===== 辅助函数 =====
+function getDeviceFingerprint() {
+  // 简化的设备指纹（生产环境应采集 Canvas/WebGL/字体等）
+  const parts = [navigator.userAgent, navigator.language, screen.width + 'x' + screen.height, new Date().getTimezoneOffset()];
+  return 'fp_' + btoa(parts.join('|')).substring(0, 32);
+}
+
+function base64urlToBuffer(b64url) {
+  const b64 = b64url.replace(/-/g, '+').replace(/_/g, '/');
+  const pad = '='.repeat((4 - b64.length % 4) % 4);
+  const bin = atob(b64 + pad);
+  const buf = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
+  return buf.buffer;
+}
+
+function bufferToBase64url(buffer) {
+  const bytes = new Uint8Array(buffer);
+  let bin = '';
+  for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+  return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+</script>
+</body>
+</html>

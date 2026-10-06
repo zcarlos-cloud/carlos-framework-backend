@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.carlos.monitor</groupId>
+    <artifactId>carlos-monitor</artifactId>
+    <version>${revision}</version>
+  </parent>
+
+  <packaging>jar</packaging>
+
+  <artifactId>carlos-monitor-bus</artifactId>
+
+  <description>
+    系统监控业务实现模块
+    中间件/数据库/微服务指标采集、数据管理代理、告警引擎
+    对应设计文档：DESIGN-20260930-系统监控模块功能设计
+  </description>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.carlos</groupId>
+      <artifactId>carlos-spring-boot-starter-web</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.carlos</groupId>
+      <artifactId>carlos-spring-boot-starter-mybatis</artifactId>
+    </dependency>
+
+    <!-- 安全模块（用户上下文、方法级权限） -->
+    <dependency>
+      <groupId>com.carlos</groupId>
+      <artifactId>carlos-spring-boot-starter-security</artifactId>
+    </dependency>
+
+    <!-- Disruptor 异步处理支持（指标 sink 环形缓冲） -->
+    <dependency>
+      <groupId>com.carlos</groupId>
+      <artifactId>carlos-spring-boot-starter-disruptor</artifactId>
+    </dependency>
+
+    <!-- 加密组件（实例凭据 SM4 加解密） -->
+    <dependency>
+      <groupId>com.carlos</groupId>
+      <artifactId>carlos-spring-boot-starter-encrypt</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.carlos</groupId>
+      <artifactId>carlos-spring-boot-starter-openapi</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.carlos.monitor</groupId>
+      <artifactId>carlos-monitor-api</artifactId>
+    </dependency>
+
+    <!-- ClickHouse 客户端（指标时序写入） -->
+    <dependency>
+      <groupId>com.clickhouse</groupId>
+      <artifactId>clickhouse-jdbc-all</artifactId>
+    </dependency>
+
+    <!-- Guava 缓存（实例连接注册中心 LoadingCache） -->
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+    </dependency>
+
+    <!-- Micrometer 监控（sink 指标） -->
+    <dependency>
+      <groupId>io.micrometer</groupId>
+      <artifactId>micrometer-core</artifactId>
+    </dependency>
+
+    <!-- Nacos 客户端（实例配置自动发现，读取目标应用配置） -->
+    <dependency>
+      <groupId>com.alibaba.nacos</groupId>
+      <artifactId>nacos-client</artifactId>
+    </dependency>
+
+    <!-- 定时任务统一接入 carlos-job（@ScheduleJob/@AutoRegisterJob：采集扫描与 CK 周期刷新） -->
+    <dependency>
+      <groupId>com.carlos.job</groupId>
+      <artifactId>carlos-job-client</artifactId>
+    </dependency>
+
+    <!--
+      操作审计埋点通道：@MonitorAudit → MqTemplate → MQ(audit:log) → carlos-audit → ClickHouse。
+      仅依赖 carlos-audit-api（契约：主题常量与参数类型），不依赖 carlos-audit-bus（服务本体）。
+    -->
+    <dependency>
+      <groupId>com.carlos.audit</groupId>
+      <artifactId>carlos-audit-api</artifactId>
+    </dependency>
+
+    <!-- 告警通知：message-api Feign 契约（MessageSendApi），不依赖 carlos-message-bus -->
+    <dependency>
+      <groupId>com.carlos.message</groupId>
+      <artifactId>carlos-message-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.carlos</groupId>
+      <artifactId>carlos-spring-boot-starter-mq</artifactId>
+    </dependency>
+
+  </dependencies>
+
+</project>

@@ -1,0 +1,50 @@
+server:
+  port: 9820
+
+spring:
+  application:
+    name: carlos-sample-oss
+
+carlos:
+  boot:
+    # OSS 配置
+    oss:
+      # 默认 OSS 类型：aliyun 或 tencent
+      default-type: aliyun
+      
+      # 阿里云 OSS 配置
+      aliyun:
+        enabled: true
+        # Endpoint 地域节点，如：oss-cn-hangzhou.aliyuncs.com
+        endpoint: ${ALIYUN_OSS_ENDPOINT:}
+        # AccessKey ID
+        access-key-id: ${ALIYUN_OSS_ACCESS_KEY_ID:}
+        # AccessKey Secret
+        access-key-secret: ${ALIYUN_OSS_ACCESS_KEY_SECRET:}
+        # 默认存储空间名称
+        bucket-name: ${ALIYUN_OSS_BUCKET_NAME:}
+        # 自定义域名（可选）
+        domain: ${ALIYUN_OSS_DOMAIN:}
+        # 上传文件大小限制（单位：MB，默认 100MB）
+        max-size: 100
+      
+      # 腾讯云 COS 配置
+      tencent:
+        enabled: false
+        # 地域，如：ap-guangzhou
+        region: ${TENCENT_COS_REGION:}
+        # SecretId
+        secret-id: ${TENCENT_COS_SECRET_ID:}
+        # SecretKey
+        secret-key: ${TENCENT_COS_SECRET_KEY:}
+        # 默认存储桶名称
+        bucket-name: ${TENCENT_COS_BUCKET_NAME:}
+        # 自定义域名（可选）
+        domain: ${TENCENT_COS_DOMAIN:}
+        # 上传文件大小限制（单位：MB，默认 100MB）
+        max-size: 100
+
+# 日志配置
+logging:
+  level:
+    com.carlos: debug

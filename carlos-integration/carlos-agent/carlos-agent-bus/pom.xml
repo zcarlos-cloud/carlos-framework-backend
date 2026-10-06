@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <parent>
+        <groupId>com.carlos</groupId>
+        <artifactId>carlos-agent</artifactId>
+        <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>carlos-agent-bus</artifactId>
+    <name>carlos-agent-bus</name>
+    <description>AI 助手业务模块：SSE 代理、会话转发、审计落库</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.carlos</groupId>
+            <artifactId>carlos-spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.carlos</groupId>
+            <artifactId>carlos-spring-boot-starter-json</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.carlos</groupId>
+            <artifactId>carlos-spring-boot-starter-security</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.carlos</groupId>
+            <artifactId>carlos-spring-boot-starter-openapi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.carlos.audit</groupId>
+            <artifactId>carlos-audit-api</artifactId>
+        </dependency>
+        <!--
+            操作日志落库链路：@Log → LogStorage → MQ(audit:log) → carlos-audit → ClickHouse。
+            与 AgentChatService 里既有的 Feign 直投（ApiAuditLogMain）并存，互不影响。
+        -->
+        <dependency>
+            <groupId>com.carlos</groupId>
+            <artifactId>carlos-spring-boot-starter-log</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.carlos</groupId>
+            <artifactId>carlos-spring-boot-starter-mq</artifactId>
+        </dependency>
+
+        <!-- 仅测试用：审计注解守卫测试（纯反射，不起 Spring 上下文） -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!--
+                父 POM 的 pluginManagement 把 surefire 的 skipTests 写死为 true（字面量，命令行覆盖不了），
+                本模块要执行 src/test 下的用例只能像 carlos-org-bus 一样显式打开。
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <skipTests>false</skipTests>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

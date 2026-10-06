@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- DDD 架构代码生成模板
+ 基于 Carlos Framework 分层规范，适配领域驱动设计（DDD）四层架构：
+ - interfaces: 接口适配层（Controller / FeignImpl）
+ - application: 应用层（AppService / DTO / Param / VO）
+ - domain: 领域层（Aggregate / Repository接口 / DomainEvent）
+ - infrastructure: 基础设施层（RepositoryImpl / Mapper / PO / Convert）
+-->
+<templates>
+  <name>微服务DDD-Mybatis-plus</name>
+  <describe>mybatis-plus + DDD 领域驱动设计</describe>
+  <!--逻辑删除字段-->
+  <logicDeleteFields>
+    <name>is_deleted</name>
+    <name>is_delete</name>
+    <name>deleted</name>
+    <name>delete</name>
+    <name>delete_flag</name>
+    <name>del_flag</name>
+  </logicDeleteFields>
+  <!--乐观锁版本字段-->
+  <versionFields>
+    <name>version</name>
+  </versionFields>
+  <!--共同字段-->
+  <commonFields>
+    <name>create_user</name>
+    <name>createUser</name>
+    <name>create_by</name>
+    <name>createBy</name>
+    <name>create_time</name>
+    <name>createTime</name>
+    <name>create_date</name>
+    <name>createDate</name>
+
+    <name>update_user</name>
+    <name>updateUser</name>
+    <name>update_by</name>
+    <name>updateBy</name>
+    <name>update_time</name>
+    <name>updateTime</name>
+    <name>update_date</name>
+    <name>updateDate</name>
+
+    <name>modify_user</name>
+    <name>modifyUser</name>
+    <name>modify_by</name>
+    <name>modifyBy</name>
+    <name>modify_time</name>
+    <name>modifyTime</name>
+    <name>modify_date</name>
+    <name>modifyDate</name>
+  </commonFields>
+</templates>

@@ -1,0 +1,394 @@
+server:
+  port: 9510
+
+spring:
+  profiles:
+    active: ${PROFILE:local}
+  application:
+    name: carlos-gateway
+  config:
+    import:
+      # 1. 公共配置（所有环境共享）
+      #      - optional:nacos:${spring.application.name}.yaml?group=DEFAULT_GROUP&refreshEnabled=true
+      # 2. 环境专属配置（覆盖公共配置）
+      #      - optional:nacos:${spring.application.name}-${spring.profiles.active}.yaml?group=DEFAULT_GROUP&refreshEnabled=true
+      # 3. 额外共享配置（如 Redis、MySQL 配置）
+      - optional:nacos:common.yml?group=DEFAULT_GROUP&refreshEnabled=true
+      - optional:nacos:redis.yml?group=DEFAULT_GROUP&refreshEnabled=true
+      - optional:nacos:db.yml?group=DEFAULT_GROUP&refreshEnabled=true
+  cloud:
+    nacos:
+      discovery:
+        enabled: true
+      config:
+        enabled: true
+        file-extension: yml
+        refresh-enabled: true
+
+# 本地调试环境
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+  cloud:
+    nacos:
+      username: ${NACOS_USERNAME:@nacos.username@}
+      password: ${NACOS_PASSWORD:@nacos.password@}
+      discovery:
+        server-addr: ${NACOS_ADDR:@nacos.addr@}
+        namespace: ${NACOS_NAMESPACE:@nacos.namespace@}
+        group: ${NACOS_GROUP:@nacos.group@}
+      config:
+        server-addr: ${NACOS_ADDR:@nacos.addr@}
+        namespace: ${NACOS_NAMESPACE:@nacos.namespace@}
+        group: ${NACOS_GROUP:@nacos.group@}
+
+
+# 部署采用配置文件
+---
+spring:
+  config:
+    activate:
+      on-profile: deploy
+  cloud:
+    nacos:
+      username: ${NACOS_USERNAME}
+      password: ${NACOS_PASSWORD}
+      discovery:
+        server-addr: ${NACOS_ADDR}
+        namespace: ${NACOS_NAMESPACE}
+        group: ${NACOS_GROUP}
+      config:
+        namespace: ${NACOS_NAMESPACE}
+        server-addr: ${NACOS_ADDR}
+        group: ${NACOS_GROUP}
+
+---
+# ==========================================
+# Carlos Gateway 现代配置（完整功能版）
+# ==========================================
+# 配置说明：
+#   - 统一前缀 /api/v1：所有 API 请求需以此开头
+#   - PathPrefixFilter 会在路由前自动截掉此前缀
+#   - Swagger/Knife4j 资源在白名单中，可直接访问
+
+spring:
+  cloud:
+    gateway:
+      server:
+        webflux:
+          discovery:
+            locator:
+              enabled: true
+              lower-case-service-id: true
+            # 路由配置
+            # 注意：PathPrefixFilter 已处理前缀，路由配置匹配截掉前缀后的路径
+          routes:
+            -
+              id: carlos-auth
+              uri: lb://carlos-auth
+              predicates:
+                - Path=/auth/**,/oauth2/**
+              filters:
+                - SelectStripPrefix=1
+      #              filters:
+      #                # Carlos 扩展限流器：支持更多 KeyResolver 策略和统一错误响应
+      #                -
+      #                  name: CarlosRateLimiter
+      #                  args:
+      #                    replenishRate: 100
+      #                    burstCapacity: 200
+      #                    keyResolver: IP
+      #                -
+      #                  name: Resilience4jCircuitBreaker
+      #                  args:
+      #                    name: user-service
+      #                    fallbackUri: forward:/fallback/user
+      #            -
+      #              id: carlos-org
+      #              uri: lb://carlos-org
+      #              predicates:
+      #                - Path=/org/**
+      #              filters:
+      #                # Carlos 扩展限流器：支持更多 KeyResolver 策略和统一错误响应
+      #                -
+      #                  name: CarlosRateLimiter
+      #                  args:
+      #                    replenishRate: 100
+      #                    burstCapacity: 200
+      #                    keyResolver: IP
+      #                -
+      #                  name: Resilience4jCircuitBreaker
+      #                  args:
+      #                    name: user-service
+      #                    fallbackUri: forward:/fallback/user
+      #
+      #            -
+      #              id: carlos-system
+      #              uri: lb://carlos-system
+      #              predicates:
+      #                - Path=/sys/**
+      #              filters:
+      #                -
+      #                  name: CarlosRateLimiter
+      #                  args:
+      #                    replenishRate: 200
+      #                    burstCapacity: 400
+      #            # Knife4j 文档聚合路由（白名单路径，无需前缀）
+      #            -
+      #              id: knife4j-gateway
+      #              uri: http://localhost:${server.port}
+      #              predicates:
+      #                - Path=/doc.html,/webjars/**,/swagger-resources/**,/v3/api-docs/**
+      # 全局跨域配置
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+            allowCredentials: true
+            maxAge: 3600
+
+      # 默认过滤器
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+
+
+
+
+# ==========================================
+# Carlos 网关配置
+# ==========================================
+# ==================== Carlos Gateway 配置 ====================
+carlos:
+  gateway:
+    # API 统一前缀配置
+    # 所有请求必须以此前缀开头（白名单路径除外）
+    #    prefix: /api/v1
+    # 是否启用前缀校验
+    prefix-enabled: true
+    # 白名单路径（支持 Ant 风格通配符）
+    # 默认包含：/doc.html, /webjars/**, /swagger-ui/**, /v3/api-docs/**, /actuator/**
+    whitelist:
+      - /custom/public/**
+    tracing:
+      enabled: true
+      sampling-rate: 1.0
+      request-id:
+        header-name: X-Request-Id
+        auto-generate: true
+        add-to-response: true
+      ignore-patterns:
+        - /actuator/**
+        - /health
+    # ==================== OAuth2 配置 ====================
+    oauth2:
+      enabled: true
+      # Token 类型：JWT 或 OPAQUE
+      token-type: JWT
+
+      # JWT 配置
+      #      jwt-public-key:
+      jwt-issuer: carlos-auth
+      jwt-audience: carlos-gateway
+
+      # Opaque Token 配置（当 token-type 为 OPAQUE 时使用）
+      introspection-uri: http://carlos-auth/oauth2/introspect
+      client-id: carlos-ui
+      client-secret: gateway-secret
+      introspection-cache-duration: 5m
+
+      # 权限配置
+      authorization-enabled: true
+      authorization-mode: RBAC
+
+      # 白名单
+      whitelist:
+        - /public/**
+        - /static/**
+        - /sys/i18n/messages
+
+    # ==================== 灰度发布配置 ====================
+    gray:
+      enabled: false
+      strategies:
+        user-service:
+          enabled: true
+          weight: 10  # 10% 流量进入灰度
+          version: "2.0.0"
+          hash-key: USER
+        order-service:
+          enabled: true
+          user-ids:
+            - "10001"
+            - "10002"
+
+    # ==================== WAF 配置 ====================
+    waf:
+      enabled: false
+      sql-injection-protection: true
+      xss-protection: true
+      path-traversal-protection: true
+      sensitive-file-protection: true
+      command-injection-protection: true
+      check-body: true
+      csrf-protection: true
+      allowed-origin: "http://localhost:3000"
+
+    # ==================== 防重放配置 ====================
+    replay:
+      enabled: false
+      strict-mode: false
+      secret-key: ${REPLAY_SECRET_KEY:your-secret-key-here}
+      whitelist:
+        - /public/**
+
+    # ==================== 异常处理配置 ====================
+    exception:
+      # 开发模式：显示详细错误信息（包括异常详情和堆栈）
+      dev-mode: false
+      # 是否显示异常堆栈信息（生产环境建议关闭）
+      show-stack-trace: false
+
+    # ==================== 限流配置 ====================
+    # Carlos 扩展限流器配置
+    # 基于 Spring Cloud Gateway RedisRateLimiter 扩展，提供多维度限流策略
+    rate-limiter:
+      enabled: true
+
+      # 默认限流配置（全局生效）
+      default-config:
+        replenish-rate: 100      # 每秒产生 100 个令牌
+        burst-capacity: 200      # 令牌桶容量 200
+        requested-tokens: 1      # 每次请求消耗 1 个令牌
+        key-resolver: IP         # 默认基于 IP 限流
+
+      # 路由特定配置（可选，覆盖默认配置）
+      routes:
+        -
+          route-id: carlos-org
+          replenish-rate: 100
+          burst-capacity: 200
+          key-resolver: IP
+        -
+          route-id: order-service
+          replenish-rate: 50
+          burst-capacity: 100
+          key-resolver: USER
+          inherit-default: false
+
+      # 白名单（不限流的 IP）
+      whitelist:
+        - "127.0.0.1"
+        - "10.0.0.1"
+
+      # 黑名单（直接拒绝的 IP）
+      blacklist:
+      # - "192.168.1.100"
+
+      # 响应配置
+      response:
+        include-headers: true           # 包含限流响应头
+        uniform-error-response: true    # 使用 Carlos ErrorResponse 格式
+        retry-after: 60                 # 建议重试时间（秒）
+
+      # 监控配置
+      metrics:
+        enabled: true
+        publish-events: true
+        sample-rate: 1.0
+
+    # ==================== 熔断配置 ====================
+    circuitbreaker:
+      enabled: true
+
+    # ==================== 缓存配置 ====================
+    cache:
+      enabled: true
+      local-size: 10000
+      local-expire: 5m
+      redis-enabled: true
+      redis-expire: 10m
+
+    # ==================== 指标配置 ====================
+    metrics:
+      enabled: true
+
+    # ==================== 转换配置 ====================
+    transform:
+      enabled: true
+      api-version-enabled: true
+      path-rewrites:
+        "/api/v1/(.*)": "/v1/$1"
+      header-transforms:
+        -
+          source: X-Old-Header
+          target: X-New-Header
+          operation: REPLACE
+        -
+          source: X-Internal-Token
+          operation: REMOVE
+  cache:
+    reactive:
+      enabled: true
+    # 序列化方式：jackson、fastjson、kryo、jdk
+    serializer: fastjson
+
+# ==========================================
+# Knife4j 配置（API 文档聚合）
+# ==========================================
+knife4j:
+  gateway:
+    enabled: true
+    tags-sorter: order
+    operations-sorter: order
+    strategy: discover
+
+    routes:
+      -
+        name: 认证服务
+        url: /auth/v3/api-docs
+        service-name: carlos-auth
+        context-path: ""    # 关键：空字符串，不额外添加前缀
+        order: 1
+
+
+
+# ==========================================
+# 日志配置
+# ==========================================
+logging:
+  config: classpath:config/logback.xml
+  level:
+    root: info
+    com.carlos: debug
+    org.springframework.security: debug
+    org.springframework.cloud.gateway: DEBUG
+    com.github.xiaoymin.knife4j: debug
+    com.github.xingfudeshi.knife4j: debug
+  file:
+    path: logs/gateway
+
+
+# ==================== Micrometer Tracing 配置 ====================
+management:
+  tracing:
+    enabled: true
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: http://localhost:9411/api/v2/spans
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,gateway
+    health:
+      show-details: when-authorized
+    gateway:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<ScrollPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.carlos.fx.projectge.ProjectGeneratorController"
+            fitToWidth="true"
+            vbarPolicy="AS_NEEDED"
+            hbarPolicy="NEVER"
+            pannable="true"
+            style="-fx-background-color: transparent;">
+
+
+    <VBox spacing="20" style="-fx-padding: 20;">
+
+        <Label text="项目脚手架" styleClass="title-large"/>
+        <!-- Project Configuration -->
+        <VBox spacing="10" styleClass="card">
+            <Label text="项目配置" styleClass="title-medium"/>
+
+            <GridPane styleClass="form-grid" hgap="15" vgap="12">
+                <columnConstraints>
+                    <ColumnConstraints minWidth="120" prefWidth="120"/>
+                    <ColumnConstraints hgrow="ALWAYS"/>
+                    <ColumnConstraints minWidth="120" prefWidth="120"/>
+                    <ColumnConstraints hgrow="ALWAYS"/>
+                </columnConstraints>
+
+                <Label text="项目名称:" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                <TextField fx:id="projectNameField" promptText="my-project" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+
+                <Label text="Group ID:" styleClass="form-label" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+                <TextField fx:id="groupIdField" promptText="com.carlos" GridPane.columnIndex="3" GridPane.rowIndex="0"/>
+
+                <Label text="Artifact ID:" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                <TextField fx:id="artifactIdField" promptText="my-project" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+
+                <Label text="版本:" styleClass="form-label" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+                <TextField fx:id="versionField" promptText="1.0.0-SNAPSHOT" GridPane.columnIndex="3" GridPane.rowIndex="1"/>
+
+                <Label text="包名:" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                <TextField fx:id="packageField" promptText="com.carlos.myproject" GridPane.columnIndex="1" GridPane.rowIndex="2" GridPane.columnSpan="3"/>
+
+                <Label text="描述:" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+                <TextField fx:id="descriptionField" promptText="项目描述" GridPane.columnIndex="1" GridPane.rowIndex="3" GridPane.columnSpan="3"/>
+
+                <Label text="作者:" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+                <TextField fx:id="authorField" promptText="Carlos" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+
+                <Label text="输出路径:" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
+                <HBox spacing="10" GridPane.columnIndex="1" GridPane.rowIndex="5" GridPane.columnSpan="3">
+                    <TextField fx:id="outputPathField" promptText="选择输出目录" HBox.hgrow="ALWAYS"/>
+                    <Button fx:id="browseButton" text="浏览..." styleClass="secondary-button"/>
+                </HBox>
+            </GridPane>
+        </VBox>
+
+        <!-- Template Selection -->
+        <HBox spacing="20" styleClass="card" VBox.vgrow="ALWAYS">
+            <VBox spacing="10" HBox.hgrow="ALWAYS">
+                <Label text="项目模板" styleClass="title-medium"/>
+
+                <ComboBox fx:id="templateCombo" prefWidth="300"/>
+
+                <Label text="模板说明:" styleClass="form-label" style="-fx-padding: 10 0 0 0;"/>
+                <TextArea fx:id="templateDescArea" editable="false" wrapText="true" VBox.vgrow="ALWAYS" prefHeight="80.0"
+                          style="-fx-background-color: #f5f5f5;"/>
+            </VBox>
+        </HBox>
+
+        <!-- Generate Button -->
+        <VBox spacing="10" styleClass="card">
+            <HBox spacing="10">
+                <Button fx:id="generateButton" text="生成项目" styleClass="success-button"/>
+            </HBox>
+
+            <ProgressBar fx:id="progressBar" prefWidth="Infinity" progress="0"/>
+            <Label fx:id="statusLabel" style="-fx-text-fill: #1976d2;"/>
+        </VBox>
+    </VBox>
+</ScrollPane>
+

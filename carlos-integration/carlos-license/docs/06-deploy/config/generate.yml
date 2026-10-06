@@ -1,0 +1,17 @@
+---
+
+# License 相关配置
+carlos:
+  license:
+    generate:
+      enabled: true
+      file-path: d:\root
+
+
+
+
+
+
+
+
+

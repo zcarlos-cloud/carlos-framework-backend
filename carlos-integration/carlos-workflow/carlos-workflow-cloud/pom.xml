@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.carlos.workflow</groupId>
+    <artifactId>carlos-workflow</artifactId>
+    <version>${revision}</version>
+  </parent>
+
+  <artifactId>carlos-workflow-cloud</artifactId>
+  <description>工作流审批中心微服务启动入口</description>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.carlos.workflow</groupId>
+      <artifactId>carlos-workflow-bus</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.carlos</groupId>
+      <artifactId>carlos-spring-cloud-starter</artifactId>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <finalName>${project.parent.artifactId}</finalName>
+    <plugins>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>repackage</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-deploy-plugin</artifactId>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

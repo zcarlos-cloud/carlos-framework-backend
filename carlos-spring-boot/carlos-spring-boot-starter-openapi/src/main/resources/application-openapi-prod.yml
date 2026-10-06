@@ -1,0 +1,26 @@
+# ==========================================
+# 生产环境配置 - Knife4j 完全关闭
+# ==========================================
+
+knife4j:
+  # 完全关闭文档
+  enable: false
+  production: true
+
+  # 禁用所有功能
+  basic:
+    enable: false
+
+  setting:
+    enable-swagger-models: false
+    enable-document-manage: false
+    enable-dynamic-parameter: false
+    enable-search: false
+
+springdoc:
+  api-docs:
+    enabled: false      # 关闭 API Docs
+  swagger-ui:
+    enabled: false      # 关闭 Swagger UI
+  cache:
+    disabled: false     # 启用缓存

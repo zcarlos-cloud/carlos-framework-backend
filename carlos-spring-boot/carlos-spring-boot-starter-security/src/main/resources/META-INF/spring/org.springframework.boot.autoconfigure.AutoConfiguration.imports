@@ -1,0 +1,2 @@
+com.carlos.security.config.ResourceServerAutoConfiguration
+com.carlos.security.config.ResourceServerDisabledConfiguration

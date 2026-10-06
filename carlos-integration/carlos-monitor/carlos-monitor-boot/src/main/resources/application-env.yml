@@ -1,0 +1,21 @@
+# ==========================================
+# carlos-monitor-boot 本地开发环境变量配置
+# 说明：仅用于本地开发，生产环境通过系统环境变量或 Nacos 配置中心提供
+# 警告：此文件不应包含真实密码，提交前请确认已使用占位符
+# ==========================================
+
+# ======================== 数据库配置（PostgreSQL 元数据库） ========================
+DB_URL: ${CARLOS_DB_URL:localhost:5432/carlos}
+DB_USERNAME: ${CARLOS_DB_USERNAME:postgres}
+DB_PWD: ${CARLOS_DB_PASSWORD:}
+
+# ======================== ClickHouse 配置（指标时序） ========================
+CLICKHOUSE_URL: ${CARLOS_CLICKHOUSE_URL:jdbc:clickhouse://localhost:8123/default}
+CLICKHOUSE_USERNAME: ${CARLOS_CLICKHOUSE_USERNAME:default}
+CLICKHOUSE_PASSWORD: ${CARLOS_CLICKHOUSE_PASSWORD:}
+
+# ======================== Redis 配置 ========================
+REDIS_IP: ${CARLOS_REDIS_HOST:localhost}
+REDIS_PORT: ${CARLOS_REDIS_PORT:6379}
+REDIS_DB: ${CARLOS_REDIS_DB:0}
+REDIS_PWD: ${CARLOS_REDIS_PASSWORD:}

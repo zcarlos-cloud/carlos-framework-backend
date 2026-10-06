@@ -1,0 +1,254 @@
+# ==========================================
+# carlos-org-boot 组织管理/用户中心单体启动配置
+# 说明：组织架构、用户管理、权限相关服务
+# ==========================================
+
+# ======================== 服务基础配置 ========================
+server:
+  port: ${SERVER_PORT:9512}
+  tomcat:
+    # 最大工作线程数
+    threads:
+      max: 64
+
+# ======================== Spring 主配置 ========================
+spring:
+  application:
+    name: carlos-org
+  profiles:
+    active: env,boot
+  servlet:
+    multipart:
+      # 启用文件上传
+      enabled: true
+      # 单文件最大限制
+      max-file-size: 200MB
+      # 一次上传所有文件的最大限制
+      max-request-size: 200MB
+
+  # ======================== 数据源配置（Druid + 动态数据源） ========================
+  datasource:
+    druid:
+      stat-view-servlet:
+        enabled: true
+        loginUsername: admin
+        loginPassword: 123456
+    dynamic:
+      primary: master
+      druid:
+        time-between-connect-error-millis: 10000
+        break-after-acquire-failure: false
+        fail-fast: true
+        connection-error-retry-attempts: 10
+        initial-size: 50
+        min-idle: 50
+        max-idle: 800
+        max-active: 800
+        max-wait: 10000
+        time-between-eviction-runs-millis: 60000
+        min-evictable-idle-time-millis: 300000
+        validation-query: SELECT 1
+        test-while-idle: true
+        test-on-borrow: false
+        test-on-return: false
+        pool-prepared-statements: true
+        max-pool-prepared-statement-per-connection-size: 20
+        filters: stat,wall,slf4j
+        connection-properties:
+          druid.stat.mergeSql: true
+          druid.stat.slowSqlMillis: 5000
+
+# ======================== Carlos 框架配置 ========================
+carlos:
+  # APM 链路追踪（Brave + MDC 日志关联）
+  apm:
+    enabled: true
+  web:
+    # 跨域配置
+    cors:
+      enabled: true
+    # 枚举字典配置
+    enum-dict:
+      # 只扫本服务自己的枚举包（@AppEnum 的 code 需全局唯一，扫 com.carlos 会跨模块互相覆盖）
+      scan-packages: com.carlos.org
+      enabled: true
+
+  # MyBatis 高级配置
+  mybatis:
+    interceptor:
+      # 是否启用多租户拦截器
+      tenant: true
+
+  # ======================== 组织管理模块配置 ========================
+  org:
+    # 新用户默认密码
+    default-password: ${ORG_DEFAULT_PASSWORD:carlos@123}
+    # 密码过期时间
+    password-expire: 90d
+    # 登录失败统计时间窗口（分钟）
+    login:
+      count-interval-time: 1440
+      # 登录失败次数上限
+      fail-limit: 5
+      # 账号锁定时间（分钟）
+      lock-time: 30
+
+  # ======================== SMS 短信配置 ========================
+  sms:
+    templates:
+      verification:
+        template-id: ${SMS_VERIFICATION_TEMPLATE:}
+        sign-name: ${SMS_SIGN_NAME:}
+
+  # ======================== OSS 对象存储配置 ========================
+  oss:
+    enabled: false
+    type: MINIO
+    endpoint: ${CARLOS_OSS_ENDPOINT:}
+    access-key: ${CARLOS_OSS_ACCESS_KEY:}
+    secret-key: ${CARLOS_OSS_SECRET_KEY:}
+    bucket-name: ${CARLOS_OSS_BUCKET_NAME:carlos-org}
+
+  # ======================== 资源服务器/安全配置 ========================
+  resource-server:
+    enabled: true
+    auth:
+      # 用户 ID 请求头
+      user-id-header: X-User-Id
+      # 用户名请求头
+      username-header: X-User-Name
+      # 角色请求头
+      roles-header: X-User-Roles
+    permission:
+      cache:
+        enabled: true
+        # 本地缓存 TTL（秒）
+        local-ttl: 600
+        # Redis 缓存 TTL（秒）
+        redis-ttl: 604800
+
+# ======================== 监控配置（Actuator） ========================
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+# ======================== 日志配置 ========================
+logging:
+  config: classpath:config/logback.xml
+  level:
+    root: info
+    com.carlos: debug
+  file:
+    path: logs/org
+
+# ======================== MyBatis-Plus 配置 ========================
+mybatis-plus:
+  # 启动时是否检查 MyBatis XML 文件是否存在
+  check-config-location: true
+  # MyBatis 原生配置
+  configuration:
+    # 字段名称下划线转驼峰命名
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+    call-setters-on-nulls: true
+  global-config:
+    db-config:
+      # 全局默认主键类型
+      id-type: assign_id
+      # 逻辑已删除值（默认为 1）
+      logic-delete-value: 1
+      # 逻辑未删除值（默认为 0）
+      logic-not-delete-value: 0
+  # mapper xml 映射路径
+  mapper-locations: classpath*:mapper/**/*Mapper.xml
+
+---
+# ======================== 接口文档配置（Knife4j/SpringDoc） ========================
+carlos:
+  openapi:
+    enable: true
+    # 基本信息
+    title: "Carlos 用户中心 API 文档"
+    description: "用户管理、组织架构、权限控制等接口"
+    version: "1.0.0"
+
+    # 联系人信息
+    contact:
+      name: carlos
+      email: carlos@xxx.com
+      url: www.carlos.com
+
+  # 扫描的包
+  swagger:
+    base-package: com.carlos.org
+
+knife4j:
+  enable: true
+  production: false
+  basic:
+    enable: false
+    username: carlos
+    password: hadoop543216
+  setting:
+    enableDebug: true
+    language: zh-CN
+    enableSwaggerModels: true
+    enableDocumentManage: true
+    swaggerModelName: 实体类列表
+    enableVersion: true
+    enableReloadCacheParameter: false
+    enableAfterScript: true
+    enableFilterMultipartApiMethodType: POST
+    enableFilterMultipartApis: false
+    enableRequestCache: true
+    enableHost: false
+    enableHostText: 192.168.0.193:8000
+    enableHomeCustom: false
+    homeCustomLocation: classpath:markdown/home.md
+    enableSearch: true
+    enableFooter: false
+    enableFooterCustom: true
+    footerCustomContent: 云津智慧科技有限公司
+    enableDynamicParameter: true
+    enableOpenApi: true
+    enableGroup: true
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+    resolve-schema-properties: true
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+    doc-expansion: list
+    display-request-duration: true
+  paths-to-exclude: /error, /actuator/**
+  cache:
+    disabled: false
+  show-actuator: false
+  show-login-endpoint: false
+  # ==================== 接口分组 ====================
+  group-configs:
+    # Feign 接口（服务间调用）
+    -
+      group: 'Feign接口'
+      displayName: 'Feign 接口（服务间调用）'
+      packagesToScan: com.carlos.org.apiimpl,com.carlos.org.position.apiimpl
+      pathsToMatch: /**
+    # 用户、角色、部门管理
+    -
+      group: '用户角色部门'
+      displayName: '用户、角色、部门管理'
+      packagesToScan: com.carlos.org.controller
+      pathsToMatch: /**
+    # 职级、职类、职等管理
+    -
+      group: '职级管理'
+      displayName: '职级、职类、职等管理'
+      packagesToScan: com.carlos.org.position.controller
+      pathsToMatch: /**

@@ -1,0 +1,329 @@
+server:
+  port: 9812
+
+
+# 钉钉配置
+DINGTALK_ENABLE: 'true'
+DINGTALK_API_HOST: 'https://oapi.dingtalk.com'
+DINGTALK_APPKEY: 'key'
+DINGTALK_APPSECRET: 'secret'
+
+
+
+
+carlos:
+  docking:
+    datacenter:
+      instances:
+        test-shuning:
+          instance-id: test-shuning
+          supplier: ShuNing
+          base-url: http://172.34.72.248:8081/portjs
+          app-key: uGG1GDSxddFfdxzb
+          app-secret: pG9sQ2y35CV4LJWE
+          encrypt:
+            key: 234567890
+            iv: 32456789
+  boot:
+    cors:
+      allowed-origins:
+        - 'http://localhost:8080'
+        - 'http://localhost:8081'
+
+---
+carlos:
+  sms:
+  # 标注从yml读取配置
+  config-type: yaml
+  #用于标定yml中的配置是否开启短信拦截，接口配置不受此限制
+  restricted: false
+  #短信拦截限制单手机号每日最大发送量，只对开启了拦截的配置有效
+  account-max: 20
+  #短信拦截限制单手机号每分钟最大发送，只对开启了拦截的配置有效
+  minute-max: 5
+  #核心线程池大小
+  corePoolSize: 5
+  #最大线程数
+  maxPoolSize: 16
+  #队列容量
+  queueCapacity: 50
+  #设置线程池关闭的时候等待所有任务都完成再继续销毁其他的Bean
+  shutdownStrategy: true
+  templates:
+    gecode:
+      code: gecode
+      template-id: 6302
+      content: '您的验证码是：{code}，请在10分钟内输入。'
+      signature: '【云津智慧】'
+    event01:
+      code: event01
+      template-id: 5864
+      content: '您好，您待处理的事件已被督办，请尽快处理，事件编号{eventId}。'
+      signature: '【云津智慧】'
+  blends:
+    chuanglan:
+      #厂商标识，标定此配置是哪个厂商，详细请看厂商标识介绍部分
+      supplier: chuanglan
+      #您的accessKey
+      access-key-id: YZM4174302
+      #您的accessKeySecret
+      access-key-secret: yvjkx11Vr2fa7f
+      # 随机权重，负载均衡的权重值依赖于此，默认为1，如不需要负载均衡可不进行配置
+      weight: 0
+      #短信自动重试间隔时间  默认五秒
+      retry-interval: 5
+      # 短信重试次数，默认0次不重试，如果你需要短信重试则根据自己的需求修改值即可
+      max-retries: 0
+    wocloud:
+      #厂商标识，标定此配置是哪个厂商，详细请看厂商标识介绍部分
+      supplier: wocloud
+      #您的accessKey
+      access-key-id: smsbbt
+      #您的accessKeySecret
+      access-key-secret: 7ykOtrNurgClTt6Q
+      # 随机权重，负载均衡的权重值依赖于此，默认为1，如不需要负载均衡可不进行配置
+      weight: 0
+      #短信自动重试间隔时间  默认五秒
+      retry-interval: 5
+      # 短信重试次数，默认0次不重试，如果你需要短信重试则根据自己的需求修改值即可
+      max-retries: 0
+
+###############################  缓存数据库配置 #################################
+---
+spring:
+  application:
+    name: carlos-test
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 200MB # 单文件最大限制
+      max-request-size: 200MB # 一次上传所有文件的最大限制. 如果接口只支持单文件,则该值与上面相同即可
+  cache:
+    type: redis
+  data:
+    redis:
+      database: 15
+      host: 100.127.6.234
+      port: 16379
+      password: ${REDIS_PASSWORD:carlos@123456}
+      #      host: 127.0.0.1
+      #      port: 26379
+      #      password: 'HJbgx_7281&'
+      lettuce:
+        pool:
+          max-active: 10
+          max-idle: 10
+          max-wait: 30s
+          min-idle: 10
+        shutdown-timeout: 100ms
+  #    redisson:
+  #      config: |
+  #        {
+  #          "masterSlaveServersConfig": {
+  #            "masterAddress": "redis://100.127.6.234:16379",
+  #            "slaveAddresses": [
+  #              "redis://100.127.6.234:16379"
+  #            ],
+  #            "database": "14",
+  #            "password": "carlos@123456",
+  #            "readMode": "MASTER_SLAVE",
+  #            "masterConnectionPoolSize": 64,
+  #            "slaveConnectionPoolSize": 64
+  #          }
+  #        }
+  ##############################  redis缓存配置 end   ###########################
+
+
+  datasource:
+    druid:
+      stat-view-servlet:
+        enabled: true
+        loginUsername: admin
+        loginPassword: 123456
+    dynamic:
+      primary: master
+      datasource:
+        # 主库数据源
+        master:
+          url: jdbc:postgresql://100.127.6.234:15432/carlos_bbt?currentSchema=public&stringtype=unspecified
+          driver-class-name: org.postgresql.Driver
+          username: ${DB_USERNAME:root}
+          password: ${DB_PASSWORD:carlos@123456}
+      druid:
+        initial-size: 5
+        min-idle: 5
+        maxActive: 20
+        maxWait: 60000
+        timeBetweenEvictionRunsMillis: 60000
+        minEvictableIdleTimeMillis: 300000
+        validationQuery: SELECT 1 FROM DUAL
+        testWhileIdle: true
+        testOnBorrow: false
+        testOnReturn: false
+        poolPreparedStatements: true
+        breakAfterAcquireFailure: true
+        ConnectionErrorRetryAttempts: 2
+        maxPoolPreparedStatementPerConnectionSize: 20
+        filters: stat,wall,slf4j
+        connection-properties:
+          druid.stat.mergeSql: true
+          druid.stat.slowSqlMillis: 5000
+
+############################### mybatis-plus start #################################
+mybatis-plus: # 启动时是否检查MyBatis XML文件是否存在
+  check-config-location: true
+  # 支持统配符 * 或者 ; 分割
+  # MyBatis原生配置
+  configuration: # 字段名称下划线转驼峰命名
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+    call-setters-on-nulls: true
+  global-config:
+    db-config: # 全局默认主键类型
+      id-type: assign_id
+      # 逻辑已删除值(默认为 1)
+      logic-delete-value: 1
+      # 逻辑未删除值(默认为 0)
+      logic-not-delete-value: 0
+  # mapper xml映射路径
+  mapper-locations: classpath*:mapper/**/*Mapper.xml
+################################ mybatis-plus end ##################################
+
+---
+carlos:
+  feign:
+    log:
+      enable: true
+      level: full
+  boot:
+    enums:
+      scan-package: com.carlos
+      enabled: true
+  encrypt:
+    sm4:
+      enabled: true
+      encrypt-mode: cbc
+      key: asdfghjklmnbvcxz
+      iv: mnbvcxzpoiuytre1
+    sm2:
+      enabled: true
+      public-key: 0403c7a7250306531238d49c2e0146e48217f2d65b28ed1d61565bd40472c7516bc78574de0a89f9067328558d656ecdc2504f49bb2bd843a9cfa9b404463ed453
+      private-key: 3134665e1e009bab370738fd5ff1dabc7f390b683885c321f1523f4f725e8aa1
+    # 蓉政通相关配置
+  docking:
+    dingtalk:
+      enabled: ${DINGTALK_ENABLE:false}
+      host: ${DINGTALK_API_HOST}
+      appkey: ${DINGTALK_APPKEY}
+      appsecret: ${DINGTALK_APPSECRET}
+      agent-id: 3257007330
+      corp-id: dinge79398240f37912facaaa37764f94726
+    rzt:
+      enabled: ${RZT_ENABLE:true}
+      debug: ${RZT_DEBUG:false}
+      api:
+        host: ${RZT_API_HOST}
+        path: ${RZT_API_PATH}
+        name: rzt
+        context-id: rzt
+      access-token-refresh-corn: '0 0/59 * * * *'
+      corpid: ${RZT_CORPID}
+      secret: ${RZT_SECRET}
+      token-duration: 1h
+      agent-id: ${RZT_AGENTID}
+      paas-id: ${RZT_PAASID}
+      paas-token: ${RZT_PAASTOKEN}
+      organization:
+        enabled: ${RZT_ORG_ENABLE:false}
+        paas-id: ${RZT_ORG_PAASID}
+        paas-token: ${RZT_ORG_PAASTOKEN}
+        app-id: ${RZT_ORG_APPID}
+        app-secret: ${RZT_ORG_APPSECRET}
+        host: ${RZT_ORG_HOST}
+        path: ${RZT_ORG_PATH}
+        name: rzt-org
+        context-id: rzt-org
+      user-cache-refresh-corn: '0 0 3 * * ?'
+#################################### 接口文档 Swagger start #################################
+# springdoc-openapi项目配置
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  api-docs:
+    path: /v3/api-docs
+  group-configs:
+    -
+      group: '测试'
+      paths-to-match: '/**'
+      packages-to-scan: com.carlos.test
+---
+carlos:
+  openapi:
+  # 是否启用
+  enable: true
+  group-name: 分组名称
+  # 扫描的包，多个包使用逗号隔开
+  base-package: com.ulang.contest.mng.controller
+  description: 接口描述
+  title: 接口标题
+  version: 1.0.0
+  contact:
+    email: xx@carlos.com
+    name: Chengdu
+    url: www.carlos.com
+
+knife4j: # 是否开启Knife4j增强模式 默认 false
+  enable: true
+  # 是否是生产环境
+  production: false
+  # knife4j配置
+  cors: false
+  # 个性化配置 详情配置参照源码
+  setting: # 是否开启Debug调试
+    enableDebug: true
+    language: zh-CN
+    enableSwaggerModels: true
+    enableDocumentManage: true
+    swaggerModelName: 实体类列表
+    enableVersion: true
+    enableReloadCacheParameter: false
+    enableAfterScript: true
+    enableFilterMultipartApiMethodType: POST
+    enableFilterMultipartApis: false
+    enableRequestCache: true
+    enableHost: false
+    enableHostText: 192.168.0.193:8000
+    # 是否开启自定义主页内容
+    enableHomeCustom: false
+    # 主页内容Markdown文件路径
+    homeCustomLocation: classpath:markdown/home.md
+    # 开启搜索
+    enableSearch: true
+    # 显示页底信息
+    enableFooter: false
+    enableFooterCustom: true
+    footerCustomContent: 云津智慧科技有限公司
+    # 动态参数调试
+    enableDynamicParameter: true
+    # 显示OpenAPI规范
+    enableOpenApi: true
+    enableGroup: true
+  # 是否开启BasicHttp验证
+  basic:
+    enable: false
+    username: carlos
+    password: hadoop543216
+#################################### 接口文档 Swagger end ###################################
+
+##############################  日志配置 start  ###########################
+logging:
+  config: classpath:config/logback.xml
+  level:
+    root: info
+    com.carlos: debug
+  file:
+    path: logs/test
+##############################  日志配置 end   ###########################
+

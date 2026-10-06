@@ -1,0 +1,2 @@
+com.carlos.oss.config.OssAutoConfiguration
+com.carlos.oss.web.OssWebAutoConfiguration

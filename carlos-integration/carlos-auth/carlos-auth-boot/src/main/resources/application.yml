@@ -1,0 +1,265 @@
+# ==========================================
+# carlos-auth-boot 认证服务单体启动配置
+# 说明：OAuth2 认证授权服务，基于 Spring Authorization Server
+# ==========================================
+
+# ======================== 服务基础配置 ========================
+server:
+  port: 9511
+
+# ======================== Spring 主配置 ========================
+spring:
+  profiles:
+    active: env,boot
+  application:
+    name: carlos-auth
+  # 配置文件导入（OAuth2 专属配置）
+  config:
+    import: classpath:application-auth.yml
+
+  # ======================== 数据源配置（Druid + 动态数据源） ========================
+  datasource:
+    druid:
+      stat-view-servlet:
+        enabled: true
+        loginUsername: admin
+        loginPassword: 123456
+    dynamic:
+      primary: master
+      druid:
+        initial-size: 5
+        min-idle: 5
+        maxActive: 20
+        maxWait: 60000
+        timeBetweenEvictionRunsMillis: 60000
+        minEvictableIdleTimeMillis: 300000
+        validationQuery: SELECT 1
+        testWhileIdle: true
+        testOnBorrow: false
+        testOnReturn: false
+        poolPreparedStatements: true
+        breakAfterAcquireFailure: true
+        ConnectionErrorRetryAttempts: 2
+        maxPoolPreparedStatementPerConnectionSize: 20
+        filters: stat,wall,slf4j
+        connection-properties:
+          druid.stat.mergeSql: true
+          druid.stat.slowSqlMillis: 5000
+
+  # ======================== 模板引擎配置（Thymeleaf） ========================
+  # OAuth2 登录页面、授权页面等使用 Thymeleaf 模板渲染
+  thymeleaf:
+    # 模板文件前缀
+    prefix: classpath:/templates/
+    # 模板文件后缀
+    suffix: .html
+    # 模板文件编码
+    encoding: UTF-8
+    # 是否缓存模板（开发环境建议关闭）
+    cache: false
+    # 模板模式
+    mode: HTML
+
+# ======================== Carlos 框架配置 ========================
+carlos:
+  # APM 链路追踪（Brave + MDC 日志关联）
+  apm:
+    enabled: true
+  web:
+    # 跨域配置
+    cors:
+      enabled: true
+    # 枚举字典配置
+    enum-dict:
+      # 只扫本服务自己的枚举包（@AppEnum 的 code 需全局唯一，扫 com.carlos 会跨模块互相覆盖）
+      scan-packages: com.carlos.auth
+      enabled: true
+
+  # ======================== 加密配置（SM4/SM2 国密） ========================
+  encrypt:
+    # SM4 国密对称加密配置
+    sm4:
+      enabled: true
+      encrypt-mode: cbc
+      key: ${CARLOS_ENCRYPT_KEY:asdfghjklmnbvcxz}
+      iv: ${CARLOS_ENCRYPT_IV:mnbvcxzpoiuytre1}
+      store-type: base64
+
+    # SM2 国密非对称加密配置
+    sm2:
+      enabled: true
+      public-key: ${CARLOS_SM2_PUBLIC_KEY:}
+      private-key: ${CARLOS_SM2_PRIVATE_KEY:}
+      store-type: base64
+
+  # ======================== SMS 短信配置 ========================
+  sms:
+    templates:
+      verification:
+        template-id: ${SMS_VERIFICATION_TEMPLATE:}
+        sign-name: ${SMS_SIGN_NAME:}
+      notification:
+        template-id: ${SMS_NOTIFICATION_TEMPLATE:}
+        sign-name: ${SMS_SIGN_NAME:}
+
+  # ======================== 钉钉集成配置 ========================
+  integration:
+    dingtalk:
+      enabled: ${DINGTALK_ENABLED:false}
+      host: ${DINGTALK_HOST:https://oapi.dingtalk.com}
+      appkey: ${DINGTALK_APPKEY:}
+      appsecret: ${DINGTALK_APPSECRET:}
+
+  # ======================== 资源服务器配置 ========================
+  resource-server:
+    enabled: ${RESOURCE_SERVER_ENABLED:true}
+    auth:
+      user-id-header: X-User-Id
+      username-header: X-User-Name
+      roles-header: X-User-Roles
+    permission:
+      cache:
+        enabled: true
+        local-ttl: 600
+        redis-ttl: 604800
+
+# ======================== 监控配置（Actuator） ========================
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+    health:
+      show-details: when-authorized
+
+# ======================== 日志配置 ========================
+logging:
+  config: classpath:config/logback.xml
+  level:
+    root: info
+    com.carlos: debug
+    org.springframework.security: debug
+  file:
+    path: logs/auth
+
+# ======================== MyBatis-Plus 配置 ========================
+mybatis-plus:
+  # 启动时是否检查 MyBatis XML 文件是否存在
+  check-config-location: true
+  # MyBatis 原生配置
+  configuration:
+    # 字段名称下划线转驼峰命名
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+    call-setters-on-nulls: true
+  global-config:
+    db-config:
+      # 全局默认主键类型
+      id-type: assign_id
+      # 逻辑已删除值（默认为 1）
+      logic-delete-value: 1
+      # 逻辑未删除值（默认为 0）
+      logic-not-delete-value: 0
+  # mapper xml 映射路径
+  mapper-locations: classpath*:mapper/**/*Mapper.xml
+
+---
+# ======================== 接口文档配置（Knife4j/SpringDoc） ========================
+carlos:
+  openapi:
+    enable: true
+    # 基本信息
+    title: "Carlos 认证服务 API 文档"
+    description: "OAuth2 认证授权服务接口"
+    version: "1.0.0"
+
+    # 联系人信息
+    contact:
+      name: "技术支持"
+      email: "zhujunkeep@gmail.com"
+      url: "https://example.com"
+
+    # 许可证信息
+    license: "Apache 2.0"
+    license-url: "https://www.apache.org/licenses/LICENSE-2.0"
+
+knife4j:
+  enable: true
+  production: false
+  basic:
+    enable: false
+    username: carlos
+    password: hadoop543216
+  setting:
+    enableDebug: true
+    language: zh-CN
+    enableSwaggerModels: true
+    enableDocumentManage: true
+    swaggerModelName: 实体类列表
+    enableVersion: true
+    enableReloadCacheParameter: false
+    enableAfterScript: true
+    enableFilterMultipartApiMethodType: POST
+    enableFilterMultipartApis: false
+    enableRequestCache: true
+    enableHost: false
+    enableHostText: 192.168.0.193:8000
+    enableHomeCustom: false
+    homeCustomLocation: classpath:markdown/home.md
+    enableSearch: true
+    enableFooter: false
+    enableFooterCustom: true
+    footerCustomContent: 云津智慧科技有限公司
+    enableDynamicParameter: true
+    enableOpenApi: true
+    enableGroup: true
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+    resolve-schema-properties: true
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+    doc-expansion: list
+    display-request-duration: true
+  paths-to-exclude: /error, /actuator/**
+  cache:
+    disabled: true
+  show-actuator: false
+  show-login-endpoint: false
+  # ==================== 接口分组 ====================
+  group-configs:
+    # Feign 接口（服务间调用）
+    -
+      group: 'Feign接口'
+      displayName: 'Feign 接口（服务间调用）'
+      packagesToScan: com.carlos.auth.app.apiimpl
+      pathsToMatch: /**
+    # 登录认证
+    -
+      group: '登录认证'
+      displayName: '登录与认证'
+      packagesToScan: com.carlos.auth.login,com.carlos.auth.web,com.carlos.auth.captcha
+      pathsToMatch: /**
+    # 应用管理
+    -
+      group: '应用管理'
+      displayName: '应用客户端管理'
+      packagesToScan: com.carlos.auth.app.controller
+      pathsToMatch: /**
+    # 联合登录
+    -
+      group: '联合登录'
+      displayName: '联合登录'
+      packagesToScan: com.carlos.auth.idp.web,com.carlos.auth.sso.web
+      pathsToMatch: /**
+    # MFA多因素认证
+    -
+      group: 'MFA认证'
+      displayName: 'MFA多因素认证'
+      packagesToScan: com.carlos.auth.mfa.controller
+      pathsToMatch: /**

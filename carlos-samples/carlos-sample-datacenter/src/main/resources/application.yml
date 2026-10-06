@@ -1,0 +1,6 @@
+server:
+  port: 9814
+
+spring:
+  application:
+    name: carlos-sample-datacenter

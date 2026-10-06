@@ -1,0 +1,3 @@
+com.carlos.audit.config.AuditAutoConfiguration
+com.carlos.audit.config.AuditDisruptorConfig
+com.carlos.audit.clickhouse.ClickHouseConfig

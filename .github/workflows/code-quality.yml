@@ -1,0 +1,84 @@
+name: Code Quality
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  static-analysis:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout code
+        uses: actions/checkout@v4
+
+      -
+        name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: 21
+          distribution: 'temurin'
+
+      -
+        name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      -
+        name: Run Checkstyle
+        run: mvn checkstyle:check
+
+      -
+        name: Run SpotBugs
+        run: mvn spotbugs:check
+
+      -
+        name: Upload SpotBugs results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: target/spotbugs.sarif
+
+  code-coverage:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout code
+        uses: actions/checkout@v4
+
+      -
+        name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: 21
+          distribution: 'temurin'
+
+      -
+        name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      -
+        name: Run tests with coverage
+        run: mvn clean test jacoco:report -P carlos-public
+
+      -
+        name: Check coverage threshold
+        run: |
+          mvn jacoco:check -Djacoco.haltOnFailure=true
+
+      -
+        name: Upload coverage report
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./target/site/jacoco/jacoco.xml
+          flags: coverage
+          name: coverage-report

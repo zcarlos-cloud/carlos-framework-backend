@@ -1,0 +1,46 @@
+server:
+  port: 9813
+
+spring:
+  application:
+    name: carlos-sample-apm
+
+carlos:
+  apm:
+    # 是否启用 APM 模块（默认 false，必须显式开启）
+    enabled: true
+    # 链路追踪配置（内置 Brave）
+    tracing:
+      enabled: true
+      # 采样率 (0.0 - 1.0)，1.0 表示全量采样，生产环境建议 0.1
+      sample-rate: 1.0
+      # 传播类型：B3_SINGLE（默认）/ B3_MULTI
+      propagation: B3_SINGLE
+    # SkyWalking 配置
+    skywalking:
+      # AUTO：检测到 Agent 时自动增强；也可显式设为 true / false
+      enabled: AUTO
+      # Agent 存在时接管 Trace ID
+      takeover: true
+      # 日志中额外打印 tid
+      enrich-log: true
+    # MDC 配置
+    mdc:
+      enabled: true
+      # Trace ID 在 MDC 中的 key
+      trace-id-key: traceId
+      # Span ID 在 MDC 中的 key
+      span-id-key: spanId
+      # 是否将 Trace ID 添加到响应头
+      add-to-response: true
+      # 响应头名称
+      response-header-name: X-Trace-Id
+    # Feign 传播配置
+    feign:
+      enabled: true
+
+# 日志配置
+logging:
+  level:
+    root: info
+    com.carlos: debug

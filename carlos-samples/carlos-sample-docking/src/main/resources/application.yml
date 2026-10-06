@@ -1,0 +1,93 @@
+server:
+  port: 9813
+
+spring:
+  application:
+    name: carlos-sample-docking
+
+# 钉钉配置（使用环境变量）
+DINGTALK_ENABLE: 'false'
+DINGTALK_API_HOST: 'https://oapi.dingtalk.com'
+DINGTALK_APPKEY: 'your-app-key'
+DINGTALK_APPSECRET: 'your-app-secret'
+
+# Carlos Framework 配置
+carlos:
+  boot:
+    cors:
+      allowed-origins:
+        - 'http://localhost:8080'
+        - 'http://localhost:8081'
+    enums:
+      scan-package: com.carlos
+      enabled: true
+
+  # 钉钉对接配置
+  docking:
+    dingtalk:
+      enabled: ${DINGTALK_ENABLE:false}
+      host: ${DINGTALK_API_HOST:https://oapi.dingtalk.com}
+      appkey: ${DINGTALK_APPKEY}
+      appsecret: ${DINGTALK_APPSECRET}
+      agent-id: your-agent-id
+      corp-id: your-corp-id
+
+# OpenAPI 文档配置
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  api-docs:
+    path: /v3/api-docs
+  group-configs:
+    -
+      group: '钉钉对接示例'
+      paths-to-match: '/**'
+      packages-to-scan: com.carlos.sample.docking
+
+carlos:
+  openapi:
+    enable: true
+    group-name: 钉钉对接示例
+    base-package: com.carlos.sample.docking.controller
+    description: Carlos Framework 第三方平台对接示例 - 演示钉钉消息推送等功能
+    title: 钉钉对接示例 API
+    version: 1.0.0
+    contact:
+      email: dev@carlos.com
+      name: Carlos Team
+      url: https://www.zcarlos.com
+
+knife4j:
+  enable: true
+  production: false
+  setting:
+    enableDebug: true
+    language: zh-CN
+    enableSwaggerModels: true
+    enableDocumentManage: true
+    swaggerModelName: 实体类列表
+    enableVersion: true
+    enableReloadCacheParameter: false
+    enableAfterScript: true
+    enableFilterMultipartApiMethodType: POST
+    enableFilterMultipartApis: false
+    enableRequestCache: true
+    enableHost: false
+    enableHomeCustom: false
+    enableSearch: true
+    enableFooter: false
+    enableDynamicParameter: true
+    enableOpenApi: true
+    enableGroup: true
+  basic:
+    enable: false
+
+# 日志配置
+logging:
+  level:
+    root: info
+    com.carlos: debug
+  file:
+    path: logs/sample-docking

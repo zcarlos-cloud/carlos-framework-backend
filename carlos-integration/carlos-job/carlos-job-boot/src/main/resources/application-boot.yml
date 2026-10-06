@@ -1,0 +1,50 @@
+# ==========================================
+# carlos-job-boot 本地数据源补充配置
+# ==========================================
+
+# ======================== 数据源配置 ========================
+spring:
+  datasource:
+    dynamic:
+      primary: master
+      datasource:
+        # 主库数据源
+        master:
+          driver-class-name: org.postgresql.Driver
+          url: jdbc:postgresql://${DB_URL}?currentSchema=public&stringtype=unspecified
+          username: ${DB_USERNAME}
+          password: ${DB_PWD}
+
+---
+# ======================== 缓存数据库配置（Redis） ========================
+spring:
+  cache:
+    type: redis
+  redis:
+    database: ${REDIS_DB}
+    host: ${REDIS_IP}
+    port: ${REDIS_PORT}
+    password: ${REDIS_PWD}
+    lettuce:
+      pool:
+        max-active: 100
+        max-idle: 1000
+        max-wait: 30s
+        min-idle: 50
+      shutdown-timeout: 100ms
+
+---
+# ======================== 加密配置（SM4 国密） ========================
+# 本模块不使用 SM4 加密，不提供默认密钥（禁止把真实密钥兜底值提交进 git）
+carlos:
+  encrypt:
+    key: ${CARLOS_ENCRYPT_KEY:}
+    iv: ${CARLOS_ENCRYPT_IV:}
+
+---
+# ======================== MyBatis 实体 fill 注解启动期校验 ========================
+carlos:
+  mybatis:
+    # 实体包扫描路径：启动时校验实体上 fill 注解的字段是否可自动填充（error 告警不阻断）
+    entity-packages:
+      - com.carlos.job

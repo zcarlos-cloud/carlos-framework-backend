@@ -1,0 +1,69 @@
+# Carlos Migration 默认配置
+# 使用说明：
+# 1. 将此配置复制到 application.yml 中进行自定义
+# 2. 根据环境配置不同的 contexts
+# 3. 多数据源场景下配置 multi 节点
+
+carlos:
+  migration:
+    # 是否启用迁移功能
+    enabled: true
+
+    # 是否启用异步迁移（多数据源时推荐开启）
+    async: false
+    async-thread-pool-size: 2
+
+    # 是否启用迁移管理端点（需要 spring-web 支持）
+    endpoint-enabled: false
+    endpoint-path: /migration
+
+    # 主数据源配置
+    primary:
+      # 是否启用
+      enabled: true
+
+      # 变更日志主文件路径
+      change-log: db/changelog/db.changelog-master.yaml
+
+      # 执行环境上下文（多环境区分）
+      # 可选值：develop, test, production
+      contexts: "develop"
+
+      # 标签过滤器
+      labels: ""
+
+      # 默认 Schema
+      default-schema: ""
+
+      # 是否先清空数据库（危险操作！仅用于开发环境）
+      drop-first: false
+
+      # 是否校验变更集 checksum
+      validate-on-migrate: true
+
+      # 是否在启动时执行迁移
+      run-on-startup: true
+
+      # Liquibase 系统表名
+      database-change-log-table: DATABASECHANGELOG
+      database-change-log-lock-table: DATABASECHANGELOGLOCK
+
+      # 自定义参数（可在变更日志中使用 ${key} 引用）
+      parameters:
+        schema.name: public
+        table.prefix: t_
+
+    # 多数据源配置（key 为数据源名称）
+    # 示例：
+    # multi:
+    #   slave:
+    #     enabled: true
+    #     change-log: db/changelog/slave/db.changelog-master.yaml
+    #     contexts: "develop"
+    #     run-on-startup: true
+    multi: { }
+
+# Spring Boot 原生 Liquibase 配置（兼容）
+spring:
+  liquibase:
+    enabled: false  # 关闭原生配置，使用 carlos.migration 配置

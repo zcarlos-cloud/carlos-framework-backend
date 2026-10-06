@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Carlos Gateway 日志配置
+
+  特性：
+  1. 支持链路追踪：Request ID + Trace ID + Span ID
+  2. 支持 SkyWalking 集成
+  3. 彩色控制台输出
+  4. 分级别日志文件（debug/info/warn/error）
+  5. 异步日志提升性能
+
+  MDC 变量：
+  - traceId: Micrometer Tracing Trace ID
+  - spanId: Micrometer Tracing Span ID
+  - tid: SkyWalking Trace ID
+-->
+<configuration scan="true" scanPeriod="60 seconds" debug="false">
+
+  <!-- ==================== 基础配置 ==================== -->
+  <!-- 单文件最大 -->
+  <property name="MAX_FILE_SIZE" value="50MB"/>
+  <!-- 最长保存时间 -->
+  <property name="MAX_HISTORY" value="30"/>
+  <!-- 日志路径 -->
+  <property name="LOG_PATH" value="${LOG_PATH:-./logs}"/>
+  <!-- 应用名称 -->
+  <property name="APP_NAME" value="${spring.application.name}"/>
+
+  <!-- 上下文名称 -->
+  <contextName>${APP_NAME}</contextName>
+
+  <!-- 禁用 logback 自身日志输出 -->
+  <statusListener class="ch.qos.logback.core.status.NopStatusListener"/>
+
+  <!-- ==================== 彩色日志 ==================== -->
+  <conversionRule conversionWord="clr" class="org.springframework.boot.logging.logback.ColorConverter"/>
+  <conversionRule conversionWord="wex"
+                  class="org.springframework.boot.logging.logback.WhitespaceThrowableProxyConverter"/>
+  <conversionRule conversionWord="wEx"
+                  class="org.springframework.boot.logging.logback.ExtendedWhitespaceThrowableProxyConverter"/>
+
+  <!-- ==================== 日志格式 ==================== -->
+  <!--
+      格式说明：
+      %d: 日期时间
+      %thread: 线程名
+      %-5level: 级别，5个字符宽度，左对齐
+      %logger: Logger 名
+      %X{traceId}: Trace ID（分布式链路追踪）
+      %X{spanId}: Span ID
+      %msg: 日志消息
+      %n: 换行符
+      %highlight(): 高亮颜色
+      %clr(): 颜色
+  -->
+
+  <!-- 控制台日志样式（彩色，包含链路追踪信息） -->
+  <property name="CONSOLE_LOG_PATTERN"
+            value="%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(%5p) %clr([%15.15t]){faint} [%clr(%X{traceId:-}-%X{spanId:-}){cyan}] %clr(%-40.40logger{39}){cyan} : %m%n%wEx"/>
+
+  <!-- 文件日志样式（包含链路追踪信息） -->
+  <property name="FILE_LOG_PATTERN"
+            value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{traceId:-}-%X{spanId:-}] %logger{50} - %msg%n"/>
+
+  <!-- 访问日志格式 -->
+  <property name="ACCESS_LOG_PATTERN"
+            value="%d{yyyy-MM-dd HH:mm:ss.SSS}|%X{traceId:-}|%msg%n"/>
+
+  <!-- ==================== Appender 定义 ==================== -->
+
+  <!-- 控制台输出 -->
+  <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+      <charset>UTF-8</charset>
+    </encoder>
+  </appender>
+
+  <!-- Debug 日志文件 -->
+  <appender name="DEBUG" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+      <level>debug</level>
+    </filter>
+    <encoder>
+      <pattern>${FILE_LOG_PATTERN}</pattern>
+      <charset>UTF-8</charset>
+    </encoder>
+    <file>${LOG_PATH}/debug.log</file>
+    <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+      <fileNamePattern>${LOG_PATH}/debug-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+      <maxFileSize>${MAX_FILE_SIZE}</maxFileSize>
+      <maxHistory>${MAX_HISTORY}</maxHistory>
+    </rollingPolicy>
+  </appender>
+
+  <!-- Info 日志文件（只记录 info 级别） -->
+  <appender name="INFO" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <filter class="ch.qos.logback.classic.filter.LevelFilter">
+      <level>info</level>
+      <onMatch>ACCEPT</onMatch>
+      <onMismatch>DENY</onMismatch>
+    </filter>
+    <encoder>
+      <charset>UTF-8</charset>
+      <pattern>${FILE_LOG_PATTERN}</pattern>
+    </encoder>
+    <file>${LOG_PATH}/info.log</file>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <fileNamePattern>${LOG_PATH}/info-%d{yyyy-MM-dd}.log</fileNamePattern>
+      <maxHistory>${MAX_HISTORY}</maxHistory>
+      <totalSizeCap>4GB</totalSizeCap>
+    </rollingPolicy>
+  </appender>
+
+  <!-- Warn 日志文件（只记录 warn 级别） -->
+  <appender name="WARN" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <filter class="ch.qos.logback.classic.filter.LevelFilter">
+      <level>warn</level>
+      <onMatch>ACCEPT</onMatch>
+      <onMismatch>DENY</onMismatch>
+    </filter>
+    <encoder>
+      <charset>UTF-8</charset>
+      <pattern>${FILE_LOG_PATTERN}</pattern>
+    </encoder>
+    <file>${LOG_PATH}/warn.log</file>
+    <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+      <fileNamePattern>${LOG_PATH}/warn-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+      <maxFileSize>${MAX_FILE_SIZE}</maxFileSize>
+      <maxHistory>${MAX_HISTORY}</maxHistory>
+    </rollingPolicy>
+  </appender>
+
+  <!-- Error 日志文件（只记录 error 级别） -->
+  <appender name="ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <encoder>
+      <charset>UTF-8</charset>
+      <pattern>${FILE_LOG_PATTERN}</pattern>
+    </encoder>
+    <file>${LOG_PATH}/error.log</file>
+    <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+      <fileNamePattern>${LOG_PATH}/error-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+      <maxFileSize>${MAX_FILE_SIZE}</maxFileSize>
+      <maxHistory>${MAX_HISTORY}</maxHistory>
+    </rollingPolicy>
+    <filter class="ch.qos.logback.classic.filter.LevelFilter">
+      <level>error</level>
+      <onMatch>ACCEPT</onMatch>
+      <onMismatch>DENY</onMismatch>
+    </filter>
+  </appender>
+
+  <!-- 访问日志文件（独立记录请求访问信息） -->
+  <appender name="ACCESS_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>${LOG_PATH}/access.log</file>
+    <encoder>
+      <pattern>${ACCESS_LOG_PATTERN}</pattern>
+      <charset>UTF-8</charset>
+    </encoder>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <fileNamePattern>${LOG_PATH}/access-%d{yyyy-MM-dd}.log</fileNamePattern>
+      <maxHistory>${MAX_HISTORY}</maxHistory>
+      <totalSizeCap>10GB</totalSizeCap>
+    </rollingPolicy>
+  </appender>
+
+  <!-- 异步 Appender（提升性能） -->
+  <appender name="ASYNC_INFO_FILE" class="ch.qos.logback.classic.AsyncAppender">
+    <discardingThreshold>0</discardingThreshold>
+    <queueSize>1024</queueSize>
+    <neverBlock>true</neverBlock>
+    <appender-ref ref="INFO"/>
+  </appender>
+  <appender name="ASYNC_ERROR_FILE" class="ch.qos.logback.classic.AsyncAppender">
+    <discardingThreshold>0</discardingThreshold>
+    <queueSize>1024</queueSize>
+    <neverBlock>true</neverBlock>
+    <appender-ref ref="ERROR"/>
+  </appender>
+
+  <!-- SkyWalking GRPC 日志上报（可选，需启用 SkyWalking agent 时取消注释） -->
+  <!--
+  <appender name="SKYWALKING" class="org.apache.skywalking.apm.toolkit.log.logback.v1.x.log.GRPCLogClientAppender">
+    <encoder>
+      <pattern>${FILE_LOG_PATTERN}</pattern>
+      <charset>UTF-8</charset>
+    </encoder>
+  </appender>
+  -->
+
+  <!-- ==================== Logger 配置 ==================== -->
+
+  <!-- 访问日志 Logger -->
+  <logger name="gateway.access" level="INFO" additivity="false">
+    <appender-ref ref="ACCESS_FILE"/>
+  </logger>
+
+  <!-- Carlos 包日志 -->
+  <logger name="com.carlos" level="debug" additivity="false">
+    <appender-ref ref="CONSOLE"/>
+    <appender-ref ref="DEBUG"/>
+  </logger>
+
+  <!-- Spring 框架日志 -->
+  <logger name="org.springframework" level="WARN"/>
+  <logger name="org.springframework.cloud.gateway" level="INFO"/>
+  <logger name="org.springframework.http.server.reactive" level="INFO"/>
+
+  <!-- Netty/Reactor 日志 -->
+  <logger name="io.netty" level="WARN"/>
+  <logger name="reactor.netty" level="INFO"/>
+
+  <!-- ==================== Root 配置 ==================== -->
+  <root level="INFO">
+    <appender-ref ref="CONSOLE"/>
+    <appender-ref ref="DEBUG"/>
+    <appender-ref ref="ASYNC_INFO_FILE"/>
+    <appender-ref ref="WARN"/>
+    <appender-ref ref="ASYNC_ERROR_FILE"/>
+  </root>
+
+</configuration>

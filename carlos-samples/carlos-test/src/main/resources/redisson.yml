@@ -1,0 +1,37 @@
+# 单节点设置
+singleServerConfig: # 节点地址
+  address: redis://carlos.com:6379
+  database: 0
+  password: hadoop543216
+  # 连接空闲超时，单位：毫秒
+  idleConnectionTimeout: 10000
+  # 连接超时，单位：毫秒
+  connectTimeout: 10000
+  # 命令等待超时，单位：毫秒
+  timeout: 3000
+  # 命令失败重试次数,如果尝试达到 retryAttempts（命令失败重试次数） 仍然不能将命令发送至某个指定的节点时，将抛出错误。
+  # 如果尝试在此限制之内发送成功，则开始启用 timeout（命令等待超时） 计时。
+  retryAttempts: 3
+  # 命令重试发送时间间隔，单位：毫秒
+  retryInterval: 1500
+  # 客户端名称
+  clientName: null
+  # 发布和订阅连接的最小空闲连接数 默认1
+  subscriptionConnectionMinimumIdleSize: 1
+  # 发布和订阅连接池大小 默认50
+  subscriptionConnectionPoolSize: 10
+  # 单个连接最大订阅数量 默认5
+  subscriptionsPerConnection: 5
+  # 最小空闲连接数 默认32，现在暂时不需要那么多的线程
+  connectionMinimumIdleSize: 4
+  # 连接池大小， 默认64，现在暂时不需要那么多的线程
+  connectionPoolSize: 20
+  # DNS监测时间间隔，单位：毫秒
+  dnsMonitoringInterval: 5000
+# 这个线程池数量被所有RTopic对象监听器，RRemoteService调用者和RExecutorService任务共同共享。 线程池数量,默认值: 当前处理核数量 * 2
+threads: 0
+# 这个线程池数量是在一个Redisson实例内，被其创建的所有分布式数据类型和服务，以及底层客户端所一同共享的线程池里保存的线程数量。Netty线程池数量,默认值: 当前处理核数量 * 2
+nettyThreads: 0
+codec: !<org.redisson.codec.JsonJacksonCodec> { }
+# 传输模式
+transportMode: NIO

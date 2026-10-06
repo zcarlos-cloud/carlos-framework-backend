@@ -1,0 +1,148 @@
+name: Bug Report
+about: Create a report to help us improve
+title: '[BUG] '
+labels: [ 'bug', 'needs-triage' ]
+assignees: ''
+body:
+  -
+    type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+        Before reporting, please search existing issues to avoid duplicates.
+
+  -
+    type: input
+    id: version
+    attributes:
+      label: Framework Version
+      description: What version of Carlos Framework are you using?
+      placeholder: e.g., 3.0.0, 2.5.1
+    validations:
+      required: true
+
+  -
+    type: dropdown
+    id: module
+    attributes:
+      label: Affected Module
+      description: Which module is affected by this bug?
+      options:
+        - carlos-spring-boot-core
+        - carlos-spring-boot-starter-redis
+        - carlos-spring-boot-starter-mybatis
+        - carlos-spring-boot-starter-mongodb
+        - carlos-spring-boot-starter-oauth2
+        - carlos-spring-boot-starter-web
+        - carlos-spring-cloud-starter
+        - carlos-spring-boot-starter-encrypt
+        - carlos-spring-boot-starter-oss
+        - carlos-utils
+        - carlos-excel
+        - carlos-license
+        - carlos-tools
+        - Other (please specify in description)
+      default: 0
+    validations:
+      required: true
+
+  -
+    type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is
+      placeholder: Tell us what happened...
+    validations:
+      required: true
+
+  -
+    type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: Steps to reproduce the behavior
+      placeholder: |
+        1. Go to '...'
+        2. Click on '....'
+        3. Scroll down to '....'
+        4. See error
+    validations:
+      required: true
+
+  -
+    type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What you expected to happen
+    validations:
+      required: true
+
+  -
+    type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened
+    validations:
+      required: true
+
+  -
+    type: textarea
+    id: code
+    attributes:
+      label: Code Sample
+      description: Minimal code sample that reproduces the issue
+      render: java
+
+  -
+    type: textarea
+    id: logs
+    attributes:
+      label: Stack Trace / Logs
+      description: Any error logs or stack traces
+      render: text
+
+  -
+    type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      description: How severe is this bug?
+      options:
+        - Low - Minor inconvenience
+        - Medium - Affects functionality but workaround exists
+        - High - Major functionality broken
+        - Critical - Application crash, security vulnerability
+      default: 1
+
+  -
+    type: checkboxes
+    id: terms
+    attributes:
+      label: Checklist
+      options:
+        -
+          label: I have searched existing issues to avoid duplicates
+          required: true
+        -
+          label: I have provided a minimal code sample to reproduce the issue
+        -
+          label: I have included all relevant environment details
+        -
+          label: This is not a security vulnerability (use security policy instead)
+          required: true
+
+  -
+    type: textarea
+    id: environment
+    attributes:
+      label: Environment Details
+      description: |
+        - OS: [e.g. Windows 11, Ubuntu 20.04]
+        - JDK Version: [e.g. 17.0.8]
+        - Maven Version: [e.g. 3.8.6]
+        - Database: [e.g. MySQL 8.0]
+        - IDE: [e.g. IntelliJ IDEA 2023.2]
+      render: markdown

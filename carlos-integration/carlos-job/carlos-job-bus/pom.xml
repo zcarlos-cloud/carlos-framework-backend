@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>com.carlos.job</groupId>
+        <artifactId>carlos-job</artifactId>
+        <version>${revision}</version>
+    </parent>
+
+    <packaging>jar</packaging>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>carlos-job-bus</artifactId>
+    <description>定时任务调度中心服务端</description>
+
+    <dependencies>
+        <!-- API模块 -->
+        <dependency>
+            <groupId>com.carlos.job</groupId>
+            <artifactId>carlos-job-api</artifactId>
+        </dependency>
+
+        <!-- 消息中心 API（任务失败报警通知） -->
+        <dependency>
+            <groupId>com.carlos.message</groupId>
+            <artifactId>carlos-message-api</artifactId>
+        </dependency>
+
+        <!-- 客户端（调度中心自身也支持本地处理器，boot 单体模式下直接本地执行） -->
+        <dependency>
+            <groupId>com.carlos.job</groupId>
+            <artifactId>carlos-job-client</artifactId>
+        </dependency>
+
+        <!-- carlos Security（用户上下文） -->
+        <dependency>
+            <groupId>com.carlos</groupId>
+            <artifactId>carlos-spring-boot-starter-security</artifactId>
+        </dependency>
+
+        <!--
+            操作日志落库链路：@Log → LogStorage → MQ(audit:log) → carlos-audit → ClickHouse。
+            仅依赖 carlos-audit-api（契约 + 桥接实现），不依赖 carlos-audit-bus（服务本体）。
+        -->
+        <dependency>
+            <groupId>com.carlos.audit</groupId>
+            <artifactId>carlos-audit-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.carlos</groupId>
+            <artifactId>carlos-spring-boot-starter-log</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.carlos</groupId>
+            <artifactId>carlos-spring-boot-starter-mq</artifactId>
+        </dependency>
+
+        <!-- carlos Web -->
+        <dependency>
+            <groupId>com.carlos</groupId>
+            <artifactId>carlos-spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- carlos MyBatis -->
+        <dependency>
+            <groupId>com.carlos</groupId>
+            <artifactId>carlos-spring-boot-starter-mybatis</artifactId>
+        </dependency>
+
+        <!-- carlos Redis -->
+        <dependency>
+            <groupId>com.carlos</groupId>
+            <artifactId>carlos-spring-boot-starter-redis</artifactId>
+        </dependency>
+
+        <!-- carlos OpenAPI -->
+        <dependency>
+            <groupId>com.carlos</groupId>
+            <artifactId>carlos-spring-boot-starter-openapi</artifactId>
+        </dependency>
+
+        <!-- Quartz 调度框架 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-quartz</artifactId>
+        </dependency>
+        <!-- Spring Cloud Commons（LoadBalancerClient 服务发现派发） -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-commons</artifactId>
+        </dependency>
+        <!-- Test -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+
+            <!--
+                父 POM 的 pluginManagement 把 surefire 的 skipTests 写死为 true
+                （字面量，不是 ${} 占位），命令行 -DskipTests / -Dmaven.test.skip 都覆盖不了。
+                模块要执行 src/test 下的用例，只能在本模块显式打开。
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <skipTests>false</skipTests>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

@@ -1,0 +1,88 @@
+# ==========================================
+# carlos-org-boot 本地数据源补充配置
+# 说明：补充 boot profile 下的数据库连接、MinIO、Redis 等配置
+# ==========================================
+
+# ======================== 数据源配置 ========================
+spring:
+  datasource:
+    dynamic:
+      primary: master
+      datasource:
+        # 主库数据源
+        master:
+          driver-class-name: org.postgresql.Driver
+          url: jdbc:postgresql://${DB_URL}?currentSchema=public&stringtype=unspecified
+          username: ${DB_USERNAME}
+          password: ${DB_PWD}
+
+---
+# ======================== 对象存储配置（MinIO） ========================
+carlos:
+  minio:
+    # 是否启用 MinIO
+    enabled: true
+    # MinIO 服务端点
+    endpoint: ${MINIO_HOST}
+    # 公网访问端点
+    public-endpoint: ${MINIO_PUBLIC_HOST}
+    # 访问密钥
+    access-key: ${MINIO_USERNAME}
+    # 秘密密钥
+    secret-key: ${MINIO_PWD}
+    # 默认 Bucket
+    bucket: carlos-default
+    # 连接超时
+    connect-timeout: 10s
+    # 写入超时
+    write-timeout: 60s
+    # 读取超时
+    read-timeout: 10s
+    # 启动时检查 Bucket 是否存在
+    check-bucket: true
+    # 自动创建 Bucket
+    create-bucket: true
+
+---
+# ======================== 缓存数据库配置（Redis） ========================
+spring:
+  cache:
+    type: redis
+  redis:
+    # Redis 数据库索引
+    database: ${REDIS_DB}
+    # Redis 服务器地址
+    host: ${REDIS_IP}
+    # Redis 服务器端口
+    port: ${REDIS_PORT}
+    # Redis 密码
+    password: ${REDIS_PWD}
+    lettuce:
+      pool:
+        # 最大活跃连接数
+        max-active: 100
+        # 最大空闲连接数
+        max-idle: 1000
+        # 最大等待时间
+        max-wait: 30s
+        # 最小空闲连接数
+        min-idle: 50
+      # 关闭超时
+      shutdown-timeout: 100ms
+
+---
+# ======================== 加密配置（SM4 国密） ========================
+carlos:
+  encrypt:
+    # SM4 密钥（16 字节，使用环境变量注入）
+    key: ${CARLOS_ENCRYPT_KEY:VV8s9qgRo17OHX2r}
+    # SM4 初始化向量（16 字节，使用环境变量注入）
+    iv: ${CARLOS_ENCRYPT_IV:rXU3JJjP3eog5oLS}
+
+---
+# ======================== MyBatis 实体 fill 注解启动期校验 ========================
+carlos:
+  mybatis:
+    # 实体包扫描路径：启动时校验实体上 fill 注解的字段是否可自动填充（error 告警不阻断）
+    entity-packages:
+      - com.carlos.org

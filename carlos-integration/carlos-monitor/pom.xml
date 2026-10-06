@@ -1,0 +1,41 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <parent>
+    <groupId>com.carlos</groupId>
+    <artifactId>carlos-integration</artifactId>
+    <version>${revision}</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+  <packaging>pom</packaging>
+
+  <version>${revision}</version>
+  <groupId>com.carlos.monitor</groupId>
+  <artifactId>carlos-monitor</artifactId>
+  <name>carlos-monitor</name>
+
+
+  <modules>
+    <module>carlos-monitor-bus</module>
+    <module>carlos-monitor-api</module>
+    <module>carlos-monitor-cloud</module>
+    <module>carlos-monitor-boot</module>
+  </modules>
+  <modelVersion>4.0.0</modelVersion>
+
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>com.carlos.monitor</groupId>
+        <artifactId>carlos-monitor-bus</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.carlos.monitor</groupId>
+        <artifactId>carlos-monitor-api</artifactId>
+        <version>${revision}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+</project>

@@ -1,0 +1,256 @@
+-- ============================================
+-- ClickHouse: 审计日志宽主表（单节点版本）
+-- 用于：海量数据存储、聚合分析、历史查询
+-- ============================================
+
+-- 1. 本地表（实际存储）
+CREATE TABLE IF NOT EXISTS `audit_log_main_local` (
+    -- ========================================
+    -- 1. 主键与时间体系（CK时间必须在最前）
+    -- ========================================
+    `server_time`          DateTime64(3)    COMMENT '服务器时间，毫秒精度，主排序键',
+    `event_date`           Date             DEFAULT toDate(server_time) COMMENT '事件日期，分区键，自动生成',
+    `id`                   UInt64           COMMENT '雪花ID，非自增，分布式唯一',
+
+    `client_time`          Nullable(DateTime64(3)) COMMENT '客户端时间',
+    `event_time`           Nullable(DateTime64(3)) COMMENT '事件实际发生时间',
+    `duration_ms`          Nullable(UInt32) COMMENT '操作耗时，毫秒',
+    `retention_deadline`   Date             COMMENT '数据保留截止日期，TTL删除用',
+
+    -- ========================================
+    -- 2. 分类与版本（LowCardinality优化枚举）
+    -- ========================================
+    `log_schema_version`   UInt8            DEFAULT 3 COMMENT '日志Schema版本',
+    `category`             LowCardinality(String) COMMENT '大类：SECURITY/BUSINESS/SYSTEM/AUDIT',
+    `log_type`             LowCardinality(String) COMMENT '细类：USER_LOGIN/ORDER_PAY/DATA_EXPORT等',
+    `risk_level`           UInt8            DEFAULT 0 COMMENT '风险等级 0-100',
+
+    -- ========================================
+    -- 3. 操作者体系
+    -- ========================================
+    `principal_id`         String           COMMENT '操作主体ID',
+    `principal_type`       LowCardinality(String) DEFAULT 'USER' COMMENT '主体类型：USER/SERVICE/SYSTEM/ANONYMOUS',
+    `principal_name`       Nullable(String) COMMENT '主体名称，冗余存储',
+    `tenant_id`            String           DEFAULT '0' COMMENT '租户ID，SaaS隔离',
+    `dept_id`              Nullable(String) COMMENT '部门ID',
+    `dept_name`            Nullable(String) COMMENT '部门名称，冗余存储',
+    `dept_path`            Nullable(String) COMMENT '部门层级路径，如：1/12/156/',
+
+    -- ========================================
+    -- 4. 目标对象体系
+    -- ========================================
+    `target_type`          LowCardinality(Nullable(String)) COMMENT '对象类型：ORDER/USER/CONFIG/DATA',
+    `target_id`            Nullable(String) COMMENT '对象唯一标识',
+    `target_name`          Nullable(String) COMMENT '对象显示名称',
+    `target_snapshot`      Nullable(String) COMMENT '对象关键信息摘要，JSON字符串',
+
+    -- ========================================
+    -- 5. 操作结果（LowCardinality优化枚举）
+    -- ========================================
+    `log_status`           LowCardinality(String) DEFAULT 'SUCCESS' COMMENT '状态：SUCCESS/FAIL/PENDING/TIMEOUT/PARTIAL_SUCCESS',
+    `result_code`          Nullable(String) COMMENT '业务结果码',
+    `result_message`       Nullable(String) COMMENT '结果描述，前500字符',
+    `operation`            String           COMMENT '操作描述，人工可读',
+    `approval_comment`     Nullable(String) COMMENT '审批意见，工作流用',
+
+    -- ========================================
+    -- 6. 网络与设备（IPv4专用类型优化）
+    -- ========================================
+    `client_ip`            Nullable(IPv4)   COMMENT '客户端IP，专用类型压缩存储',
+    `client_port`          Nullable(UInt16) COMMENT '客户端端口',
+    `server_ip`            Nullable(IPv4)   COMMENT '处理服务器IP',
+    `user_agent`           Nullable(String) COMMENT '浏览器UA',
+    `device_fingerprint`   Nullable(String) COMMENT '设备指纹',
+    `location_country`     LowCardinality(Nullable(String)) COMMENT '国家',
+    `location_province`    LowCardinality(Nullable(String)) COMMENT '省份',
+    `location_city`        LowCardinality(Nullable(String)) COMMENT '城市',
+    `location_lat`         Nullable(Float64) COMMENT '纬度',
+    `location_lon`         Nullable(Float64) COMMENT '经度',
+
+    -- ========================================
+    -- 7. 认证与权限（JSON存String）
+    -- ========================================
+    `auth_type`            LowCardinality(Nullable(String)) COMMENT '认证方式：PASSWORD/SMS/OAUTH2/LDAP/CERT',
+    `auth_provider`        LowCardinality(Nullable(String)) COMMENT '认证源：LOCAL/WECHAT/DINGTALK',
+    `roles`                Nullable(String) COMMENT '当前角色列表，JSON字符串',
+    `permissions`          Nullable(String) COMMENT '当前权限列表，JSON字符串',
+
+    -- ========================================
+    -- 8. 业务上下文
+    -- ========================================
+    `biz_channel`          LowCardinality(Nullable(String)) COMMENT '业务渠道：WEB/APP/MINI_PROGRAM/OPEN_API',
+    `biz_scene`            Nullable(String) COMMENT '业务场景',
+    `biz_order_no`         Nullable(String) COMMENT '业务订单号',
+    `related_biz_ids`      Nullable(String) COMMENT '关联业务ID列表，JSON字符串',
+    `monetary_amount`      Nullable(Decimal(18, 4)) COMMENT '涉及金额',
+    `process_id`           Nullable(String) COMMENT '流程实例ID，工作流引擎生成',
+
+    -- ========================================
+    -- 9. 批量操作
+    -- ========================================
+    `batch_id`             Nullable(String) COMMENT '批量操作批次号，UUID',
+    `batch_index`          Nullable(UInt32) COMMENT '批次内序号，从0开始',
+    `batch_total`          Nullable(UInt32) COMMENT '批次总数',
+
+    -- ========================================
+    -- 10. 审批工作流
+    -- ========================================
+    `task_id`              Nullable(String) COMMENT '任务ID',
+    `approver_id`          Nullable(String) COMMENT '审批人ID',
+
+    -- ========================================
+    -- 11. 数据变更详情（宽表核心，原data_change表扁平化）
+    -- ========================================
+    `has_data_change`      UInt8            DEFAULT 0 COMMENT '是否有数据变更：0-否/1-是',
+    `entity_class`         LowCardinality(Nullable(String)) COMMENT '实体类名',
+    `table_name`           LowCardinality(Nullable(String)) COMMENT '数据库表名',
+    `change_summary`       Nullable(String) COMMENT '变更摘要，人工可读',
+    `changed_field_count`  Nullable(UInt16) COMMENT '变更字段数量',
+
+    -- 完整变更数据（存String，CK压缩率极高）
+    `old_data`             Nullable(String) COMMENT '变更前完整数据，JSON字符串',
+    `new_data`             Nullable(String) COMMENT '变更后完整数据，JSON字符串',
+    `old_data_compressed`  UInt8            DEFAULT 0 COMMENT '旧数据是否压缩：0-否/1-是',
+    `new_data_compressed`  UInt8            DEFAULT 0 COMMENT '新数据是否压缩：0-否/1-是',
+
+    -- 关键字段变更扁平化（加速查询，避免解析JSON）
+    `change_field_1_name`  Nullable(String) COMMENT '变更字段1名称',
+    `change_field_1_old`   Nullable(String) COMMENT '变更字段1旧值',
+    `change_field_1_new`   Nullable(String) COMMENT '变更字段1新值',
+
+    -- ========================================
+    -- 12. 技术上下文（原technical表扁平化）
+    -- ========================================
+    `trace_id`             Nullable(String) COMMENT '全链路追踪ID，如SkyWalking TraceId',
+    `span_id`              Nullable(String) COMMENT '当前Span ID',
+    `parent_span_id`       Nullable(String) COMMENT '父Span ID',
+    `trace_path`           Nullable(String) COMMENT '调用链路节点，JSON字符串',
+
+    -- 性能指标
+    `db_query_count`       Nullable(UInt16) COMMENT '数据库查询次数',
+    `db_query_time_ms`     Nullable(UInt32) COMMENT '数据库查询耗时',
+    `external_call_count`  Nullable(UInt16) COMMENT '外部接口调用次数',
+    `external_call_time_ms` Nullable(UInt32) COMMENT '外部接口耗时',
+    `custom_metrics`       Nullable(String) COMMENT '自定义指标，JSON字符串',
+
+    -- Payload存储引用（避免存大字段）
+    `request_payload_ref`  Nullable(String) COMMENT '请求数据OSS引用',
+    `response_payload_ref` Nullable(String) COMMENT '响应数据OSS引用',
+    `payload_storage_type` LowCardinality(Nullable(String)) COMMENT '存储类型：OSS/S3/MINIO/DB',
+
+    -- 环境信息（LowCardinality优化）
+    `app_name`             LowCardinality(Nullable(String)) COMMENT '应用名',
+    `app_version`          Nullable(String) COMMENT '应用版本',
+    `cluster`              LowCardinality(Nullable(String)) COMMENT '集群标识',
+    `host_name`            Nullable(String) COMMENT '主机名',
+
+    -- ========================================
+    -- 13. 动态标签（原tags表Array化，比副表高效10倍+）
+    -- ========================================
+    `tag_keys`             Array(Nullable(String)) COMMENT '标签键数组',
+    `tag_values`           Array(Nullable(String)) COMMENT '标签值数组',
+
+    -- ========================================
+    -- 14. 附件元数据（原attachments表统计化）
+    -- ========================================
+    `attachment_count`     UInt8            DEFAULT 0 COMMENT '附件数量',
+    `attachment_types`     Array(Nullable(String)) COMMENT '附件类型数组',
+    `attachment_total_size` Nullable(UInt64) COMMENT '附件总大小，字节',
+    `first_attachment_ref` Nullable(String) COMMENT '第一个附件的OSS引用，快速预览',
+    `attachment_refs`      Nullable(String) COMMENT '所有附件引用数组，JSON字符串',
+
+    -- ========================================
+    -- 15. 动态扩展
+    -- ========================================
+    `dynamic_tags`         Nullable(String) COMMENT '业务标签，JSON字符串',
+    `dynamic_extras`       Nullable(String) COMMENT '业务扩展字段，JSON字符串',
+
+    -- ========================================
+    -- 16. 系统字段
+    -- ========================================
+    `created_time`         DateTime64(3)    DEFAULT now64(3) COMMENT '记录创建时间',
+    `updated_time`         DateTime64(3)    DEFAULT now64(3) COMMENT '记录更新时间',
+    `deleted`              UInt8            DEFAULT 0 COMMENT '逻辑删除：0-未删除/1-已删除'
+
+) ENGINE = MergeTree()
+PARTITION BY toYYYYMM(event_date)
+ORDER BY (tenant_id, category, server_time, id)
+TTL event_date + INTERVAL 3 YEAR
+SETTINGS
+    index_granularity = 8192,
+    storage_policy = 'default',
+    merge_with_ttl_timeout = 86400;
+
+-- 2. 分布式表（单节点时与本地表同名，集群环境手动指定）
+-- 单节点直接使用本地表，无需创建分布式表
+-- 如需分布式，手动替换为实际集群名，如：cluster_1shards_1replicas
+-- CREATE TABLE IF NOT EXISTS `audit_log_main` AS `audit_log_main_local`
+-- ENGINE = Distributed('your_cluster_name', default, audit_log_main_local, rand());
+
+
+-- ============================================
+-- ClickHouse: 物化视图（预聚合，加速统计查询）
+-- ============================================
+
+CREATE MATERIALIZED VIEW IF NOT EXISTS `audit_log_stats_mv_local`
+ENGINE = SummingMergeTree()
+PARTITION BY toYYYYMM(event_date)
+ORDER BY (tenant_id, category, event_date, hour)
+AS SELECT
+    tenant_id,
+    category,
+    toDate(server_time) as event_date,
+    toHour(server_time) as hour,
+    count() as cnt,
+    countDistinct(principal_id) as unique_users,
+    countDistinct(target_id) as unique_targets,
+    sum(duration_ms) as total_duration,
+    avg(duration_ms) as avg_duration,
+    max(risk_level) as max_risk_level,
+    sum(attachment_count) as total_attachments,
+    sum(monetary_amount) as total_amount
+FROM `audit_log_main_local`
+GROUP BY tenant_id, category, event_date, hour;
+
+
+-- ============================================
+-- ClickHouse: 日志归档记录表
+-- ============================================
+
+CREATE TABLE IF NOT EXISTS `audit_log_archive_record` (
+    `id`                   UInt64           COMMENT '主键',
+    `archive_id`           String           COMMENT '归档批次ID，UUID',
+    `archive_date`         Date             COMMENT '归档日期',
+    `start_time`           DateTime         COMMENT '归档数据起始时间',
+    `end_time`             DateTime         COMMENT '归档数据结束时间',
+    `record_count`         UInt64           COMMENT '归档记录数',
+    `file_size_bytes`      UInt64           COMMENT '归档文件大小，字节',
+    `storage_path`         String           COMMENT '存储路径',
+    `storage_type`         LowCardinality(String) COMMENT '存储类型：OSS/S3/LOCAL',
+    `verify_checksum`      Nullable(String) COMMENT '校验和，MD5或SHA256',
+    `archive_status`       LowCardinality(String) DEFAULT 'SUCCESS' COMMENT '状态：SUCCESS/FAILED/PROCESSING',
+    `created_time`         DateTime64(3)    DEFAULT now64(3) COMMENT '创建时间'
+) ENGINE = MergeTree()
+ORDER BY (archive_date, id);
+
+
+-- ============================================
+-- ClickHouse: 日志配置表
+-- ============================================
+
+CREATE TABLE IF NOT EXISTS `audit_log_config` (
+    `id`                   UInt64           COMMENT '主键',
+    `log_type`             String           COMMENT '日志类型',
+    `retention_days`       UInt32           DEFAULT 90 COMMENT '保留天数',
+    `sampling_rate`        Decimal(3, 2)    DEFAULT 1.00 COMMENT '采样率 0.00-1.00',
+    `async_write`          UInt8            DEFAULT 1 COMMENT '是否异步写入：0-同步/1-异步',
+    `store_data_change`    UInt8            DEFAULT 1 COMMENT '是否存储数据变更：0-否/1-是',
+    `store_technical`      UInt8            DEFAULT 0 COMMENT '是否存储技术上下文：0-否/1-是',
+    `deleted`              UInt8            DEFAULT 0 COMMENT '逻辑删除：0-未删除/1-已删除',
+    `tenant_id`            String           DEFAULT '0' COMMENT '租户ID，0表示系统级',
+    `create_by`            Nullable(UInt64) COMMENT '创建者编号',
+    `create_time`          DateTime64(3)    DEFAULT now64(3) COMMENT '创建时间',
+    `update_by`            Nullable(UInt64) COMMENT '更新者编号',
+    `update_time`          DateTime64(3)    DEFAULT now64(3) COMMENT '更新时间'
+) ENGINE = MergeTree()
+ORDER BY (tenant_id, log_type);

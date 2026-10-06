@@ -1,0 +1,148 @@
+server:
+  port: ${SERVER_PORT:31618}
+  tomcat:
+    threads:
+      max: 64
+spring:
+  application:
+    name: carlos-szt-org
+  profiles:
+    active: env,boot
+  # spring配置
+  datasource:
+    druid:
+      stat-view-servlet:
+        enabled: true
+        loginUsername: admin
+        loginPassword: 123456
+    dynamic:
+      primary: master
+      druid:
+        time-between-connect-error-millis: 10000
+        break-after-acquire-failure: false
+        fail-fast: true
+        connection-error-retry-attempts: 10
+        initial-size: 50
+        min-idle: 50
+        max-idle: 800
+        max-active: 800
+        max-wait: 10000
+        time-between-eviction-runs-millis: 60000
+        min-evictable-idle-time-millis: 300000
+        validation-query: SELECT 1
+        test-while-idle: true
+        test-on-borrow: false
+        test-on-return: false
+        pool-prepared-statements: true
+        max-pool-prepared-statement-per-connection-size: 20
+        filters: stat,wall,slf4j
+        connection-properties:
+          druid.stat.mergeSql: true
+          druid.stat.slowSqlMillis: 5000
+############################## application start ##############################
+carlos:
+  web:
+    cors:
+      enabled: true
+    enum-dict:
+      scan-packages: com.carlos
+      enabled: true
+############################ application end ###############################
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+
+##############################  日志配置 start  ###########################
+logging:
+  config: classpath:config/logback.xml
+  level:
+    root: info
+    com.carlos: debug
+  file:
+    path: logs/message
+##############################  日志配置 end   ###########################
+
+
+############################### mybatis-plus start #################################
+mybatis-plus: # 启动时是否检查MyBatis XML文件是否存在
+  check-config-location: true
+  # 支持统配符 * 或者 ; 分割
+  # MyBatis原生配置
+  configuration: # 字段名称下划线转驼峰命名
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+    call-setters-on-nulls: true
+  global-config:
+    db-config: # 全局默认主键类型
+      id-type: assign_id
+      # 逻辑已删除值(默认为 1)
+      logic-delete-value: 1
+      # 逻辑未删除值(默认为 0)
+      logic-not-delete-value: 0
+  # mapper xml映射路径
+  mapper-locations: classpath*:mapper/**/*Mapper.xml
+################################ mybatis-plus end ##################################
+
+
+
+#################################### 接口文档 Swagger start #################################
+swagger:
+  enable: true
+  # 扫描的包，多个包使用逗号隔开
+  base-package: com.carlos.message
+  description: 消息中心文档
+  title: 消息中心文档
+  version: 1.0.0
+  terms-of-service-url: https://www.carlos.com
+  contact:
+    email: carlos@xxx.com
+    name: carlos
+    url: www.carlos.com
+  group-name: 用户管理
+knife4j: # 是否开启Knife4j增强模式 默认 false
+  enable: true
+  # 是否是生产环境
+  production: false
+  # knife4j配置
+  cors: false
+  # 个性化配置 详情配置参照源码
+  setting: # 是否开启Debug调试
+    enableDebug: true
+    language: zh-CN
+    enableSwaggerModels: true
+    enableDocumentManage: true
+    swaggerModelName: 实体类列表
+    enableVersion: true
+    enableReloadCacheParameter: false
+    enableAfterScript: true
+    enableFilterMultipartApiMethodType: POST
+    enableFilterMultipartApis: false
+    enableRequestCache: true
+    enableHost: false
+    enableHostText: 192.168.0.193:8000
+    # 是否开启自定义主页内容
+    enableHomeCustom: false
+    # 主页内容Markdown文件路径
+    homeCustomLocation: classpath:markdown/home.md
+    # 开启搜索
+    enableSearch: true
+    # 显示页底信息
+    enableFooter: false
+    enableFooterCustom: true
+    footerCustomContent: 云津智慧科技有限公司
+    # 动态参数调试
+    enableDynamicParameter: true
+    # 显示OpenAPI规范
+    enableOpenApi: true
+    enableGroup: true
+  # 是否开启BasicHttp验证
+  basic:
+    enable: false
+    username: carlos
+    password: hadoop543216
+#################################### 接口文档 Swagger end ###################################
+

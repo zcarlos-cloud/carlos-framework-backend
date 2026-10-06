@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.carlos.devkit</groupId>
+    <artifactId>carlos-devkit</artifactId>
+    <version>${revision}</version>
+  </parent>
+
+  <artifactId>carlos-devkit-api</artifactId>
+  <description>
+    开发工具平台 API 模块 - Feign 接口定义 + AO/Param（服务间调用契约）
+  </description>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.carlos</groupId>
+      <artifactId>carlos-spring-boot-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-openfeign-core</artifactId>
+      <optional>true</optional>
+    </dependency>
+  </dependencies>
+
+</project>

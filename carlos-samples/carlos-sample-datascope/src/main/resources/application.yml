@@ -1,0 +1,16 @@
+server:
+  port: 9815
+
+spring:
+  application:
+    name: carlos-sample-datascope
+
+# 数据权限配置
+carlos:
+  datascope:
+    enabled: true
+
+# 日志配置
+logging:
+  level:
+    com.carlos.datascope: debug

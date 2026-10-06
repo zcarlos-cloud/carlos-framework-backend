@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>com.carlos.message</groupId>
+        <artifactId>carlos-message</artifactId>
+        <version>${revision}</version>
+    </parent>
+
+    <packaging>jar</packaging>
+    <modelVersion>4.0.0</modelVersion>
+
+  <artifactId>carlos-message-bus</artifactId>
+    <description>消息中心服务端</description>
+
+    <dependencies>
+        <!-- API模块 -->
+        <dependency>
+            <groupId>com.carlos.message</groupId>
+            <artifactId>carlos-message-api</artifactId>
+        </dependency>
+
+        <!-- Core模块 -->
+        <dependency>
+            <groupId>com.carlos.message</groupId>
+            <artifactId>carlos-message-core</artifactId>
+        </dependency>
+
+        <!-- carlos Security（用户上下文） -->
+        <dependency>
+            <groupId>com.carlos</groupId>
+            <artifactId>carlos-spring-boot-starter-security</artifactId>
+        </dependency>
+
+        <!-- carlos Web -->
+        <dependency>
+            <groupId>com.carlos</groupId>
+            <artifactId>carlos-spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- carlos MyBatis -->
+        <dependency>
+            <groupId>com.carlos</groupId>
+            <artifactId>carlos-spring-boot-starter-mybatis</artifactId>
+        </dependency>
+
+        <!-- carlos Redis -->
+        <dependency>
+            <groupId>com.carlos</groupId>
+            <artifactId>carlos-spring-boot-starter-redis</artifactId>
+        </dependency>
+
+        <!--
+            carlos MQ：消息中心的队列改为委托框架级 MQ（Redis Stream 传输）。
+            此前本模块自持一套 Redis Stream + RDelayedQueue 实现，与框架重复；
+            现统一为「业务语义留在本模块、传输与可靠性交给框架」。
+        -->
+        <dependency>
+            <groupId>com.carlos</groupId>
+            <artifactId>carlos-spring-boot-starter-mq</artifactId>
+        </dependency>
+
+        <!--
+            操作日志落库链路：@Log → LogStorage → MQ(audit:log) → carlos-audit → ClickHouse。
+            仅依赖 carlos-audit-api（契约 + 桥接实现），不依赖 carlos-audit-bus（服务本体）。
+        -->
+        <dependency>
+            <groupId>com.carlos.audit</groupId>
+            <artifactId>carlos-audit-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.carlos</groupId>
+            <artifactId>carlos-spring-boot-starter-log</artifactId>
+        </dependency>
+
+        <!-- carlos OpenAPI -->
+        <dependency>
+            <groupId>com.carlos</groupId>
+            <artifactId>carlos-spring-boot-starter-openapi</artifactId>
+        </dependency>
+
+      <!-- carlos SMS -->
+      <dependency>
+        <groupId>com.carlos</groupId>
+        <artifactId>carlos-spring-boot-starter-sms</artifactId>
+      </dependency>
+
+      <!-- 邮件发送 -->
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-mail</artifactId>
+      </dependency>
+
+      <!-- 钉钉 SDK -->
+      <dependency>
+        <groupId>com.aliyun</groupId>
+        <artifactId>alibaba-dingtalk-service-sdk</artifactId>
+      </dependency>
+
+      <!-- WebSocket -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
+        </dependency>
+
+        <!-- FreeMarker -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-freemarker</artifactId>
+        </dependency>
+
+        <!-- OpenFeign -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-openfeign</artifactId>
+        </dependency>
+
+        <!-- MapStruct -->
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
+        </dependency>
+
+        <!-- Lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Test -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+
+            <!--
+                父 POM 的 pluginManagement 把 surefire 的 skipTests 写死为 true
+                （字面量，不是 ${} 占位），命令行 -DskipTests / -Dmaven.test.skip 都覆盖不了。
+                模块要执行 src/test 下的用例，只能像 carlos-auth-service 一样在本模块显式打开。
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <skipTests>false</skipTests>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

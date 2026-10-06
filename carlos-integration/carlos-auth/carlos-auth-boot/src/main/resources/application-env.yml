@@ -1,0 +1,50 @@
+# ==========================================
+# carlos-auth-boot 本地开发环境变量配置
+# 说明：仅用于本地开发，生产环境通过系统环境变量或 Nacos 配置中心提供
+# 警告：此文件不应包含真实密码，提交前请确认已使用占位符
+# ==========================================
+
+# ======================== 数据库配置 ========================
+DB_URL: ${CARLOS_DB_URL:localhost:3306/carlos_auth}
+DB_USERNAME: ${CARLOS_DB_USERNAME:root}
+DB_PWD: ${CARLOS_DB_PASSWORD:}
+
+# ======================== Redis 配置 ========================
+REDIS_IP: ${CARLOS_REDIS_HOST:localhost}
+REDIS_PORT: ${CARLOS_REDIS_PORT:6379}
+REDIS_DB: ${CARLOS_REDIS_DB:0}
+REDIS_PWD: ${CARLOS_REDIS_PASSWORD:}
+
+# ======================== OAuth2 JWT 配置 ========================
+AUTH_JWT_ISSUER: ${CARLOS_AUTH_ISSUER:http://localhost:9511}
+AUTH_JWT_SIGNING_KEY: ${CARLOS_AUTH_SIGNING_KEY:}
+AUTH_JWT_VERIFICATION_KEY: ${CARLOS_AUTH_VERIFICATION_KEY:}
+AUTH_ACCESS_TOKEN_TTL: ${CARLOS_AUTH_ACCESS_TOKEN_TTL:7200}
+AUTH_REFRESH_TOKEN_TTL: ${CARLOS_AUTH_REFRESH_TOKEN_TTL:604800}
+
+# ======================== OAuth2 客户端配置 ========================
+OAUTH2_CLIENT_ID: ${CARLOS_OAUTH2_CLIENT_ID:carlos-client}
+OAUTH2_CLIENT_SECRET: ${CARLOS_OAUTH2_CLIENT_SECRET:}
+GATEWAY_CLIENT_SECRET: ${CARLOS_GATEWAY_CLIENT_SECRET:}
+
+# ======================== 社交登录配置 ========================
+# 说明：这些变量用于 carlos.auth.login.methods.social 下的配置
+AUTH_SOCIAL_CALLBACK_BASE_URL: ${CARLOS_AUTH_SOCIAL_CALLBACK_BASE_URL:}
+
+# 钉钉登录配置（app-key/app-secret/corp-id 或复用 carlos-integration 钉钉模块配置）
+DINGTALK_ENABLED: ${CARLOS_DINGTALK_ENABLED:false}
+DINGTALK_LOGIN_ENABLED: ${CARLOS_DINGTALK_LOGIN_ENABLED:false}
+DINGTALK_APP_KEY: ${CARLOS_DINGTALK_APP_KEY:}
+DINGTALK_APP_SECRET: ${CARLOS_DINGTALK_APP_SECRET:}
+DINGTALK_CORP_ID: ${CARLOS_DINGTALK_CORP_ID:}
+
+# 微信登录配置
+WECHAT_LOGIN_ENABLED: ${CARLOS_WECHAT_LOGIN_ENABLED:false}
+WECHAT_APP_ID: ${CARLOS_WECHAT_APP_ID:}
+WECHAT_APP_SECRET: ${CARLOS_WECHAT_APP_SECRET:}
+
+# ======================== 加密密钥配置 ========================
+CARLOS_ENCRYPT_KEY: ${CARLOS_ENCRYPT_KEY_VAR:}
+CARLOS_ENCRYPT_IV: ${CARLOS_ENCRYPT_IV_VAR:}
+CARLOS_SM2_PUBLIC_KEY: ${CARLOS_SM2_PUBLIC_KEY:}
+CARLOS_SM2_PRIVATE_KEY: ${CARLOS_SM2_PRIVATE_KEY:}

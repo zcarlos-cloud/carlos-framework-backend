@@ -1,0 +1,205 @@
+# ==========================================
+# carlos-job-boot 定时任务调度中心单体启动配置
+# 说明：Quartz 调度中心，统一管理和派发全框架定时任务
+# ==========================================
+
+# ======================== 服务基础配置 ========================
+server:
+  port: ${SERVER_PORT:9516}
+  tomcat:
+    threads:
+      max: 64
+
+# ======================== Spring 主配置 ========================
+spring:
+  application:
+    name: carlos-job
+  profiles:
+    active: env,boot
+
+  # ======================== Quartz 调度配置（JDBC Store 集群模式） ========================
+  quartz:
+    job-store-type: jdbc
+    jdbc:
+      # 建表脚本见 docs/sql/quartz_tables_postgres.sql，不自动初始化
+      initialize-schema: never
+    properties:
+      org:
+        quartz:
+          scheduler:
+            instanceName: carlosJobScheduler
+            # AUTO：集群下每个实例唯一标识
+            instanceId: AUTO
+          jobStore:
+            driverDelegateClass: org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
+            tablePrefix: QRTZ_
+            # 集群模式：同一触发器集群内仅一个节点触发
+            isClustered: true
+            clusterCheckinInterval: 10000
+            misfireThreshold: 60000
+          threadPool:
+            threadCount: 10
+
+  # ======================== 数据源配置（Druid + 动态数据源） ========================
+  datasource:
+    druid:
+      stat-view-servlet:
+        enabled: true
+        # 控制台口令必须走环境变量，禁止默认弱口令
+        loginUsername: ${DRUID_CONSOLE_USERNAME:admin}
+        loginPassword: ${DRUID_CONSOLE_PASSWORD:}
+    dynamic:
+      primary: master
+      druid:
+        time-between-connect-error-millis: 10000
+        break-after-acquire-failure: false
+        fail-fast: true
+        connection-error-retry-attempts: 10
+        initial-size: 20
+        min-idle: 20
+        max-active: 100
+        max-wait: 10000
+        time-between-eviction-runs-millis: 60000
+        min-evictable-idle-time-millis: 300000
+        validation-query: SELECT 1
+        test-while-idle: true
+        test-on-borrow: false
+        test-on-return: false
+        pool-prepared-statements: true
+        max-pool-prepared-statement-per-connection-size: 20
+        filters: stat,wall,slf4j
+        connection-properties:
+          druid.stat.mergeSql: true
+          druid.stat.slowSqlMillis: 5000
+
+  # ======================== OpenFeign 配置 ========================
+  cloud:
+    openfeign:
+      okhttp:
+        enabled: false
+      httpclient:
+        enabled: true
+        max-connections: 200
+        max-connections-per-route: 50
+        connection-timeout: 3000
+      client:
+        config:
+          default:
+            connect-timeout: 5000
+            read-timeout: 30000
+            logger-level: BASIC
+
+# ======================== Carlos 框架配置 ========================
+carlos:
+  # ======================== 资源服务器/安全配置 ========================
+  # 开启后挂载 UserContextAuthenticationFilter：校验网关签发的身份断言（X-User-Context），
+  # 并在本服务内建立登录人上下文。这是 @Log 审计日志能记录「操作人」的前提 ——
+  # 关闭时审计行会记成 principalType=ANONYMOUS、操作人为空。
+  # 注意：该过滤器链是 anyRequest().permitAll()，不收紧任何准入；准入权威仍在网关。
+  resource-server:
+    enabled: true
+  apm:
+    enabled: true
+  web:
+    cors:
+      enabled: true
+    enum-dict:
+      # 只扫本服务自己的枚举包（@AppEnum 的 code 需全局唯一，扫 com.carlos 会跨模块互相覆盖）
+      scan-packages: com.carlos.job
+      enabled: true
+
+  # ======================== 调度中心配置 ========================
+  job:
+    # 回调业务服务时携带的访问令牌（与业务端 carlos.job.client.access-token 配对，均空则不校验）
+    access-token: ${CARLOS_JOB_ACCESS_TOKEN:}
+    # 回调连接超时（毫秒）
+    connect-timeout-ms: 5000
+    # 回调读取超时（毫秒），长耗时任务需调大
+    read-timeout-ms: 300000
+    # ===== 注解式接入（carlos-job-client，调度中心自身也可当业务端）=====
+    # 本机自身地址。填上它，AnnotationSampleJob 就会在启动时被播种进 job_info
+    # （每天 3 点执行、只打一行日志；已存在则跳过不覆盖，运维改过的配置不会被改回来）
+    # client:
+    #   admin-url: http://127.0.0.1:9516
+    #   # 注册令牌需与上面的 carlos.job.access-token 配对（两者都空则不校验）
+    #   access-token: ${CARLOS_JOB_ACCESS_TOKEN:}
+
+# ======================== 监控配置（Actuator） ========================
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+# ======================== 日志配置 ========================
+logging:
+  config: classpath:config/logback.xml
+  level:
+    root: info
+    com.carlos: debug
+  file:
+    path: logs/job
+
+# ======================== MyBatis-Plus 配置 ========================
+mybatis-plus:
+  check-config-location: true
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+    call-setters-on-nulls: true
+  global-config:
+    db-config:
+      id-type: assign_id
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+  mapper-locations: classpath*:mapper/**/*Mapper.xml
+
+---
+# ======================== 接口文档配置（Knife4j/SpringDoc） ========================
+carlos:
+  openapi:
+    enable: true
+    title: "Carlos 调度中心 API 文档"
+    description: "定时任务管理、任务执行日志等接口"
+    version: "1.0.0"
+    contact:
+      name: Carlos
+      email: carlos@xxx.com
+      url: https://www.carlos.com
+  swagger:
+    base-package: com.carlos.job
+
+knife4j:
+  enable: true
+  production: false
+  setting:
+    language: zh-CN
+    enableSwaggerModels: true
+    enableDocumentManage: true
+    enableVersion: true
+    enableSearch: true
+    enableFooter: false
+    enableOpenApi: true
+    enableGroup: true
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+    resolve-schema-properties: true
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+  paths-to-exclude: /error, /actuator/**
+  show-actuator: false
+  group-configs:
+    - group: '任务管理'
+      displayName: '任务管理'
+      packagesToScan: com.carlos.job.controller
+      pathsToMatch: /**
+    - group: 'Feign接口'
+      displayName: 'Feign 接口（服务间调用）'
+      packagesToScan: com.carlos.job.apiimpl
+      pathsToMatch: /**

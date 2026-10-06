@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.carlos.test.mapper.OrgUserMapper">
+    <resultMap type="com.carlos.test.pojo.entity.OrgUser" id="baseMap">
+        <id column="id" property="id"/>
+        <result column="account" property="account"/>
+        <result column="realname" property="realname"/>
+        <result column="pwd" property="pwd"/>
+        <result column="identify" property="identify"/>
+        <result column="phone" property="phone"/>
+        <result column="address" property="address"/>
+        <result column="gender" property="gender"/>
+        <result column="head" property="head"/>
+        <result column="sort" property="sort"/>
+        <result column="description" property="description"/>
+        <result column="dingding" property="dingding"/>
+        <result column="political_outlook" property="politicalOutlook"/>
+        <result column="education_background" property="educationBackground"/>
+        <result column="last_login" property="lastLogin"/>
+        <result column="login_count" property="loginCount"/>
+        <result column="create_by" property="createBy"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_by" property="updateBy"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+</mapper>

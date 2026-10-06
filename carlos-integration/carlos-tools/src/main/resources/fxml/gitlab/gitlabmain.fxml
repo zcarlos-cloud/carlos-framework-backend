@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<!--
+    GitLab 主界面 FXML 文件
+    使用 ScrollPane 包裹主内容，支持内容超出窗口时滚动
+-->
+<ScrollPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.carlos.fx.gitlab.controller.GitlabMainController"
+            fitToWidth="true"
+            vbarPolicy="AS_NEEDED"
+            hbarPolicy="NEVER"
+            pannable="true"
+            style="-fx-background-color: transparent;">
+
+    <!-- 主容器：垂直布局 (VBox) -->
+    <VBox spacing="20" style="-fx-padding: 20;">
+
+        <!-- 标题标签 -->
+        <Label text="GitLab 工具" styleClass="title-large"/>
+        <Separator/>
+
+        <!-- 服务器选择区域：水平布局 (HBox) -->
+        <HBox spacing="10" alignment="CENTER_LEFT" styleClass="card">
+            <Label text="GitLab 服务器:" styleClass="form-label"/>
+            <!-- 服务器下拉框：显示已保存的 GitLab 服务器列表 -->
+            <ComboBox fx:id="serverCombo" prefWidth="400" HBox.hgrow="ALWAYS"/>
+            <!-- 添加服务器按钮：点击后弹出服务器配置对话框 -->
+            <Button fx:id="addServerButton" text="添加服务器" styleClass="secondary-button"/>
+        </HBox>
+
+        <!-- 标签页容器：包含多个功能标签页 -->
+        <TabPane fx:id="tabPane" prefHeight="500">
+            <!-- 合并请求标签页 -->
+            <Tab fx:id="mergeRequestTab" text="合并请求" closable="false"/>
+            <!-- 分支管理标签页 -->
+            <Tab fx:id="branchTab" text="分支管理" closable="false"/>
+            <!-- 问题管理标签页 -->
+            <Tab fx:id="issueTab" text="问题管理" closable="false"/>
+            <!-- 用户管理标签页 -->
+            <Tab fx:id="userTab" text="用户管理" closable="false"/>
+            <!-- 导出功能标签页 -->
+            <Tab fx:id="exportTab" text="导出" closable="false"/>
+        </TabPane>
+    </VBox>
+
+</ScrollPane>

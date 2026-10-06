@@ -1,0 +1,227 @@
+# ==========================================
+# carlos-monitor-boot 监控模块单体启动配置
+# 说明：用于本地单体启动监控服务，元数据存 PostgreSQL，指标时序写 ClickHouse
+# ==========================================
+
+# ======================== 服务基础配置 ========================
+server:
+  port: 9519
+  compression:
+    enabled: true
+    mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json
+    min-response-size: 128KB
+  tomcat:
+    threads:
+      max: 32
+  servlet:
+    context-path: /
+
+# ======================== Spring 主配置 ========================
+spring:
+  profiles:
+    active: env,boot
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 200MB
+      max-request-size: 200MB
+  application:
+    name: carlos-monitor
+
+  # ======================== 数据源配置（Druid + 动态数据源） ========================
+  datasource:
+    druid:
+      stat-view-servlet:
+        enabled: true
+        loginUsername: admin
+        loginPassword: 123456
+    dynamic:
+      primary: master
+      # 严格匹配数据源，默认 false。true 未匹配到指定数据源时抛异常，false 使用默认数据源
+      strict: false
+      druid:
+        initial-size: 5
+        min-idle: 5
+        max-active: 20
+        max-wait: 60000
+        time-between-eviction-runs-millis: 60000
+        min-evictable-idle-time-millis: 300000
+        validation-query: SELECT 1
+        test-while-idle: true
+        test-on-borrow: false
+        test-on-return: false
+        pool-prepared-statements: true
+        break-after-acquire-failure: true
+        connection-error-retry-attempts: 2
+        max-pool-prepared-statement-per-connection-size: 20
+        connection-properties:
+          druid.stat.mergeSql: true
+          druid.stat.slowSqlMillis: 5000
+
+# ======================== Carlos 框架配置 ========================
+carlos:
+  # ======================== 资源服务器/安全配置 ========================
+  # 校验网关签发的身份断言（X-User-Context），建立登录人上下文（@MonitorAudit 记录操作人的前提）
+  resource-server:
+    enabled: true
+  # ======================== 加密配置（SM4 国密，实例凭据加密必需） ========================
+  encrypt:
+    sm4:
+      enabled: true
+      encrypt-mode: cbc
+      key: ${CARLOS_ENCRYPT_KEY:asdfghjklmnbvcxz}
+      iv: ${CARLOS_ENCRYPT_IV:mnbvcxzpoiuytre1}
+  # APM 链路追踪（Brave + MDC 日志关联）
+  apm:
+    enabled: true
+  web:
+    cors:
+      enabled: true
+    # 枚举字典配置（@AppEnum 的 code 需全局唯一，只扫本服务自己的枚举包）
+    enum-dict:
+      scan-packages: com.carlos.monitor
+      enabled: true
+
+  # ======================== Disruptor 高性能队列配置 ========================
+  disruptor:
+    enabled: true
+    buffer-size: 1024
+    wait-strategy: blocking
+    thread-pool:
+      thread-name-prefix: monitor-disruptor-
+
+  # ======================== 雪花 ID 配置 ========================
+  snowflake:
+    tag: monitor
+    use-system-clock: false
+
+  # ======================== 系统监控配置（详见 MonitorProperties） ========================
+  monitor:
+    enabled: true
+    collect:
+      enabled: true
+      shard-count: 8
+      parallelism: 32
+      scan-count: 500
+      scan-interval-ms: 20
+      bigkey:
+        cron: "0 30 2 * * ?"
+        top-n: 500
+        batch-sleep-ms: 50
+    sink:
+      clickhouse:
+        url: ${CLICKHOUSE_URL:jdbc:clickhouse://localhost:8123/default}
+        username: ${CLICKHOUSE_USERNAME:default}
+        password: ${CLICKHOUSE_PASSWORD:}
+        batch-size: 2000
+        flush-interval-ms: 3000
+        backup-dir: logs/monitor/backup
+      disruptor:
+        ring-size: 65536
+    connection:
+      registry-max-size: 500
+      expire-after-access-min: 30
+      db-pool-max-active: 8
+    redis:
+      confirm-token-ttl-sec: 60
+      batch-delete-size: 500
+      batch-delete-sleep-ms: 100
+    sql-console:
+      default-limit: 500
+      max-limit: 5000
+      statement-timeout-sec: 10
+      write-max-affected-rows: 10000
+    alarm:
+      rule-cache-sec: 60
+      recover-notify: true
+    service-monitor:
+      actuator-base-path: /actuator
+      connect-timeout-ms: 2000
+
+# ======================== 监控配置（Actuator） ========================
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+# ======================== 日志配置 ========================
+logging:
+  config: classpath:config/logback.xml
+  level:
+    root: info
+    com.carlos: debug
+  file:
+    path: logs/monitor/
+
+---
+# ======================== 接口文档配置（Knife4j/SpringDoc） ========================
+carlos:
+  openapi:
+    enable: true
+    title: "Carlos 监控服务 API 文档"
+    description: "中间件/数据库/微服务监控与数据管理接口"
+    version: "3.0.0"
+    contact:
+      name: "技术支持"
+      email: "zhujunkeep@gmail.com"
+      url: "https://example.com"
+    license: "Apache 2.0"
+    license-url: "https://www.apache.org/licenses/LICENSE-2.0"
+
+knife4j:
+  enable: true
+  production: false
+  basic:
+    enable: false
+    username: admin
+    password: 123456
+  setting:
+    language: ZH_CN
+    enable-document-manage: true
+    enable-swagger-models: true
+    swagger-model-name: Swagger Models
+    enable-host: true
+    enable-request-cache: true
+    enable-filter-multipart-apis: true
+    enable-filter-multipart-api-method-type: POST
+    enable-dynamic-parameter: true
+    enable-open-api: true
+    enable-search: true
+    enable-after-script: true
+    enable-group: true
+    enable-response-code: true
+    enable-reload-cache-parameter: false
+    enable-debug: true
+    enable-home-custom: false
+    home-custom-path: classpath:markdown/home.md
+    enable-version: true
+    enable-footer: false
+    enable-footer-custom: false
+    footer-custom-content: "自定义Footer内容"
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+    resolve-schema-properties: true
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+    doc-expansion: list
+    display-request-duration: true
+  paths-to-exclude: /error, /actuator/**
+  cache:
+    disabled: false
+  show-actuator: false
+  show-login-endpoint: false
+  # ==================== 接口分组 ====================
+  group-configs:
+    # Feign 接口（服务间调用）
+    -
+      group: 'Feign接口'
+      displayName: 'Feign 接口（服务间调用）'
+      packagesToScan: com.carlos.monitor.apiimpl
+      pathsToMatch: /**

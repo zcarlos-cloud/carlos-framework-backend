@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 360" role="img" aria-label="Carlos Framework">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#161F45"/>
+      <stop offset="1" stop-color="#0A0F24"/>
+    </linearGradient>
+    <linearGradient id="beam" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#818CF8"/>
+      <stop offset="1" stop-color="#22D3EE"/>
+    </linearGradient>
+    <radialGradient id="haloCyan">
+      <stop offset="0" stop-color="#67E8F9" stop-opacity="0.5"/>
+      <stop offset="1" stop-color="#67E8F9" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="haloAmber">
+      <stop offset="0" stop-color="#FBBF24" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#FBBF24" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <g transform="translate(30 42) scale(0.55)">
+    <path d="M231.75 38 A28 28 0 0 1 280.25 38 L432.65 126 A28 28 0 0 1 456.9 168 L456.9 344 A28 28 0 0 1 432.65 386 L280.25 474 A28 28 0 0 1 231.75 474 L79.35 386 A28 28 0 0 1 55.1 344 L55.1 168 A28 28 0 0 1 79.35 126 Z"
+          fill="url(#bg)" stroke="url(#beam)" stroke-opacity="0.4" stroke-width="5"/>
+    <g stroke="url(#beam)" stroke-width="11" stroke-linecap="round">
+      <line x1="336" y1="142" x2="200" y2="158"/>
+      <line x1="200" y1="158" x2="150" y2="256"/>
+      <line x1="150" y1="256" x2="200" y2="354"/>
+      <line x1="200" y1="354" x2="336" y2="370"/>
+    </g>
+    <circle cx="150" cy="256" r="52" fill="url(#haloCyan)"/>
+    <circle cx="322" cy="256" r="34" fill="url(#haloAmber)"/>
+    <g fill="#EEF2FF">
+      <circle cx="336" cy="142" r="13"/>
+      <circle cx="200" cy="158" r="13"/>
+      <circle cx="200" cy="354" r="13"/>
+      <circle cx="336" cy="370" r="13"/>
+      <circle cx="150" cy="256" r="18"/>
+    </g>
+    <circle cx="322" cy="256" r="10" fill="#FBBF24"/>
+    <circle cx="262" cy="118" r="4" fill="#A5B4FC" fill-opacity="0.8"/>
+    <circle cx="404" cy="238" r="3.5" fill="#A5B4FC" fill-opacity="0.7"/>
+  </g>
+
+  <line x1="352" y1="196" x2="1150" y2="196" stroke="#1E293B" stroke-width="1"/>
+
+  <text x="350" y="168" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif"
+        font-size="96" font-weight="800" letter-spacing="14" fill="#F1F5F9">CARLOS</text>
+  <text x="353" y="238" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif"
+        font-size="24" font-weight="600" letter-spacing="5" fill="#67E8F9">CLOUD-NATIVE MICROSERVICES FRAMEWORK</text>
+  <text x="353" y="292" font-family="Inter, 'Segoe UI', 'Helvetica Neue', 'PingFang SC', 'Microsoft YaHei', sans-serif"
+        font-size="20" letter-spacing="2" fill="#94A3B8">云原生微服务框架 · www.zcarlos.com</text>
+</svg>

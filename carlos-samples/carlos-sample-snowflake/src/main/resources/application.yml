@@ -1,0 +1,14 @@
+server:
+  port: 9822
+
+spring:
+  application:
+    name: carlos-sample-snowflake
+
+carlos:
+  snowflake:
+    enabled: true
+    # 工作节点 ID（0-31）
+    worker-id: 0
+    # 数据中心 ID（0-31）
+    data-center-id: 0

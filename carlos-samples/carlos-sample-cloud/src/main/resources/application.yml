@@ -1,0 +1,95 @@
+# Carlos Spring Cloud 示例应用配置
+
+server:
+  port: 9820
+
+spring:
+  application:
+    name: carlos-sample-cloud
+
+  # Spring Cloud Alibaba Nacos 配置
+  cloud:
+    nacos:
+      # Nacos 服务发现配置
+      discovery:
+        # 是否启用服务注册与发现
+        enabled: true
+        # Nacos 服务器地址
+        server-addr: localhost:8848
+        # 命名空间，用于环境隔离
+        namespace: public
+        # 分组名称
+        group: DEFAULT_GROUP
+        # 服务注册心跳间隔（毫秒）
+        heart-beat-interval: 5000
+        # 服务注册心跳超时时间（毫秒）
+        heart-beat-timeout: 15000
+        # 元数据
+        metadata:
+          version: @project.version@
+          description: Carlos Spring Cloud Sample
+
+      # Nacos 配置中心配置（可选）
+      config:
+        # 是否启用配置中心
+        enabled: false
+        # Nacos 服务器地址
+        server-addr: localhost:8848
+        # 配置文件格式
+        file-extension: yaml
+        # 命名空间
+        namespace: public
+        # 分组名称
+        group: DEFAULT_GROUP
+
+    # Spring Cloud OpenFeign 配置
+    openfeign:
+      client:
+        config:
+          default:
+            # 连接超时时间（毫秒）
+            connectTimeout: 5000
+            # 读取超时时间（毫秒）
+            readTimeout: 10000
+            # 日志级别: NONE, BASIC, HEADERS, FULL
+            loggerLevel: BASIC
+      # Feign 使用 OkHttp 客户端
+      okhttp:
+        enabled: true
+      # Feign 使用 Apache HttpClient（与 OkHttp 二选一）
+      httpclient:
+        enabled: false
+
+    # Spring Cloud LoadBalancer 配置
+    loadbalancer:
+      # 缓存配置
+      cache:
+        # 启用负载均衡缓存
+        enabled: true
+        # 缓存存活时间（秒）
+        ttl: 35
+      # 健康检查配置
+      health-check:
+        # 启用健康检查
+        refetch-instances: true
+        # 健康检查间隔（毫秒）
+        refetch-instances-interval: 25000
+
+  # 日志配置
+  output:
+    ansi:
+      enabled: always
+
+# 日志级别配置
+logging:
+  level:
+    com.carlos.sample.cloud: DEBUG
+    org.springframework.cloud.openfeign: DEBUG
+    com.alibaba.nacos: INFO
+
+# 应用信息
+info:
+  app:
+    name: @project.name@
+    version: @project.version@
+    description: @project.description@

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.carlos.system.menu.mapper.SysMenuMapper">
+  <resultMap type="com.carlos.system.menu.pojo.entity.SysMenu" id="baseMap">
+    <id column="id" property="id"/>
+    <result column="parent_id" property="parentId"/>
+    <result column="menu_name" property="menuName"/>
+    <result column="route_path" property="routePath"/>
+    <result column="route_name" property="routeName"/>
+    <result column="icon" property="icon"/>
+    <result column="icon_type" property="iconType"/>
+    <result column="meta" property="meta"/>
+    <result column="component" property="component"/>
+    <result column="url" property="url"/>
+    <result column="menu_status" property="menuStatus"/>
+    <result column="remark" property="remark"/>
+    <result column="menu_level" property="menuName"/>
+    <result column="order_num" property="orderNum"/>
+    <result column="hide_in_menu" property="hideInMenu"/>
+    <result column="menu_category" property="menuCategory"/>
+    <result column="client_type" property="clientType"/>
+    <result column="i18n_key" property="i18nKey"/>
+    <result column="keep_alive" property="keepAlive"/>
+    <result column="constant" property="constant"/>
+    <result column="href" property="href"/>
+    <result column="active_menu" property="activeMenu"/>
+    <result column="multi_tab" property="multiTab"/>
+    <result column="fixed_index_in_tab" property="fixedIndexInTab"/>
+    <result column="route_query" property="routeQuery"/>
+    <result column="create_by" property="createBy"/>
+    <result column="update_by" property="updateBy"/>
+    <result column="is_deleted" property="deleted"/>
+    <result column="create_time" property="createTime"/>
+    <result column="update_time" property="updateTime"/>
+  </resultMap>
+</mapper>

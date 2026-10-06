@@ -1,0 +1,163 @@
+# ==========================================
+# carlos-workflow-boot 工作流审批中心单体启动配置
+# 说明：基于 Warm-Flow 的人工审批中心，集中提供待办/审批/流程定义能力
+# ==========================================
+
+# ======================== 服务基础配置 ========================
+server:
+  port: ${SERVER_PORT:9518}
+  tomcat:
+    threads:
+      max: 64
+
+# ======================== Spring 主配置 ========================
+spring:
+  application:
+    name: carlos-workflow
+  profiles:
+    active: env,boot
+
+  # ======================== 数据源配置（Druid + 动态数据源） ========================
+  # 由 carlos-spring-boot-starter-mybatis 提供；连接信息见 application-boot.yml（主库固定叫 master）
+  datasource:
+    druid:
+      stat-view-servlet:
+        enabled: true
+        # 控制台口令必须走环境变量，禁止默认弱口令
+        loginUsername: ${DRUID_CONSOLE_USERNAME:admin}
+        loginPassword: ${DRUID_CONSOLE_PASSWORD:}
+    dynamic:
+      primary: master
+      druid:
+        time-between-connect-error-millis: 10000
+        break-after-acquire-failure: false
+        fail-fast: true
+        connection-error-retry-attempts: 10
+        initial-size: 20
+        min-idle: 20
+        max-active: 100
+        max-wait: 10000
+        time-between-eviction-runs-millis: 60000
+        min-evictable-idle-time-millis: 300000
+        validation-query: SELECT 1
+        test-while-idle: true
+        test-on-borrow: false
+        test-on-return: false
+        pool-prepared-statements: true
+        max-pool-prepared-statement-per-connection-size: 20
+        filters: stat,wall,slf4j
+        connection-properties:
+          druid.stat.mergeSql: true
+          druid.stat.slowSqlMillis: 5000
+
+  # ======================== OpenFeign 配置 ========================
+  cloud:
+    openfeign:
+      okhttp:
+        enabled: false
+      httpclient:
+        enabled: true
+        max-connections: 200
+        max-connections-per-route: 50
+        connection-timeout: 3000
+      client:
+        config:
+          default:
+            connect-timeout: 5000
+            read-timeout: 30000
+            logger-level: BASIC
+
+# ======================== Carlos 框架配置 ========================
+carlos:
+  # ======================== 资源服务器/安全配置 ========================
+  # 开启后挂载 UserContextAuthenticationFilter：校验网关签发的身份断言（X-User-Context），
+  # 并在本服务内建立登录人上下文。这是 @Log 审计日志能记录「操作人」的前提 ——
+  # 关闭时审计行会记成 principalType=ANONYMOUS、操作人为空。
+  # 注意：该过滤器链是 anyRequest().permitAll()，不收紧任何准入；准入权威仍在网关。
+  resource-server:
+    enabled: true
+  web:
+    cors:
+      enabled: true
+    enum-dict:
+      # 只扫本服务自己的枚举包（@AppEnum 的 code 需全局唯一，扫 com.carlos 会跨模块互相覆盖）
+      scan-packages: com.carlos.workflow
+      enabled: true
+    # ======================== 统一响应包装 ========================
+    # ⚠️ 必须排除 Warm-Flow 的控制器，否则设计器完全不可用。
+    #
+    # 引擎自己的控制器返回 ApiResult（顶层 code=200），而 Carlos 的 ResponseWrapAdvice
+    # 会把任何非 Result 的返回值再包一层 Result（顶层 code="00000"）。设计器的 axios
+    # 拦截器只看**顶层** code，拿到 "00000" 就判为失败并 Promise.reject(new Error(msg))，
+    # 于是控制台出现 "Uncaught (in promise) Error: 操作成功"，画布永远出不来。
+    #
+    # /warm-flow-ui/config 与 /warm-flow/** 是**第三方**契约，不能按 Carlos 的信封改，
+    # 只能让包装器绕开它们（引擎源码在 warm-flow-plugin-ui-*，不属于本仓库）。
+    #
+    # 两道都配：包名是主机制（覆盖引擎全部 2 个 UI 控制器，见
+    # org.dromara.warm.flow.ui.controller，不依赖 URL 前缀、引擎改路径也不会失效）；
+    # 路径是第二层保险，防将来出现「同前缀但不在该包下」的控制器。
+    response-wrap:
+      exclude-packages:
+        - org.dromara.warm.flow.ui
+      exclude-paths:
+        - /warm-flow/**
+        - /warm-flow-ui/**
+
+  # ======================== 工作流配置 ========================
+  workflow:
+    # 是否装配 Carlos 侧的服务层 Bean，缺省即生效
+    enabled: true
+
+  # ======================== MyBatis 配置 ========================
+  mybatis:
+    # 分页方言，必须与真实数据库一致。
+    # 框架默认 POSTGRE_SQL；达梦（DM）必须显式改成 dm，否则 MyBatis-Plus 的分页 SQL 会按 PostgreSQL 语法拼，
+    # Warm-Flow 自带的分页接口（UserService#page / FormService#publishedPage）会直接报错。
+    db-type: POSTGRE_SQL
+
+# ======================== Warm-Flow 引擎配置 ========================
+warm-flow:
+  enabled: true
+  # 流程设计器（静态资源 + /warm-flow-ui/** + /warm-flow/** 数据接口）
+  ui: true
+  banner: false
+  # 必须保持为空：该配置项走反射 newInstance，会绕过 Spring 依赖注入；
+  # 留空时引擎改为按类型从 Spring 容器取 PermissionHandler。
+  permission-handler-path:
+
+# ======================== MyBatis-Plus 配置 ========================
+mybatis-plus:
+  check-config-location: false
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+    call-setters-on-nulls: true
+  global-config:
+    db-config:
+      id-type: assign_id
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+  mapper-locations: classpath*:mapper/**/*Mapper.xml
+
+# ======================== 监控配置（Actuator） ========================
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+# ======================== 日志配置 ========================
+logging:
+  config: classpath:config/logback.xml
+  level:
+    root: info
+    com.carlos: debug
+  file:
+    path: logs/workflow
+
+# ======================== 接口文档（暂未接入） ========================
+# 这里原本有 carlos.openapi / knife4j / springdoc 的配置，现已移除：
+# carlos-spring-boot-starter-openapi 会经 knife4j -> springdoc -> swagger-core-jakarta
+# 传递引入 Jackson 2 的 jackson-databind，与 Warm-Flow 唯一的 Jackson 3 JSON 实现冲突
+# （JsonConvertSpiTest 有守护断言）。接入前请先核验并排除该传递依赖。

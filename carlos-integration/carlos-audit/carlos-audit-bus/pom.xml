@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.carlos.audit</groupId>
+    <artifactId>carlos-audit</artifactId>
+    <version>${revision}</version>
+  </parent>
+
+  <packaging>jar</packaging>
+
+  <artifactId>carlos-audit-bus</artifactId>
+
+  <description>
+    审计日志存储实现模块
+    提供 LogStorage 接口实现，将操作日志存储到 ClickHouse
+    配合 carlos-spring-boot-starter-log 使用
+  </description>
+
+  <dependencies>
+    <!-- 日志采集模块（必须） -->
+    <dependency>
+      <groupId>com.carlos</groupId>
+      <artifactId>carlos-spring-boot-starter-log</artifactId>
+    </dependency>
+    
+    <!-- 安全模块（用户上下文） -->
+    <dependency>
+      <groupId>com.carlos</groupId>
+      <artifactId>carlos-spring-boot-starter-security</artifactId>
+    </dependency>
+
+    <!-- Disruptor 异步处理支持 -->
+    <dependency>
+      <groupId>com.carlos</groupId>
+      <artifactId>carlos-spring-boot-starter-disruptor</artifactId>
+    </dependency>
+
+    <!-- 分布式 ID 生成 -->
+    <dependency>
+      <groupId>com.carlos</groupId>
+      <artifactId>carlos-spring-boot-starter-snowflake</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.carlos</groupId>
+      <artifactId>carlos-spring-boot-starter-web</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.carlos</groupId>
+      <artifactId>carlos-spring-boot-starter-mybatis</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.carlos</groupId>
+      <artifactId>carlos-spring-boot-starter-openapi</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.carlos.audit</groupId>
+      <artifactId>carlos-audit-api</artifactId>
+    </dependency>
+
+    <!--
+      carlos MQ：审计日志的 MQ 消费端（@MqListener）。
+      本模块此前已通过 starter-security / starter-snowflake 传递获得 Redis 依赖与连接配置，
+      因此引入 MQ 不新增部署前提。
+    -->
+    <dependency>
+      <groupId>com.carlos</groupId>
+      <artifactId>carlos-spring-boot-starter-mq</artifactId>
+    </dependency>
+
+
+    <!-- OSS 归档上传支持 -->
+    <dependency>
+      <groupId>com.carlos</groupId>
+      <artifactId>carlos-spring-boot-starter-oss</artifactId>
+    </dependency>
+
+    <!-- 定时任务统一接入 carlos-job（@ScheduleJob/@AutoRegisterJob） -->
+    <dependency>
+      <groupId>com.carlos.job</groupId>
+      <artifactId>carlos-job-client</artifactId>
+    </dependency>
+
+    <!-- ClickHouse 客户端 -->
+    <dependency>
+      <groupId>com.clickhouse</groupId>
+      <artifactId>clickhouse-jdbc-all</artifactId>
+    </dependency>
+
+    <!-- Micrometer 监控 -->
+    <dependency>
+      <groupId>io.micrometer</groupId>
+      <artifactId>micrometer-core</artifactId>
+    </dependency>
+
+    <!-- Guava 缓存 -->
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+    </dependency>
+
+    <!-- FastExcel - 审计日志导出 -->
+    <dependency>
+      <groupId>cn.idev.excel</groupId>
+      <artifactId>fastexcel</artifactId>
+      <exclusions>
+        <!-- 强制使用 carlos-dependencies 统一管理的 Apache POI 版本 -->
+        <exclusion>
+          <groupId>org.apache.poi</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <!-- 显式声明 POI，确保 fastexcel 排除传递依赖后版本统一 -->
+    <dependency>
+      <groupId>org.apache.poi</groupId>
+      <artifactId>poi-ooxml</artifactId>
+    </dependency>
+
+    <!-- 测试依赖 -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <skipTests>false</skipTests>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>

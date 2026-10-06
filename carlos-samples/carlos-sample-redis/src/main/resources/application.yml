@@ -1,0 +1,35 @@
+server:
+  port: 9821
+
+spring:
+  application:
+    name: carlos-sample-redis
+  redis:
+    host: localhost
+    port: 6379
+    password:
+    database: 0
+    timeout: 5000ms
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
+        max-wait: -1ms
+
+# Carlos Redis 配置
+carlos:
+  redis:
+    enabled: true
+    cache-type: caffeine_redis
+    caffeine:
+      initial-capacity: 100
+      maximum-size: 1000
+      expire-after-write: 10m
+    redisson:
+      enabled: true
+
+# 日志配置
+logging:
+  level:
+    com.carlos: debug

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <parent>
+    <groupId>com.carlos</groupId>
+    <artifactId>carlos-parent</artifactId>
+    <version>${revision}</version>
+    <relativePath>../carlos-parent/pom.xml</relativePath>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+
+  <artifactId>carlos-samples</artifactId>
+  <packaging>pom</packaging>
+
+  <name>carlos-samples</name>
+  <description>
+    Carlos 示例和测试模块
+  </description>
+
+  <modules>
+    <!-- 综合测试模块 -->
+    <module>carlos-test</module>
+
+    <!-- APM 应用性能监控样例 -->
+    <module>carlos-sample-apm</module>
+
+    <!-- 数据中心样例 -->
+    <module>carlos-sample-datacenter</module>
+
+    <!-- 数据权限范围样例 -->
+    <module>carlos-sample-datascope</module>
+
+    <!-- Disruptor 高性能异步事件处理样例 -->
+    <module>carlos-sample-disruptor</module>
+
+    <!-- 第三方平台对接样例 -->
+    <module>carlos-sample-docking</module>
+
+    <!-- 国密加密样例 -->
+    <module>carlos-sample-encrypt</module>
+
+    <!-- 日志增强样例 -->
+    <module>carlos-sample-log</module>
+
+    <!-- MongoDB 集成样例 -->
+    <module>carlos-sample-mongodb</module>
+
+    <!-- 消息队列样例 -->
+    <module>carlos-sample-mq</module>
+
+    <!-- MyBatis-Plus 样例 -->
+    <module>carlos-sample-mybatis</module>
+
+    <!-- OpenAPI 文档样例 -->
+    <module>carlos-sample-openapi</module>
+
+    <!-- OSS 对象存储样例 -->
+    <module>carlos-sample-oss</module>
+
+    <!-- Redis 多级缓存样例 -->
+    <module>carlos-sample-redis</module>
+
+    <!-- 短信服务样例 -->
+    <module>carlos-sample-sms</module>
+
+    <!-- 分布式 ID 样例 -->
+    <module>carlos-sample-snowflake</module>
+
+    <!-- Web 基础样例 -->
+    <module>carlos-sample-web</module>
+
+    <!-- Spring Cloud 微服务样例 -->
+    <module>carlos-sample-cloud</module>
+  </modules>
+</project>

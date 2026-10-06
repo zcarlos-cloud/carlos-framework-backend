@@ -1,0 +1,100 @@
+/* Light Theme Styles */
+.root {
+    -fx-base: #ffffff;
+    -fx-background: #ffffff;
+    -fx-control-inner-background: #ffffff;
+    -fx-accent: #1976d2;
+}
+
+/* Navigation Drawer */
+.navigation-drawer {
+    -fx-background-color: #f5f5f5;
+    -fx-border-color: #e0e0e0;
+}
+
+.navigation-list-view .list-cell {
+    -fx-text-fill: #212121;
+}
+
+.navigation-list-view .list-cell:hover {
+    -fx-background-color: #e8e8e8;
+}
+
+.navigation-list-view .list-cell:selected {
+    -fx-background-color: #1976d2;
+    -fx-text-fill: white;
+}
+
+/* Content Area */
+.content-pane {
+    -fx-background-color: white;
+}
+
+/* Form Styles */
+.form-label {
+    -fx-text-fill: #333333;
+}
+
+/* Text Controls */
+.text-field, .text-area, .combo-box {
+    -fx-background-color: white;
+    -fx-text-fill: #212121;
+    -fx-border-color: #e0e0e0;
+}
+
+.text-field:focused, .text-area:focused, .combo-box:focused {
+    -fx-border-color: #1976d2;
+}
+
+/* Table Styles */
+.table-view {
+    -fx-background-color: white;
+    -fx-border-color: #e0e0e0;
+}
+
+.table-view .column-header {
+    -fx-background-color: #f5f5f5;
+    -fx-text-fill: #212121;
+}
+
+.table-view .table-row-cell {
+    -fx-background-color: white;
+    -fx-text-fill: #212121;
+}
+
+.table-view .table-row-cell:selected {
+    -fx-background-color: #e3f2fd;
+}
+
+/* Tab Pane */
+.tab-pane .tab {
+    -fx-background-color: #f5f5f5;
+}
+
+.tab-pane .tab:selected {
+    -fx-background-color: white;
+    -fx-border-color: #1976d2;
+}
+
+.tab-pane .tab-label {
+    -fx-text-fill: #212121;
+}
+
+/* Card */
+.card {
+    -fx-background-color: white;
+    -fx-border-color: #e0e0e0;
+}
+
+/* Titles */
+.title-large {
+    -fx-text-fill: #212121;
+}
+
+.title-medium {
+    -fx-text-fill: #424242;
+}
+
+.title-small {
+    -fx-text-fill: #616161;
+}
