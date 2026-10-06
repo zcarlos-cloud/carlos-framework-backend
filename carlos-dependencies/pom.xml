@@ -117,7 +117,7 @@
 
     <freemarker.version>2.3.34</freemarker.version>                <!-- 须与 Spring Boot 4.x 管理版本一致，低于 2.3.32 缺 freemarker.ext.jakarta.jsp.TaglibFactory -->
     <resilience4j.version>2.4.0</resilience4j.version>
-    <clickhouse-jdbc.version>0.9.6</clickhouse-jdbc.version>
+    <clickhouse-jdbc.version>0.10.0</clickhouse-jdbc.version>
 
     <!-- SkyWalking -->
     <skywalking.version>9.5.0</skywalking.version>
