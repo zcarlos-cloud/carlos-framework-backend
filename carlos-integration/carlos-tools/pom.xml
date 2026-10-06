@@ -154,7 +154,7 @@
             <plugin>
                 <groupId>org.panteleyev</groupId>
                 <artifactId>jpackage-maven-plugin</artifactId>
-                <version>1.6.0</version>
+                <version>1.8.0</version>
                 <configuration>
                     <name>CarlosTools</name>
                     <appVersion>3.0.0</appVersion>
