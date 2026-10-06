@@ -74,7 +74,7 @@
     <mongodb-plus.version>2.1.9</mongodb-plus.version>
 
     <!-- Storage -->
-    <aliyun-oss.version>2.20.26</aliyun-oss.version>
+    <aliyun-oss.version>3.18.5</aliyun-oss.version>
 
     <!-- SMS -->
     <aliyun-dysmsapi.version>3.3.4</aliyun-dysmsapi.version>
